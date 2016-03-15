@@ -113,7 +113,7 @@ def ReadInput(maxlen):
             DisplayChar(c)
 
 def DisplayBanner():
-    DisplayString('ALICE - v0.0\n')
+    DisplayString('DEMON - v0.1\n')
 
 def Parse(ops):
     current = 0
