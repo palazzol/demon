@@ -2,7 +2,7 @@
 """
 Created on Tue Feb 23 23:11:53 2016
 
-@author: Frank
+@author: Frank Palazzolo
 """
 import string
 import sys

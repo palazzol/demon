@@ -1,5 +1,6 @@
 ;
-; Monk - Z80 Version
+; Moniker - Z80 Version
+; by Frank Palazzolo
 ; For Sega Star Trek
 ;
 ; SCL  - OUT F9, bit7, (0x80) coin counter 1, pin 5, U11 - R1

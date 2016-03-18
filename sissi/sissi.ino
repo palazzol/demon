@@ -1,5 +1,8 @@
 #include <Wire.h>
 
+// SISSI - Simple I2C-Slave to Serial Interface
+// by Frank Palazzolo
+
 #define I2C_ADDRESS 0x08
 
 void setup() {

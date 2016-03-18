@@ -1,6 +1,6 @@
 
 ///////////////////////////////////////////////////////
-// "Monk" Monitor Kernel Reference code
+// "Moniker" Reference code
 // by Frank Palazzolo
 //
 // 8-bit target debug shim, acting as
