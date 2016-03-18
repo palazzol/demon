@@ -65,7 +65,8 @@ def RemoteCall(addr):
     cmd = cmd + hextable[addr&0x0f]
     cmd = cmd + '\n'
     ser.write(cmd)
-    return ord(ser.read())
+    #return ord(ser.read())
+    return
     
 # System Specific
 def DisplayChar(c):
@@ -113,7 +114,7 @@ def ReadInput(maxlen):
             DisplayChar(c)
 
 def DisplayBanner():
-    DisplayString('DEMON - v0.1\n')
+    DisplayString('DEMON - v0.8\n')
 
 def Parse(ops):
     current = 0
@@ -204,6 +205,51 @@ def DoModify(ops):
         print
     
     return True
+
+def DoCall(ops):
+    args = Parse(ops)
+    if len(args) != 1:
+        return False
+    RemoteCall(args[0])
+    return True
+    
+def DoFill(ops):
+    args = Parse(ops)
+    if len(args) != 3:
+        return False
+    for addr in range(args[0],args[1]+1):
+        MemoryWrite(addr, args[2]%256)
+    return True
+
+def DoIn(ops):
+    args = Parse(ops)
+    if len(args) != 1:
+        return False
+    data = PortRead(args[0])
+    DisplayByte(data)
+    print
+    return True
+    
+def DoOut(ops):
+    args = Parse(ops)
+    if len(args) != 2:
+        return False
+    PortWrite(args[0],args[1])
+    return True
+
+def DoLoad(ops):
+    args = Parse(ops)
+    if len(args) != 1:
+        return False
+    addr = args[0]
+    fn = str(raw_input("Filename? "))
+    fp = open(fn,'rb')
+    c = fp.read(1)
+    while c != '':
+        MemoryWrite(addr,ord(c))
+        c = fp.read(1)
+        addr+=1
+    return True
     
 def DoCommand(s):
     if len(s) == 0:
@@ -211,7 +257,7 @@ def DoCommand(s):
     s = string.upper(s)
     cmd = s[0]
     ops = s[1:]
-    if cmd in 'QDSM':
+    if cmd in 'QDSMCFIOL':
         rv = False
         if cmd == 'Q':
             return True
@@ -221,19 +267,24 @@ def DoCommand(s):
             rv = DoChecksum(ops)
         elif cmd == 'M':
             rv = DoModify(ops)
+        elif cmd == 'C':
+            rv = DoCall(ops)
+        elif cmd == 'F':
+            rv = DoFill(ops)
+        elif cmd == 'I':
+            rv = DoIn(ops)
+        elif cmd == 'O':
+            rv = DoOut(ops)
+        elif cmd == 'L':
+            rv = DoLoad(ops)
         """
+        elif cmd == 'S':
+            rv = DoSave(ops)
         elif cmd == 'T':
             DoTest(ops):
-        elif cmd == 'G':
-            DoGo(ops)
-        elif cmd == 'C':
-            DoCall(ops)
         elif cmd == 'H':
             DoHelp(ops)
-        elif cmd == 'I':
-            DoIn(ops)
-        elif cmd == 'O':
-            DoOut(ops)
+
         else:
             DoError(ops)
         """

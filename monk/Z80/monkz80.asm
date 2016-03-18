@@ -2,118 +2,122 @@
 ; Monk - Z80 Version
 ; For Sega Star Trek
 ;
-;
 ; SCL  - OUT F9, bit7, (0x80) coin counter 1, pin 5, U11 - R1
 ; DOUT - OUT F9, bit6, (0x40) coin counter 2, pin 9, U11 - R3
-; DIN  - IN  F8, bit3, (0x08) DIP, SW1, pin9, U2-pin 6, 
+; DIN  - IN  F8, bit3, (0x08) DIP, SW1, pin9, U2-pin 6
 ;
-        .area   CODE1   (ABS)
+; Note: We cannot use opcode 0x32 on this platform, or it will
+;       the security chip
+;
+        .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
+
+DSPORT  .equ    0xf8        ; dip switch 1 port
+CCPORT  .equ    0xf9        ; port for count counters
+
+CMDBUF  .equ    0xcff0      ; Need only 4 bytes of ram for command buffer
+                            ; (We will save 12 more just in case)
+SSTACK  .equ    0xcff0      ; Start of stack
+
+I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
+I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
+
+BIGDEL  .equ    0x0180      ; bigger delay, for now still fairly small
+
         .org    0x0000
     
-        LD      SP,0hc8ff   ; have to set valid SP
-        DI
-
-COINBUF .equ    0xc800     ; Need one byte for the last output pin states
-CMDBUF  .equ    0xc801     ; Need 4 bytes
-
-START:
-        JP      INIT
+START:  DI                  ; Disable interrupts - we don't handle them
+        JP      INIT        ; go to initialization code
     
-; Input HL = OUT BUFFER
+; Set the SCL pin high
+; D is the global coin counter buffer
 ; Destroys A
 SETSCL:
-        LD      A,(HL)
+        LD      A,D
         OR      0x80
-        LD      (HL),A
-        OUT     (0xF9),A
+        LD      D,A
+        OUT     (CCPORT),A
         CALL    I2CDELAY
         RET
     
-; Input HL = OUT BUFFER
+; Set the SCL pin low
+; D is the global coin counter buffer
 ; Destroys A
 CLRSCL:
-        LD      A,(HL)
+        LD      A,D
         AND     0x7F
-        LD      (HL),A
-        OUT     (0xF9),A
+        LD      D,A
+        OUT     (CCPORT),A
         RET
 
-; Input HL = OUT BUFFER
+; Set the DOUT pin low
+; D is the global coin counter buffer
 ; Destroys A 
 SETSDA:
-        LD      A,(HL)
+        LD      A,D
         AND     0xBF
-        LD      (HL),A
-        OUT     (0xF9),A
+        LD      D,A
+        OUT     (CCPORT),A
         CALL    I2CDELAY
         RET
 
-; Input HL = OUT BUFFER
+; Set the DOUT pin high
+; D is the global coin counter buffer
 ; Destroys A  
 CLRSDA:
-        LD      A,(HL)
+        LD      A,D
         OR      0x40
-        LD      (HL),A
-        OUT     (0xF9),A
+        LD      D,A
+        OUT     (CCPORT),A
         CALL    I2CDELAY
         RET
 
-; RETURNS BIT0 of A    
+; Read the DIN pin 
+; returns bit in carry flag    
 READSDA:
-        IN      A,(0xF8)    ;0x08
+        IN      A,(DSPORT)  ;0x08
         SRL     A           ;0x04
         SRL     A           ;0x02
         SRL     A           ;0x01
-        RET             ; return in bit0 of A
-    
-; Destroys B
-I2CDELAY:
-        LD      B,0x10
-DLOOP:
-        DJNZ    DLOOP
+        SRL     A           ;carry flag
         RET
+    
+; Delay for half a bit time
+I2CDELAY:
+        RET     ; This is plenty
 
+; I2C Start Condition
 ; Uses HL
-; Destroys A,B
+; Destroys A
 I2CSTART:
-        LD      HL,COINBUF
         CALL    CLRSDA      
         CALL    CLRSCL
         RET
 
+; I2C Stop Condition
 ; Uses HL
-; Destroys A,B
+; Destroys A
 I2CSTOP:
-        LD      HL,COINBUF
         CALL    CLRSDA
         CALL    SETSCL
         CALL    SETSDA
-        CALL    I2CDELAY
         RET
-    
-; Returns Bit0 of A
-; Destroys HL
-; Destroys B
+
+; I2C Read Bit routine
+; Returns bit in carry blag
+; Destroys A
 I2CRBIT:
-        LD      HL,COINBUF
         CALL    SETSDA
         CALL    SETSCL
         CALL    READSDA
-        PUSH    AF
+        PUSH    AF          ; save carry flag
         CALL    CLRSCL
-        POP     AF          ; rv in bit0 of A
+        POP     AF          ; rv in carry flag
         RET
 
-        ; no space left here!
-        
-        .org     0x0066
-        RETN
-        
-; Takes bit0 of A
-; Destroys HL,B
+; I2C Write Bit routine
+; Takes carry flag
+; Destroys A
 I2CWBIT:
-        LD      HL,COINBUF
-        RRC     A
         JR      NC,DOCLR
         CALL    SETSDA
         JR      AHEAD
@@ -123,45 +127,42 @@ AHEAD:
         CALL    SETSCL
         CALL    CLRSCL
         RET
+        
+        ; Make sure this code ends before address 0x66 !
+        
+        .org    0x0066
+NMI:    JP      START       ; restart on test button press
 
+; I2C Write Byte routine
 ; Takes A
-; Destroys BC,HL
-; Returns A bit0
-
+; Destroys B
+; Returns carry bit
 I2CWBYTE:
         LD      B,8
 ILOOP:
-        PUSH    BC
-        RLC     A     
-        JR      C,W1
-        PUSH    AF
-        XOR     A    
-        JR      AHEAD2
-W1:
-        PUSH    AF
-        LD      A,0x01
-
-AHEAD2:
+        PUSH    BC          ; save B
+        RLC     A    
+        PUSH    AF          ; save A
         CALL    I2CWBIT
         POP     AF
         POP     BC
         DJNZ    ILOOP
         CALL    I2CRBIT
         RET
-    
-; Destroys BC,HL
+
+; I2C Read Byte routine
+; Destroys BC
 ; Returns A
 I2CRBYTE:
         LD      B,8
         LD      C,0
 LOOP3:
         PUSH    BC
-        CALL    I2CRBIT
+        CALL    I2CRBIT     ; get bit in carry flag
         POP     BC
-        RRCA
-        RL      C
+        RL      C           ; rotate carry into bit0 of C register
         DJNZ    LOOP3
-        XOR     A
+        XOR     A           ; clear carry flag              
         PUSH    BC
         CALL    I2CWBIT
         POP     BC
@@ -169,13 +170,13 @@ LOOP3:
         RET
 ;
 
+; Read 4-byte I2C Command from device into CMDBUF
 ; Uses HL
 ; Destroys A,BC,HL
 I2CRREQ:
         CALL    I2CSTART
-        LD      A,0x11
+        LD      A,I2CRADR
         CALL    I2CWBYTE
-        RRC     A
         JR      C,SKIP
         CALL    I2CRBYTE
         LD      (IX),A
@@ -187,7 +188,7 @@ I2CRREQ:
         LD      (IX+3),A
         JR      ENDI2C
     
-SKIP:
+SKIP:                       ; If no device present, fake an idle response
         LD      A,0x2e  ; '.'
         LD      (IX),A
         JR      ENDI2C
@@ -195,7 +196,7 @@ SKIP:
 I2CSRESP:
         PUSH    AF
         CALL    I2CSTART
-        LD      A,0x10
+        LD      A,I2CWADR
         CALL    I2CWBYTE
         POP     AF
         CALL    I2CWBYTE
@@ -204,34 +205,37 @@ ENDI2C:
         RET
 ;
 
+; Main Polling loop
+; Return carry flag if we got a valid command (not idle)
 POLL:
         CALL    I2CRREQ
         LD      A,(IX)
-        CP      0x52    ; 'R'
+        CP      0x52    ; 'R' - Read memory
         JR      Z,MREAD
-        CP      0x57    ; 'W'
+        CP      0x57    ; 'W' - Write memory
         JR      Z,MWRITE
-        CP      0x49    ; 'I'
+        CP      0x49    ; 'I' - Input from port
         JR      Z,PREAD
-        CP      0x4F    ; 'O'
+        CP      0x4F    ; 'O' - Output from port
         JR      Z,PWRITE
-        CP      0x43    ; 'C'
+        CP      0x43    ; 'C' - Call subroutine
         JR      Z,REMCALL
+        CCF
         RET
 LOADHL:
         LD      A,(IX+1)
         LD      H,A
         LD      A,(IX+2)
         LD      L,A
-        RET
+        RET    
 MREAD:
-        CALL    LOADHL
-        LD      A,(HL)
+        CALL    LOADBC
+        LD      A,(BC)
         JR      SRESP
 MWRITE:
-        CALL    LOADHL
+        CALL    LOADBC
         LD      A,(IX+3)
-        LD      (HL),A
+        LD      (BC),A
         LD      A,0x57  ;'W'
         JR      SRESP
 LOADBC:
@@ -252,23 +256,29 @@ PWRITE:
 SRESP:
         CALL    I2CSRESP
 RHERE:
+        SCF
         RET
 REMCALL:
+        LD      HL,START
+        PUSH    HL
         CALL    LOADHL
-        LD      BC,RHERE
-        PUSH    BC
         JP      (HL)
     
 INIT:
-        LD      IX,CMDBUF
+        LD      SP,SSTACK   ; have to set valid SP
+        LD      IX,CMDBUF   ; Easy to index command buffer
+        
+; Main routine
 MAIN:
         CALL    POLL
-        LD      B,0xff
+        JR      C,MAIN
+        
+        LD      BC,BIGDEL
 MLOOP:
-        PUSH    BC
-        CALL    I2CDELAY
-        POP     BC
-        DJNZ    MLOOP
+        DEC     BC
+        LD      A,C
+        OR      B
+        JR      NZ,MLOOP
         JR      MAIN
 
 

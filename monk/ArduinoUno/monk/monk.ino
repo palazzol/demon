@@ -107,13 +107,11 @@ void i2c_stop_cond( void ) {
   // set SDA to 0
   clear_SDA();
 
-  // Stop bit setup time, minimum 4us
-  set_SCL();  // added by Frank ?
+  // Stop bit setup time
+  set_SCL();
 
   // SCL is high, set SDA from 0 to 1
   set_SDA();
-
-  I2C_delay();
 }
 
 // Write a bit to I2C bus
@@ -122,16 +120,10 @@ void i2c_write_bit( bool bit ) {
     set_SDA();
   } else {
     clear_SDA();
-  }
-
-  // SDA change propagation delay
-  //I2C_delay();  
+  } 
 
   // Set SCL high to indicate a new valid SDA value is available
   set_SCL();
-
-  // Wait for SDA value to be read by slave, minimum of 4us for standard mode
-  //I2C_delay();
 
   // Clear the SCL to low in preparation for next change
   clear_SCL();
@@ -144,14 +136,8 @@ bool i2c_read_bit( void ) {
   // Let the slave drive data
   set_SDA();
 
-  // Wait for SDA value to be written by slave, minimum of 4us for standard mode
-  //I2C_delay();
-
   // Set SCL high to indicate a new valid SDA value is available
   set_SCL();
-
-  // Wait for SDA value to be read by slave, minimum of 4us for standard mode
-  //I2C_delay();
 
   // SCL is high, read out bit
   bit = read_SDA();
