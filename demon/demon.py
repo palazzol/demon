@@ -11,7 +11,7 @@ import serial
 import msvcrt
 
 hextable = '0123456789ABCDEF'
-ser = serial.Serial("COM30", 250000, timeout=1)
+ser = serial.Serial("COM15", 250000, timeout=1)
 
 def MemoryRead(addr):
     cmd = 'R'
@@ -20,8 +20,8 @@ def MemoryRead(addr):
     cmd = cmd + hextable[(addr>>4)&0x0f]
     cmd = cmd + hextable[addr&0x0f]
     cmd = cmd + '\n'
-    ser.write(cmd)
-    return ord(ser.read())
+    ser.write(cmd.encode('ascii'))
+    return ser.read()[0]
 
 def MemoryWrite(addr,data):
     cmd = 'W'
@@ -32,8 +32,8 @@ def MemoryWrite(addr,data):
     cmd = cmd + hextable[(data>>4)&0x0f]
     cmd = cmd + hextable[data&0x0f]
     cmd = cmd + '\n'
-    ser.write(cmd)
-    return ord(ser.read())
+    ser.write(cmd.encode('ascii'))
+    return ser.read()[0]
 
 def PortRead(addr):
     cmd = 'I'
@@ -42,8 +42,8 @@ def PortRead(addr):
     cmd = cmd + hextable[(addr>>4)&0x0f]
     cmd = cmd + hextable[addr&0x0f]
     cmd = cmd + '\n'
-    ser.write(cmd)
-    return ord(ser.read())
+    ser.write(cmd.encode('ascii'))
+    return ser.read()[0]
 
 def PortWrite(addr,data):
     cmd = 'O'
@@ -54,8 +54,8 @@ def PortWrite(addr,data):
     cmd = cmd + hextable[(data>>4)&0x0f]
     cmd = cmd + hextable[data&0x0f]
     cmd = cmd + '\n'
-    ser.write(cmd)
-    return ord(ser.read())
+    ser.write(cmd.encode('ascii'))
+    return ser.read()[0]
 
 def RemoteCall(addr):
     cmd = 'C'
@@ -64,35 +64,25 @@ def RemoteCall(addr):
     cmd = cmd + hextable[(addr>>4)&0x0f]
     cmd = cmd + hextable[addr&0x0f]
     cmd = cmd + '\n'
-    ser.write(cmd)
+    ser.write(cmd.encode('ascii'))
     #return ord(ser.read())
     return
-    
-# System Specific
-def DisplayChar(c):
-    sys.stdout.write(c)
-    sys.stdout.flush()
 
 def ReadChar():
-    c = msvcrt.getch()
+    c = msvcrt.getch().decode('ascii')
     return c
-    
-# Generic
-def DisplayString(s):
-    for c in s:
-        DisplayChar(c)
 
-def DisplayNybble(u4):
-    table = '0123456789ABCDEF'
-    DisplayChar(table[u4])
+def DisplayChar(c):
+    print(c, end='', flush=True)
+    
+def DisplayString(s):
+    print(s, end='', flush=True)
     
 def DisplayByte(i):
-    DisplayNybble(i>>4)
-    DisplayNybble(i%16)
+    print('%02X' % i, end='', flush=True)
     
 def DisplayWord(i):
-    DisplayByte(i>>8)
-    DisplayByte(i%256)
+    print('%04X' % i, end='', flush=True)
         
 def ReadInput(maxlen):
     buf = ''
@@ -103,18 +93,18 @@ def ReadInput(maxlen):
                 buf = buf[:-1]
                 DisplayChar(c)
         elif (c == '\n') or (c == '\r'):
-            print
+            print()
             return buf
         elif len(buf) == maxlen-1:
             buf = buf + c
-            print
+            print()
             return buf
         elif len(buf) < maxlen:
             buf = buf + c
             DisplayChar(c)
 
 def DisplayBanner():
-    DisplayString('DEMON - v0.8\n')
+    DisplayString('DEMON - v0.81\n')
 
 def Parse(ops):
     current = 0
@@ -127,7 +117,7 @@ def Parse(ops):
                 current = 0
                 doing = False
         else:
-            i = string.find('0123456789ABCDEF',c)
+            i = hextable.find(c)
             if c != -1:
                 if doing == False:
                     doing = True
@@ -185,24 +175,24 @@ def DoModify(ops):
         DisplayChar(' ')
         w = ReadChar().upper()
         if (w == '\n') or (w == '\r'):
-            print
+            print()
             return True
-        i = string.find('0123456789ABCDEF',w)
+        i = hextable.find(w)
         if (i == -1):
-            print
+            print()
             break
         DisplayChar(w);
         data = i*16
         w = ReadChar().upper()
-        i = string.find('0123456789ABCDEF',w)
+        i = hextable.find(w)
         if (i == -1):
-            print
+            print()
             break
         DisplayChar(w);
         data = data + i
         MemoryWrite(addr,data)
         addr = (addr + 1)%65536
-        print
+        print()
     
     return True
 
@@ -227,7 +217,7 @@ def DoIn(ops):
         return False
     data = PortRead(args[0])
     DisplayByte(data)
-    print
+    print()
     return True
     
 def DoOut(ops):
@@ -254,7 +244,7 @@ def DoLoad(ops):
 def DoCommand(s):
     if len(s) == 0:
         return False
-    s = string.upper(s)
+    s = s.upper()
     cmd = s[0]
     ops = s[1:]
     if cmd in 'QDSMCFIOL':
