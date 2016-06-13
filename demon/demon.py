@@ -4,8 +4,6 @@ Created on Tue Feb 23 23:11:53 2016
 
 @author: Frank Palazzolo
 """
-import string
-import sys
 
 import serial
 import msvcrt
@@ -14,66 +12,33 @@ hextable = '0123456789ABCDEF'
 ser = serial.Serial("COM15", 250000, timeout=1)
 
 def MemoryRead(addr):
-    cmd = 'R'
-    cmd = cmd + hextable[(addr>>12)&0x0f]
-    cmd = cmd + hextable[(addr>>8)&0x0f]
-    cmd = cmd + hextable[(addr>>4)&0x0f]
-    cmd = cmd + hextable[addr&0x0f]
-    cmd = cmd + '\n'
+    cmd = 'R' + ('%04X' % addr) + '\n'
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def MemoryWrite(addr,data):
-    cmd = 'W'
-    cmd = cmd + hextable[(addr>>12)&0x0f]
-    cmd = cmd + hextable[(addr>>8)&0x0f]
-    cmd = cmd + hextable[(addr>>4)&0x0f]
-    cmd = cmd + hextable[addr&0x0f]
-    cmd = cmd + hextable[(data>>4)&0x0f]
-    cmd = cmd + hextable[data&0x0f]
-    cmd = cmd + '\n'
+    cmd = 'W' + ('%04X' % addr) + ('%02X' % data) + '\n'
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def PortRead(addr):
-    cmd = 'I'
-    cmd = cmd + hextable[(addr>>12)&0x0f]
-    cmd = cmd + hextable[(addr>>8)&0x0f]
-    cmd = cmd + hextable[(addr>>4)&0x0f]
-    cmd = cmd + hextable[addr&0x0f]
-    cmd = cmd + '\n'
+    cmd = 'I' + ('%04X' % addr) + '\n'
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def PortWrite(addr,data):
-    cmd = 'O'
-    cmd = cmd + hextable[(addr>>12)&0x0f]
-    cmd = cmd + hextable[(addr>>8)&0x0f]
-    cmd = cmd + hextable[(addr>>4)&0x0f]
-    cmd = cmd + hextable[addr&0x0f]
-    cmd = cmd + hextable[(data>>4)&0x0f]
-    cmd = cmd + hextable[data&0x0f]
-    cmd = cmd + '\n'
+    cmd = 'O' + ('%04X' % addr) + ('%02X' % data) + '\n'
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def RemoteCall(addr):
-    cmd = 'C'
-    cmd = cmd + hextable[(addr>>12)&0x0f]
-    cmd = cmd + hextable[(addr>>8)&0x0f]
-    cmd = cmd + hextable[(addr>>4)&0x0f]
-    cmd = cmd + hextable[addr&0x0f]
-    cmd = cmd + '\n'
+    cmd = 'C' + ('%04X' % addr) + '\n'
     ser.write(cmd.encode('ascii'))
     #return ord(ser.read())
     return
 
 def ReadChar():
-    c = msvcrt.getch().decode('ascii')
-    return c
-
-def DisplayChar(c):
-    print(c, end='', flush=True)
+    return msvcrt.getch().decode('ascii')
     
 def DisplayString(s):
     print(s, end='', flush=True)
@@ -91,7 +56,7 @@ def ReadInput(maxlen):
         if c == 9:
             if len(buf) > 0:
                 buf = buf[:-1]
-                DisplayChar(c)
+                DisplayString(c)
         elif (c == '\n') or (c == '\r'):
             print()
             return buf
@@ -101,10 +66,10 @@ def ReadInput(maxlen):
             return buf
         elif len(buf) < maxlen:
             buf = buf + c
-            DisplayChar(c)
+            DisplayString(c)
 
 def DisplayBanner():
-    DisplayString('DEMON - v0.81\n')
+    DisplayString('DEMON - v0.82\n')
 
 def Parse(ops):
     current = 0
@@ -140,13 +105,12 @@ def DoDump(ops):
         for addr in range(i,i+16):
             data = MemoryRead(addr)
             DisplayByte(data)
-            DisplayChar(' ')
+            DisplayString(' ')
             if (data>=32 and data <128):
                 s = s + chr(data)
             else:
                 s = s + '.'
-        DisplayString(s)
-        DisplayChar('\n')
+        DisplayString(s + '\n')
     return True
 
 def DoChecksum(ops):
@@ -158,7 +122,7 @@ def DoChecksum(ops):
         checksum += MemoryRead(addr)
     checksum %= 65536
     DisplayWord(checksum)
-    DisplayChar('\n')
+    DisplayString('\n')
     return True
 
 def DoModify(ops):
@@ -170,9 +134,9 @@ def DoModify(ops):
     while(1):
         data = MemoryRead(addr)
         DisplayWord(addr)
-        DisplayChar(' ')
+        DisplayString(' ')
         DisplayByte(data)
-        DisplayChar(' ')
+        DisplayString(' ')
         w = ReadChar().upper()
         if (w == '\n') or (w == '\r'):
             print()
@@ -181,14 +145,14 @@ def DoModify(ops):
         if (i == -1):
             print()
             break
-        DisplayChar(w);
+        DisplayString(w);
         data = i*16
         w = ReadChar().upper()
         i = hextable.find(w)
         if (i == -1):
             print()
             break
-        DisplayChar(w);
+        DisplayString(w);
         data = data + i
         MemoryWrite(addr,data)
         addr = (addr + 1)%65536
@@ -288,7 +252,7 @@ def DoCommand(s):
 DisplayBanner()
 done = False
 while not done:
-    DisplayChar('>')
+    DisplayString('>')
     s = ReadInput(80)
     done = DoCommand(s)
 DisplayString("BYE!\n")
