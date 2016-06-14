@@ -38,7 +38,8 @@ def RemoteCall(addr):
     return
 
 def ReadChar():
-    return msvcrt.getch().decode('ascii')
+    c = msvcrt.getch()
+    return c.decode('utf-8')
     
 def DisplayString(s):
     print(s, end='', flush=True)
@@ -48,25 +49,6 @@ def DisplayByte(i):
     
 def DisplayWord(i):
     print('%04X' % i, end='', flush=True)
-        
-def ReadInput(maxlen):
-    buf = ''
-    while True:
-        c = ReadChar()
-        if c == 9:
-            if len(buf) > 0:
-                buf = buf[:-1]
-                DisplayString(c)
-        elif (c == '\n') or (c == '\r'):
-            print()
-            return buf
-        elif len(buf) == maxlen-1:
-            buf = buf + c
-            print()
-            return buf
-        elif len(buf) < maxlen:
-            buf = buf + c
-            DisplayString(c)
 
 def DisplayBanner():
     DisplayString('DEMON - v0.82\n')
@@ -138,9 +120,13 @@ def DoModify(ops):
         DisplayByte(data)
         DisplayString(' ')
         w = ReadChar().upper()
-        if (w == '\n') or (w == '\r'):
+        if w == '\x1b':
             print()
             return True
+        if (w == '\n') or (w == '\r'):
+            print()
+            addr = (addr + 1)%65536
+            continue
         i = hextable.find(w)
         if (i == -1):
             print()
@@ -148,6 +134,10 @@ def DoModify(ops):
         DisplayString(w);
         data = i*16
         w = ReadChar().upper()
+        if (w == '\n') or (w == '\r'):
+            print()
+            addr = (addr + 1)%65536
+            continue
         i = hextable.find(w)
         if (i == -1):
             print()
@@ -196,13 +186,27 @@ def DoLoad(ops):
     if len(args) != 1:
         return False
     addr = args[0]
-    fn = str(raw_input("Filename? "))
+    fn = input("Filename? ")
     fp = open(fn,'rb')
     c = fp.read(1)
     while c != '':
         MemoryWrite(addr,ord(c))
         c = fp.read(1)
         addr+=1
+    return True
+
+def DoHelp(ops):
+    print("""AVAILABLE COMMANDS:
+    Q              - Quit
+    D xxxx xxxx    - Dump Memory
+    S xxxx xxxx    - Checksum Memory
+    M xxxx         - Modify Memory
+    C xxxx         - Call a subroutine
+    F xxxx xxxx xx - Fill Memory
+    I xxxx         - Input from port
+    O xxxx xx      - Output to port
+    L xxxx         - Load memory from file
+    H              - Help Menu""")
     return True
     
 def DoCommand(s):
@@ -211,7 +215,7 @@ def DoCommand(s):
     s = s.upper()
     cmd = s[0]
     ops = s[1:]
-    if cmd in 'QDSMCFIOL':
+    if cmd in 'QDSMCFIOLH':
         rv = False
         if cmd == 'Q':
             return True
@@ -231,28 +235,26 @@ def DoCommand(s):
             rv = DoOut(ops)
         elif cmd == 'L':
             rv = DoLoad(ops)
+        elif cmd == 'H':
+            rv = DoHelp(ops)
         """
         elif cmd == 'S':
             rv = DoSave(ops)
         elif cmd == 'T':
             DoTest(ops):
-        elif cmd == 'H':
-            DoHelp(ops)
-
         else:
             DoError(ops)
         """
         if rv == False:
-            DisplayString('HOW?\n')
+            print('HOW?')
     else:
-        DisplayString('WHAT?\n')
+        print('WHAT?')
     return False
     
 # monitor starts here
 DisplayBanner()
 done = False
 while not done:
-    DisplayString('>')
-    s = ReadInput(80)
+    s = input('>')
     done = DoCommand(s)
-DisplayString("BYE!\n")
+print("BYE!")
