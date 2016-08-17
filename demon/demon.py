@@ -51,7 +51,7 @@ def DisplayWord(i):
     print('%04X' % i, end='', flush=True)
 
 def DisplayBanner():
-    DisplayString('DEMON - v0.82\n')
+    DisplayString('DEMON - v0.83\n')
 
 def Parse(ops):
     current = 0
@@ -195,6 +195,29 @@ def DoLoad(ops):
         addr+=1
     return True
 
+def DoWrite(ops):
+    args = Parse(ops)
+    if len(args) != 2:
+        return False
+    fn = input("Filename? ")
+    fp = open(fn,'wb')
+    for i in range(args[0],args[1]+1,16):
+        DisplayWord(i)
+        DisplayString(': ')
+        s = ''
+        for addr in range(i,i+16):
+            data = MemoryRead(addr)
+            fp.write(data.to_bytes(1,byteorder='big'))
+            DisplayByte(data)
+            DisplayString(' ')
+            if (data>=32 and data <128):
+                s = s + chr(data)
+            else:
+                s = s + '.'
+        DisplayString(s + '\n')
+    fp.close()
+    return True
+    
 def DoHelp(ops):
     print("""AVAILABLE COMMANDS:
     Q              - Quit
@@ -206,6 +229,7 @@ def DoHelp(ops):
     I xxxx         - Input from port
     O xxxx xx      - Output to port
     L xxxx         - Load memory from file
+    W xxxx xxxx    - Write file from memory
     H              - Help Menu""")
     return True
     
@@ -215,7 +239,7 @@ def DoCommand(s):
     s = s.upper()
     cmd = s[0]
     ops = s[1:]
-    if cmd in 'QDSMCFIOLH':
+    if cmd in 'QDSMCFIOLHW':
         rv = False
         if cmd == 'Q':
             return True
@@ -237,9 +261,9 @@ def DoCommand(s):
             rv = DoLoad(ops)
         elif cmd == 'H':
             rv = DoHelp(ops)
+        elif cmd == 'W':
+            rv = DoWrite(ops)
         """
-        elif cmd == 'S':
-            rv = DoSave(ops)
         elif cmd == 'T':
             DoTest(ops):
         else:
