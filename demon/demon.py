@@ -189,7 +189,7 @@ def DoLoad(ops):
     fn = input("Filename? ")
     fp = open(fn,'rb')
     c = fp.read(1)
-    while c != '':
+    while len(c) != 0:
         MemoryWrite(addr,ord(c))
         c = fp.read(1)
         addr+=1
