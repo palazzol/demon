@@ -7,7 +7,7 @@
 ; DOUT - OUT F9, bit6, (0x40) coin counter 2, pin 9, U11 - R3
 ; DIN  - IN  F8, bit3, (0x08) DIP, SW1, pin9, U2-pin 6
 ;
-; Note: We cannot use opcode 0x32 on this platform, or it will
+; Note: We cannot use opcode 0x32 on this platform, or it will trigger
 ;       the security chip
 ;
         .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
@@ -27,6 +27,9 @@ BIGDEL  .equ    0x0180      ; bigger delay, for now still fairly small
         .org    0x0000
     
 START:  DI                  ; Disable interrupts - we don't handle them
+        LD      A,81h
+        LD      HL,0xE000
+        LD      (HL),A      ; blank the screen
         JP      INIT        ; go to initialization code
     
 ; Set the SCL pin high
