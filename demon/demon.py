@@ -7,31 +7,68 @@ Created on Tue Feb 23 23:11:53 2016
 
 import serial
 import msvcrt
+import argparse
 
+# Parsing the arguments
+parser = argparse.ArgumentParser(description = 'Demon Debugger')
+parser.add_argument('-p','--port',help='Serial Port Name',required=False)
+parser.add_argument('-r','--rate',default=250000,help='Serial Port Baud Rate',required=False)
+parser.add_argument('-s','--sim',help='simulation only mode',required=False,action="store_true")
+parser.add_argument('-m','--mode',type=int,default=8,help='8 or 16 bit data mode',required=False)
+global_args = parser.parse_args()
 hextable = '0123456789ABCDEF'
-ser = serial.Serial("COM15", 250000, timeout=1)
-
+if global_args.sim == False:
+    ser = serial.Serial(global_args.port, global_args.rate, timeout=1)
+else:
+    simram = []
+    
+def Init():
+    if global_args.sim == True:
+        for i in range(0,65536):
+            simram.append(0)
+            
 def MemoryRead(addr):
+    if global_args.sim:
+        return simram[addr]
     cmd = 'R' + ('%04X' % addr) + '\n'
     ser.write(cmd.encode('ascii'))
-    return ser.read()[0]
+    if global_args.mode == 16:
+        rv = ser.read(2)
+        return rv[0]*256+rv[1]
+    else:
+        return ser.read()[0]    
 
 def MemoryWrite(addr,data):
-    cmd = 'W' + ('%04X' % addr) + ('%02X' % data) + '\n'
-    ser.write(cmd.encode('ascii'))
-    return ser.read()[0]
+    if global_args.sim:
+        simram[addr] = data
+        return ord('W')
+    if global_args.mode == 16:
+        cmd = 'W' + ('%04X' % addr) + ('%04X' % data) + '\n'
+        ser.write(cmd.encode('ascii'))
+        rv = ser.read(2)
+        return rv[0]*256+rv[1]
+    else:
+        cmd = 'W' + ('%04X' % addr) + ('%02X' % data) + '\n'
+        ser.write(cmd.encode('ascii'))
+        return ser.read()[0]        
 
 def PortRead(addr):
+    if global_args.sim:
+        return 0xaa
     cmd = 'I' + ('%04X' % addr) + '\n'
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def PortWrite(addr,data):
+    if global_args.sim:
+        return ord('O')
     cmd = 'O' + ('%04X' % addr) + ('%02X' % data) + '\n'
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def RemoteCall(addr):
+    if global_args.sim:
+        return
     cmd = 'C' + ('%04X' % addr) + '\n'
     ser.write(cmd.encode('ascii'))
     #return ord(ser.read())
@@ -80,19 +117,35 @@ def DoDump(ops):
     args = Parse(ops)
     if len(args) != 2:
         return False
-    for i in range(args[0],args[1]+1,16):
-        DisplayWord(i)
-        DisplayString(': ')
-        s = ''
-        for addr in range(i,i+16):
-            data = MemoryRead(addr)
-            DisplayByte(data)
-            DisplayString(' ')
-            if (data>=32 and data <128):
-                s = s + chr(data)
-            else:
-                s = s + '.'
-        DisplayString(s + '\n')
+    if global_args.mode == 16:
+        for i in range(args[0],args[1]+1,8):
+            DisplayWord(i)
+            DisplayString(': ')
+            s = ''
+            for addr in range(i,i+8):
+                data = MemoryRead(addr)
+                DisplayWord(data)
+                DisplayString(' ')
+                data_lsb = data&0xff
+                if (data_lsb>=32 and data_lsb <128):
+                    s = s + chr(data_lsb)
+                else:
+                    s = s + '.'
+            DisplayString(s + '\n')
+    else:
+        for i in range(args[0],args[1]+1,16):
+            DisplayWord(i)
+            DisplayString(': ')
+            s = ''
+            for addr in range(i,i+16):
+                data = MemoryRead(addr)
+                DisplayByte(data)
+                DisplayString(' ')
+                if (data>=32 and data <128):
+                    s = s + chr(data)
+                else:
+                    s = s + '.'
+            DisplayString(s + '\n')        
     return True
 
 def DoChecksum(ops):
@@ -119,6 +172,7 @@ def DoModify(ops):
         DisplayString(' ')
         DisplayByte(data)
         DisplayString(' ')
+        
         w = ReadChar().upper()
         if w == '\x1b':
             print()
@@ -133,6 +187,7 @@ def DoModify(ops):
             break
         DisplayString(w);
         data = i*16
+        
         w = ReadChar().upper()
         if (w == '\n') or (w == '\r'):
             print()
@@ -144,6 +199,7 @@ def DoModify(ops):
             break
         DisplayString(w);
         data = data + i
+        
         MemoryWrite(addr,data)
         addr = (addr + 1)%65536
         print()
@@ -161,8 +217,12 @@ def DoFill(ops):
     args = Parse(ops)
     if len(args) != 3:
         return False
+    if global_args.mode == 16:
+        data = args[2]%65536
+    else:
+        data = args[2]%256
     for addr in range(args[0],args[1]+1):
-        MemoryWrite(addr, args[2]%256)
+        MemoryWrite(addr, data)
     return True
 
 def DoIn(ops):
@@ -276,6 +336,7 @@ def DoCommand(s):
     return False
     
 # monitor starts here
+Init()
 DisplayBanner()
 done = False
 while not done:
