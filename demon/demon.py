@@ -8,17 +8,30 @@ Created on Tue Feb 23 23:11:53 2016
 import serial
 import msvcrt
 import argparse
+import sys
 
 # Parsing the arguments
 parser = argparse.ArgumentParser(description = 'Demon Debugger')
 parser.add_argument('-p','--port',help='Serial Port Name',required=False)
 parser.add_argument('-r','--rate',default=250000,help='Serial Port Baud Rate',required=False)
-parser.add_argument('-s','--sim',help='simulation only mode',required=False,action="store_true")
-parser.add_argument('-m','--mode',type=int,default=8,help='8 or 16 bit data mode',required=False)
+parser.add_argument('-s','--sim',help='Simulation only mode',required=False,action="store_true")
+parser.add_argument('-c','--chip',default='Z80',help='CPU architecture (Z80 or CP1610)',required=True)
 global_args = parser.parse_args()
+
+if global_args.chip == 'Z80':
+    global_args.mode = 8
+    global_args.enable_port_io = True
+elif global_args.chip == 'CP1610':
+    global_args.mode = 16
+    global_args.enable_port_io = False
+else:
+    print("Sorry, chip must be Z80 or CP1610")
+    sys.exit(-1)
+    
 hextable = '0123456789ABCDEF'
 if global_args.sim == False:
     ser = serial.Serial(global_args.port, global_args.rate, timeout=1)
+    #print(ser.get_settings())
 else:
     simram = []
     
@@ -31,10 +44,18 @@ def MemoryRead(addr):
     if global_args.sim:
         return simram[addr]
     cmd = 'R' + ('%04X' % addr) + '\n'
-    ser.write(cmd.encode('ascii'))
+    for c in cmd:
+        ser.write(c.encode('ascii'))
+    #ser.write(cmd.encode('ascii'))
     if global_args.mode == 16:
-        rv = ser.read(2)
-        return rv[0]*256+rv[1]
+        for j in range(0,1000):
+            pass
+        rv = ser.read(4)
+        v = 0
+        for i in range(0,4):
+            v <<= 4
+            v += hextable.find(chr(rv[i]))
+        return v
     else:
         return ser.read()[0]    
 
@@ -44,9 +65,10 @@ def MemoryWrite(addr,data):
         return ord('W')
     if global_args.mode == 16:
         cmd = 'W' + ('%04X' % addr) + ('%04X' % data) + '\n'
-        ser.write(cmd.encode('ascii'))
-        rv = ser.read(2)
-        return rv[0]*256+rv[1]
+        for c in cmd:
+            ser.write(c.encode('ascii'))
+        #ser.write(cmd.encode('ascii'))
+        return ser.read()[0]
     else:
         cmd = 'W' + ('%04X' % addr) + ('%02X' % data) + '\n'
         ser.write(cmd.encode('ascii'))
@@ -70,7 +92,8 @@ def RemoteCall(addr):
     if global_args.sim:
         return
     cmd = 'C' + ('%04X' % addr) + '\n'
-    ser.write(cmd.encode('ascii'))
+    for c in cmd:
+        ser.write(c.encode('ascii'))
     #return ord(ser.read())
     return
 
@@ -88,7 +111,7 @@ def DisplayWord(i):
     print('%04X' % i, end='', flush=True)
 
 def DisplayBanner():
-    DisplayString('DEMON - v0.83\n')
+    DisplayString('DEMON for '+global_args.chip+', v0.9\n')
 
 def Parse(ops):
     current = 0
@@ -170,9 +193,45 @@ def DoModify(ops):
         data = MemoryRead(addr)
         DisplayWord(addr)
         DisplayString(' ')
-        DisplayByte(data)
+        if global_args.mode == 16:
+            DisplayWord(data)
+        else:
+            DisplayByte(data)
         DisplayString(' ')
+
+        data = 0
         
+        if global_args.mode == 16:
+            w = ReadChar().upper()
+            if w == '\x1b':
+                print()
+                return True
+            if (w == '\n') or (w == '\r'):
+                print()
+                addr = (addr + 1)%65536
+                continue
+            i = hextable.find(w)
+            if (i == -1):
+                print()
+                break
+            DisplayString(w);
+            data = data + i*4096
+            
+            w = ReadChar().upper()
+            if w == '\x1b':
+                print()
+                return True
+            if (w == '\n') or (w == '\r'):
+                print()
+                addr = (addr + 1)%65536
+                continue
+            i = hextable.find(w)
+            if (i == -1):
+                print()
+                break
+            DisplayString(w);
+            data = data + i*256
+            
         w = ReadChar().upper()
         if w == '\x1b':
             print()
@@ -186,7 +245,7 @@ def DoModify(ops):
             print()
             break
         DisplayString(w);
-        data = i*16
+        data = data + i*16
         
         w = ReadChar().upper()
         if (w == '\n') or (w == '\r'):
@@ -248,11 +307,18 @@ def DoLoad(ops):
     addr = args[0]
     fn = input("Filename? ")
     fp = open(fn,'rb')
-    c = fp.read(1)
-    while len(c) != 0:
-        MemoryWrite(addr,ord(c))
+    if global_args.mode == 16:
+        c = fp.read(2)
+        while len(c) != 0:
+            MemoryWrite(addr,c[0]*256+c[1])
+            c = fp.read(2)
+            addr+=1
+    else:
         c = fp.read(1)
-        addr+=1
+        while len(c) != 0:
+            MemoryWrite(addr,ord(c))
+            c = fp.read(1)
+            addr+=1
     return True
 
 def DoWrite(ops):
@@ -261,36 +327,65 @@ def DoWrite(ops):
         return False
     fn = input("Filename? ")
     fp = open(fn,'wb')
-    for i in range(args[0],args[1]+1,16):
-        DisplayWord(i)
-        DisplayString(': ')
-        s = ''
-        for addr in range(i,i+16):
-            data = MemoryRead(addr)
-            fp.write(data.to_bytes(1,byteorder='big'))
-            DisplayByte(data)
-            DisplayString(' ')
-            if (data>=32 and data <128):
-                s = s + chr(data)
-            else:
-                s = s + '.'
-        DisplayString(s + '\n')
+    if global_args.mode == 16:
+        for i in range(args[0],args[1]+1,8):
+            DisplayWord(i)
+            DisplayString(': ')
+            s = ''
+            for addr in range(i,i+8):
+                data = MemoryRead(addr)
+                fp.write(data.to_bytes(2,byteorder='big'))
+                DisplayWord(data)
+                DisplayString(' ')
+                d = data&0xff
+                if (d>=32 and d<128):
+                    s = s + chr(d)
+                else:
+                    s = s + '.'
+            DisplayString(s + '\n')
+    else:
+        for i in range(args[0],args[1]+1,16):
+            DisplayWord(i)
+            DisplayString(': ')
+            s = ''
+            for addr in range(i,i+16):
+                data = MemoryRead(addr)
+                fp.write(data.to_bytes(1,byteorder='big'))
+                DisplayByte(data)
+                DisplayString(' ')
+                if (data>=32 and data <128):
+                    s = s + chr(data)
+                else:
+                    s = s + '.'
+            DisplayString(s + '\n')
     fp.close()
     return True
     
 def DoHelp(ops):
-    print("""AVAILABLE COMMANDS:
-    Q              - Quit
-    D xxxx xxxx    - Dump Memory
-    S xxxx xxxx    - Checksum Memory
-    M xxxx         - Modify Memory
-    C xxxx         - Call a subroutine
-    F xxxx xxxx xx - Fill Memory
-    I xxxx         - Input from port
-    O xxxx xx      - Output to port
-    L xxxx         - Load memory from file
-    W xxxx xxxx    - Write file from memory
-    H              - Help Menu""")
+    if global_args.enable_port_io == True:
+        print("""AVAILABLE COMMANDS:
+        Q              - Quit
+        D xxxx xxxx    - Dump Memory
+        S xxxx xxxx    - Checksum Memory
+        M xxxx         - Modify Memory
+        C xxxx         - Call a subroutine
+        F xxxx xxxx xx - Fill Memory
+        I xxxx         - Input from port
+        O xxxx xx      - Output to port
+        L xxxx         - Load memory from file
+        W xxxx xxxx    - Write file from memory
+        H              - Help Menu""")
+    else:
+        print("""AVAILABLE COMMANDS:
+        Q              - Quit
+        D xxxx xxxx    - Dump Memory
+        S xxxx xxxx    - Checksum Memory
+        M xxxx         - Modify Memory
+        C xxxx         - Call a subroutine
+        F xxxx xxxx xx - Fill Memory
+        L xxxx         - Load memory from file
+        W xxxx xxxx    - Write file from memory
+        H              - Help Menu""")        
     return True
     
 def DoCommand(s):
@@ -313,10 +408,11 @@ def DoCommand(s):
             rv = DoCall(ops)
         elif cmd == 'F':
             rv = DoFill(ops)
-        elif cmd == 'I':
-            rv = DoIn(ops)
-        elif cmd == 'O':
-            rv = DoOut(ops)
+        elif global_args.enable_port_io == True:
+            if cmd == 'I':
+                rv = DoIn(ops)
+            elif cmd == 'O':
+                rv = DoOut(ops)
         elif cmd == 'L':
             rv = DoLoad(ops)
         elif cmd == 'H':
