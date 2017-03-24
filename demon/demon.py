@@ -33,23 +33,15 @@ if global_args.sim == False:
     ser = serial.Serial(global_args.port, global_args.rate, timeout=1)
     #print(ser.get_settings())
 else:
-    simram = []
-    
-def Init():
-    if global_args.sim == True:
-        for i in range(0,65536):
-            simram.append(0)
+    simram = [0] * 0x10000
             
 def MemoryRead(addr):
     if global_args.sim:
         return simram[addr]
-    cmd = 'R' + ('%04X' % addr) + '\n'
+    cmd = 'R{0:04X}\n'.format(addr)
     for c in cmd:
         ser.write(c.encode('ascii'))
-    #ser.write(cmd.encode('ascii'))
     if global_args.mode == 16:
-        for j in range(0,1000):
-            pass
         rv = ser.read(4)
         v = 0
         for i in range(0,4):
@@ -64,39 +56,39 @@ def MemoryWrite(addr,data):
         simram[addr] = data
         return ord('W')
     if global_args.mode == 16:
-        cmd = 'W' + ('%04X' % addr) + ('%04X' % data) + '\n'
+        cmd = 'W{0:04X}{1:04X}\n'.format(addr,data)
         for c in cmd:
             ser.write(c.encode('ascii'))
         #ser.write(cmd.encode('ascii'))
         return ser.read()[0]
     else:
-        cmd = 'W' + ('%04X' % addr) + ('%02X' % data) + '\n'
+        cmd = 'W{0:04X}{1:02X}\n'.format(addr,data)
         ser.write(cmd.encode('ascii'))
         return ser.read()[0]        
 
 def PortRead(addr):
     if global_args.sim:
         return 0xaa
-    cmd = 'I' + ('%04X' % addr) + '\n'
+    cmd = 'I{0:04X}\n'.format(addr)
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def PortWrite(addr,data):
     if global_args.sim:
         return ord('O')
-    cmd = 'O' + ('%04X' % addr) + ('%02X' % data) + '\n'
+    cmd = 'I{0:04X}{1:02X}\n'.format(addr,data)
     ser.write(cmd.encode('ascii'))
     return ser.read()[0]
 
 def RemoteCall(addr):
     if global_args.sim:
         return
-    cmd = 'C' + ('%04X' % addr) + '\n'
+    cmd = 'C{0:04X}\n'.format(addr)
     for c in cmd:
         ser.write(c.encode('ascii'))
     #return ord(ser.read())
     return
-
+    
 def ReadChar():
     c = msvcrt.getch()
     return c.decode('utf-8')
@@ -105,10 +97,10 @@ def DisplayString(s):
     print(s, end='', flush=True)
     
 def DisplayByte(i):
-    print('%02X' % i, end='', flush=True)
+    print('{0:02X}'.format(i), end='', flush=True)
     
 def DisplayWord(i):
-    print('%04X' % i, end='', flush=True)
+    print('{0:04X}'.format(i), end='', flush=True)
 
 def DisplayBanner():
     DisplayString('DEMON for '+global_args.chip+', v0.9\n')
@@ -178,7 +170,7 @@ def DoChecksum(ops):
     checksum = 0
     for addr in range(args[0],args[1]+1):   
         checksum += MemoryRead(addr)
-    checksum %= 65536
+    checksum %= 0x10000
     DisplayWord(checksum)
     DisplayString('\n')
     return True
@@ -208,7 +200,7 @@ def DoModify(ops):
                 return True
             if (w == '\n') or (w == '\r'):
                 print()
-                addr = (addr + 1)%65536
+                addr = (addr + 1)%0x10000
                 continue
             i = hextable.find(w)
             if (i == -1):
@@ -223,14 +215,14 @@ def DoModify(ops):
                 return True
             if (w == '\n') or (w == '\r'):
                 print()
-                addr = (addr + 1)%65536
+                addr = (addr + 1)%0x10000
                 continue
             i = hextable.find(w)
             if (i == -1):
                 print()
                 break
             DisplayString(w);
-            data = data + i*256
+            data = data + i*0x100
             
         w = ReadChar().upper()
         if w == '\x1b':
@@ -238,7 +230,7 @@ def DoModify(ops):
             return True
         if (w == '\n') or (w == '\r'):
             print()
-            addr = (addr + 1)%65536
+            addr = (addr + 1)%0x10000
             continue
         i = hextable.find(w)
         if (i == -1):
@@ -250,7 +242,7 @@ def DoModify(ops):
         w = ReadChar().upper()
         if (w == '\n') or (w == '\r'):
             print()
-            addr = (addr + 1)%65536
+            addr = (addr + 1)%0x10000
             continue
         i = hextable.find(w)
         if (i == -1):
@@ -260,7 +252,7 @@ def DoModify(ops):
         data = data + i
         
         MemoryWrite(addr,data)
-        addr = (addr + 1)%65536
+        addr = (addr + 1)%0x10000
         print()
     
     return True
@@ -277,9 +269,9 @@ def DoFill(ops):
     if len(args) != 3:
         return False
     if global_args.mode == 16:
-        data = args[2]%65536
+        data = args[2]%0x10000
     else:
-        data = args[2]%256
+        data = args[2]%0x100
     for addr in range(args[0],args[1]+1):
         MemoryWrite(addr, data)
     return True
@@ -310,7 +302,7 @@ def DoLoad(ops):
     if global_args.mode == 16:
         c = fp.read(2)
         while len(c) != 0:
-            MemoryWrite(addr,c[0]*256+c[1])
+            MemoryWrite(addr,c[0]*0x100+c[1])
             c = fp.read(2)
             addr+=1
     else:
@@ -432,7 +424,6 @@ def DoCommand(s):
     return False
     
 # monitor starts here
-Init()
 DisplayBanner()
 done = False
 while not done:
