@@ -30,7 +30,7 @@ else:
     
 hextable = '0123456789ABCDEF'
 if global_args.sim == False:
-    ser = serial.Serial(global_args.port, global_args.rate, timeout=1)
+    ser = serial.Serial(global_args.port, global_args.rate, rtscts=True, timeout=1)
     #print(ser.get_settings())
 else:
     simram = [0] * 0x10000
@@ -39,8 +39,7 @@ def MemoryRead(addr):
     if global_args.sim:
         return simram[addr]
     cmd = 'R{0:04X}\n'.format(addr)
-    for c in cmd:
-        ser.write(c.encode('ascii'))
+    ser.write(cmd.encode('ascii'))
     if global_args.mode == 16:
         rv = ser.read(4)
         v = 0
@@ -57,9 +56,7 @@ def MemoryWrite(addr,data):
         return ord('W')
     if global_args.mode == 16:
         cmd = 'W{0:04X}{1:04X}\n'.format(addr,data)
-        for c in cmd:
-            ser.write(c.encode('ascii'))
-        #ser.write(cmd.encode('ascii'))
+        ser.write(cmd.encode('ascii'))
         return ser.read()[0]
     else:
         cmd = 'W{0:04X}{1:02X}\n'.format(addr,data)
