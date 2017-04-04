@@ -6,14 +6,15 @@ Created on Tue Feb 23 23:11:53 2016
 """
 
 import serial
-import msvcrt
 import argparse
 import sys
+import kbhit
 
 # Parsing the arguments
 parser = argparse.ArgumentParser(description = 'Demon Debugger')
 parser.add_argument('-p','--port',help='Serial Port Name',required=False)
-parser.add_argument('-r','--rate',default=250000,help='Serial Port Baud Rate',required=False)
+parser.add_argument('-r','--rate',help='Serial Port Baud Rate',required=False)
+parser.add_argument('--rtscts',help='Serial Port RTS/CTS handshaking',required=False,action="store_true")
 parser.add_argument('-s','--sim',help='Simulation only mode',required=False,action="store_true")
 parser.add_argument('-c','--chip',default='Z80',help='CPU architecture (Z80 or CP1610)',required=True)
 global_args = parser.parse_args()
@@ -29,12 +30,18 @@ else:
     sys.exit(-1)
     
 hextable = '0123456789ABCDEF'
+            
 if global_args.sim == False:
-    ser = serial.Serial(global_args.port, global_args.rate, rtscts=True, timeout=1)
-    #print(ser.get_settings())
+    if global_args.port and global_args.rate:
+        ser = serial.Serial(global_args.port, global_args.rate, rtscts=global_args.rtscts, timeout=1)
+    else:
+        print("Port and Rate are required fields, unless using Simulation Mode")
+        sys.exit(-1)
 else:
     simram = [0] * 0x10000
             
+kb = kbhit.KBHit()
+
 def MemoryRead(addr):
     if global_args.sim:
         return simram[addr]
@@ -83,12 +90,17 @@ def RemoteCall(addr):
     cmd = 'C{0:04X}\n'.format(addr)
     for c in cmd:
         ser.write(c.encode('ascii'))
-    #return ord(ser.read())
-    return
+    return ser.read()[0]
+    
+def ReadInput(s):
+    global kb
+    kb.set_normal_term()
+    rv = input(s)
+    kb = kbhit.KBHit()
+    return rv
     
 def ReadChar():
-    c = msvcrt.getch()
-    return c.decode('utf-8')
+    return kb.getch()
     
 def DisplayString(s):
     print(s, end='', flush=True)
@@ -294,7 +306,7 @@ def DoLoad(ops):
     if len(args) != 1:
         return False
     addr = args[0]
-    fn = input("Filename? ")
+    fn = ReadInput("Filename? ")
     fp = open(fn,'rb')
     if global_args.mode == 16:
         c = fp.read(2)
@@ -314,7 +326,7 @@ def DoWrite(ops):
     args = Parse(ops)
     if len(args) != 2:
         return False
-    fn = input("Filename? ")
+    fn = ReadInput("Filename? ")
     fp = open(fn,'wb')
     if global_args.mode == 16:
         for i in range(args[0],args[1]+1,8):
@@ -424,6 +436,8 @@ def DoCommand(s):
 DisplayBanner()
 done = False
 while not done:
-    s = input('>')
+    s = ReadInput('>')
     done = DoCommand(s)
 print("BYE!")
+kb.set_normal_term()
+
