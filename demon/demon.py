@@ -141,6 +141,8 @@ def DoDump(ops):
     args = Parse(ops)
     if len(args) != 2:
         return False
+    if args[0] > args[1]:
+        return False
     if global_args.mode == 16:
         for i in range(args[0],args[1]+1,8):
             DisplayWord(i)
@@ -175,6 +177,8 @@ def DoDump(ops):
 def DoChecksum(ops):
     args = Parse(ops)
     if len(args) != 2:
+        return False
+    if args[0] > args[1]:
         return False
     checksum = 0
     for addr in range(args[0],args[1]+1):   
@@ -277,6 +281,8 @@ def DoFill(ops):
     args = Parse(ops)
     if len(args) != 3:
         return False
+    if args[0] > args[1]:
+        return False
     if global_args.mode == 16:
         data = args[2]%0x10000
     else:
@@ -325,6 +331,8 @@ def DoLoad(ops):
 def DoWrite(ops):
     args = Parse(ops)
     if len(args) != 2:
+        return False
+    if args[0] > args[1]:
         return False
     fn = ReadInput("Filename? ")
     fp = open(fn,'wb')
