@@ -1,0 +1,241 @@
+------- FILE moniker.asm LEVEL 1 PASS 2
+      1  8000 ????						;
+      2  8000 ????						; Moniker - 6502 Version
+      3  8000 ????						; by Frank Palazzolo
+      4  8000 ????						; For Atari Asteroids
+      5  8000 ????						;
+      6  8000 ????						; SCL	- WRITE $3200, bit0 ($01) 2 player start lamp - active low only because led is wired to +5V
+      7  8000 ????						; DOUT - WRITE $3200, bit1 ($02) 1 player start lamp - active low only because led is wired to +5V
+      8  8000 ????						; DIN	- READ	$2405, bit7 ($80) thrust button - inverted on input
+      9  8000 ????
+     10  8000 ????				      processor	6502
+     11  8000 ????
+     12  8000 ????	       28 00	   DIP7       equ	$2800	;bit0 = DIP switch 7
+     13  8000 ????	       32 00	   LEDS       equ	$3200	;bit0 = 2 player start lamp
+     14  8000 ????						;bit1 = 1 player start lamp
+     15  8000 ????
+     16  8000 ????	       00 00	   LEDBUF     equ	$00	;buffer for lamps
+     17  8000 ????	       00 01	   B	      equ	$01	;general purpose
+     18  8000 ????	       00 02	   C	      equ	$02	;general purpose
+     19  8000 ????	       00 03	   CMDBUF0    equ	$03	;command buffer
+     20  8000 ????	       00 04	   CMDBUF1    equ	$04	;command buffer
+     21  8000 ????	       00 05	   CMDBUF2    equ	$05	;command buffer
+     22  8000 ????	       00 06	   CMDBUF3    equ	$06	;command buffer
+     23  8000 ????
+     24  8000 ????	       00 fe	   SSTACK     equ	$fe	;start of stack
+     25  8000 ????
+     26  8000 ????	       00 11	   I2CRADR    equ	$11	;I2C read address  - I2C address 0x08
+     27  8000 ????	       00 10	   I2CWADR    equ	$10	;I2C write address - I2C address 0x08
+     28  8000 ????
+     29  8000 ????	       01 80	   BIGDEL     equ	$0180
+     30  8000 ????
+     31  7800					      org	$7800	;start of rom at j2
+     32  7800
+     33  7800		       40	   NMI	      rti
+     34  7801
+     35  7801		       a5 00	   SETSCL     lda	LEDBUF
+     36  7803		       09 01		      ora	#$01
+     37  7805		       85 00		      sta	LEDBUF
+     38  7807		       8d 00 32 	      sta	LEDS
+     39  780a		       20 37 78 	      jsr	I2CDLY
+     40  780d		       60		      rts
+     41  780e
+     42  780e		       a5 00	   CLRSCL     lda	LEDBUF
+     43  7810		       29 fe		      and	#$fe
+     44  7812		       85 00		      sta	LEDBUF
+     45  7814		       8d 00 32 	      sta	LEDS
+     46  7817		       60		      rts
+     47  7818
+     48  7818		       a5 00	   SETSDA     lda	LEDBUF
+     49  781a		       29 fd		      and	#$fd
+     50  781c		       85 00		      sta	LEDBUF
+     51  781e		       8d 00 32 	      sta	LEDS
+     52  7821		       20 37 78 	      jsr	I2CDLY
+     53  7824		       60		      rts
+     54  7825
+     55  7825		       a5 00	   CLRSDA     lda	LEDBUF
+     56  7827		       09 02		      ora	#$02
+     57  7829		       85 00		      sta	LEDBUF
+     58  782b		       8d 00 32 	      sta	LEDS
+     59  782e		       20 37 78 	      jsr	I2CDLY
+     60  7831		       60		      rts
+     61  7832
+     62  7832		       ad 00 28    READSDA    lda	DIP7
+     63  7835		       6a		      ror
+     64  7836		       60		      rts
+     65  7837
+     66  7837							; Delay for half a bit time
+     67  7837		       60	   I2CDLY     rts		; TBD - this is plenty?
+     68  7838
+     69  7838							; I2C Start Condition
+     70  7838				   I2CSTART
+     71  7838		       20 25 78 	      jsr	CLRSDA
+     72  783b		       20 0e 78 	      jsr	CLRSCL
+     73  783e		       60		      rts
+     74  783f
+     75  783f							; I2C Stop Condition
+     76  783f							; Uses HL
+     77  783f							; Destroys A
+     78  783f				   I2CSTOP
+     79  783f		       20 25 78 	      jsr	CLRSDA
+     80  7842		       20 01 78 	      jsr	SETSCL
+     81  7845		       20 18 78 	      jsr	SETSDA
+     82  7848		       60		      rts
+     83  7849
+     84  7849				   I2CRBIT
+     85  7849		       20 18 78 	      jsr	SETSDA
+     86  784c		       20 01 78 	      jsr	SETSCL
+     87  784f		       20 32 78 	      jsr	READSDA	; sets/clears carry flag
+     88  7852		       20 0e 78 	      jsr	CLRSCL
+     89  7855		       60		      rts		; carry flag still good here
+     90  7856
+     91  7856				   I2CWBIT
+     92  7856		       90 06		      bcc	DOCLR
+     93  7858		       20 18 78 	      jsr	SETSDA
+     94  785b		       4c 61 78 	      jmp	AHEAD
+     95  785e				   DOCLR
+     96  785e		       20 25 78 	      jsr	CLRSDA
+     97  7861				   AHEAD
+     98  7861		       20 01 78 	      jsr	SETSCL
+     99  7864		       20 0e 78 	      jsr	CLRSCL
+    100  7867		       60		      rts
+    101  7868
+    102  7868				   I2CWBYTE
+    103  7868		       48		      pha
+    104  7869		       a9 08		      lda	#$08
+    105  786b		       85 01		      sta	B
+    106  786d		       68		      pla
+    107  786e				   ILOOP
+    108  786e		       2a		      rol
+    109  786f		       48		      pha
+    110  7870		       20 56 78 	      jsr	I2CWBIT
+    111  7873		       68		      pla
+    112  7874		       c6 01		      dec	B
+    113  7876		       d0 f6		      bne	ILOOP
+    114  7878		       20 49 78 	      jsr	I2CRBIT
+    115  787b		       60		      rts
+    116  787c
+    117  787c				   I2CRBYTE
+    118  787c		       a9 08		      lda	#$08
+    119  787e		       85 01		      sta	B
+    120  7880		       a9 00		      lda	#$00
+    121  7882		       85 02		      sta	C
+    122  7884				   LOOP3
+    123  7884		       20 49 78 	      jsr	I2CRBIT	; get bit in carry flag
+    124  7887		       26 02		      rol	C	; rotate carry into bit0 of C register
+    125  7889		       c6 01		      dec	B
+    126  788b		       d0 f7		      bne	LOOP3
+    127  788d		       18		      clc		; clear carry flag
+    128  788e		       20 56 78 	      jsr	I2CWBIT
+    129  7891		       a5 02		      lda	C
+    130  7893		       60		      rts
+    131  7894
+    132  7894				   I2CRREQ
+    133  7894		       20 38 78 	      jsr	I2CSTART
+    134  7897		       a9 11		      lda	#I2CRADR
+    135  7899		       20 68 78 	      jsr	I2CWBYTE
+    136  789c		       b0 17		      bcs	SKIP
+    137  789e		       20 7c 78 	      jsr	I2CRBYTE
+    138  78a1		       85 03		      sta	CMDBUF0
+    139  78a3		       20 7c 78 	      jsr	I2CRBYTE
+    140  78a6		       85 04		      sta	CMDBUF1
+    141  78a8		       20 7c 78 	      jsr	I2CRBYTE
+    142  78ab		       85 05		      sta	CMDBUF2
+    143  78ad		       20 7c 78 	      jsr	I2CRBYTE
+    144  78b0		       85 06		      sta	CMDBUF3
+    145  78b2		       4c c9 78 	      jmp	ENDI2C
+    146  78b5
+    147  78b5				   SKIP 		; If no device present, fake an idle response
+    148  78b5		       a9 2e		      lda	#$2e	; '.'
+    149  78b7		       85 03		      sta	CMDBUF0
+    150  78b9		       4c c9 78 	      jmp	ENDI2C
+    151  78bc
+    152  78bc				   I2CSRESP
+    153  78bc		       48		      pha
+    154  78bd		       20 38 78 	      jsr	I2CSTART
+    155  78c0		       a9 10		      lda	#I2CWADR
+    156  78c2		       20 68 78 	      jsr	I2CWBYTE
+    157  78c5		       68		      pla
+    158  78c6		       20 68 78 	      jsr	I2CWBYTE
+    159  78c9				   ENDI2C
+    160  78c9		       20 3f 78 	      jsr	I2CSTOP
+    161  78cc		       60		      rts
+    162  78cd
+    163  78cd				   POLL
+    164  78cd		       20 94 78 	      jsr	I2CRREQ
+    165  78d0		       a5 03		      lda	CMDBUF0
+    166  78d2		       c9 52		      cmp	#$52	; 'R' - Read memory
+    167  78d4		       f0 0a		      beq	MREAD
+    168  78d6		       c9 57		      cmp	#$57	; 'W' - Write memory
+    169  78d8		       f0 10		      beq	MWRITE
+    170  78da		       c9 43		      cmp	#$43	; 'C' - Call subroutine
+    171  78dc		       f0 26		      beq	REMCALL
+    172  78de		       18		      clc
+    173  78df		       60		      rts
+    174  78e0
+    175  78e0				   MREAD
+    176  78e0		       20 f6 78 	      jsr	LOADBC
+    177  78e3		       a0 00		      ldy	#$00
+    178  78e5		       b1 01		      lda	(B),Y
+    179  78e7		       4c ff 78 	      jmp	SRESP
+    180  78ea				   MWRITE
+    181  78ea		       20 f6 78 	      jsr	LOADBC
+    182  78ed		       a5 06		      lda	CMDBUF3
+    183  78ef		       91 01		      sta	(B),Y
+    184  78f1		       a9 57		      lda	#$57	;'W'
+    185  78f3		       4c ff 78 	      jmp	SRESP
+    186  78f6				   LOADBC
+    187  78f6		       a5 05		      lda	CMDBUF2
+    188  78f8		       85 01		      sta	B
+    189  78fa		       a5 04		      lda	CMDBUF1
+    190  78fc		       85 02		      sta	C
+    191  78fe		       60		      rts
+    192  78ff
+    193  78ff				   SRESP
+    194  78ff		       20 bc 78 	      jsr	I2CSRESP
+    195  7902				   RHERE
+    196  7902		       38		      sec
+    197  7903		       60		      rts
+    198  7904				   REMCALL
+    199  7904		       a9 79		      lda	#(START-1)>>8
+    200  7906		       48		      pha
+    201  7907		       a9 0f		      lda	#(START-1)%256
+    202  7909		       48		      pha
+    203  790a		       20 f6 78 	      jsr	LOADBC
+    204  790d		       6c 01 00 	      jmp	(B)
+    205  7910
+    206  7910							;;;;;;;;;;
+    207  7910
+    208  7910				   START		; TBD- INIT Stack Pointer!
+    209  7910		       a2 fe		      ldx	#SSTACK
+    210  7912		       9a		      txs		; Init stack
+    211  7913		       d8		      cld		; No Decimal
+    212  7914
+    213  7914							; Main routine
+    214  7914				   MAIN
+    215  7914		       20 cd 78 	      jsr	POLL
+    216  7917		       b0 fb		      bcs	MAIN
+    217  7919
+    218  7919		       a9 01		      lda	#BIGDEL>>8
+    219  791b		       85 01		      sta	B
+    220  791d		       a9 80		      lda	#BIGDEL%256
+    221  791f		       85 02		      sta	C
+    222  7921				   MLOOP
+    223  7921		       a5 02		      lda	C
+    224  7923		       f0 05		      beq	DECBOTH
+    225  7925		       c6 02		      dec	C
+    226  7927		       4c 21 79 	      jmp	MLOOP
+    227  792a				   DECBOTH
+    228  792a		       a5 01		      lda	B
+    229  792c		       f0 e6		      beq	MAIN
+    230  792e		       c6 02		      dec	C
+    231  7930		       c6 01		      dec	B
+    232  7932		       4c 21 79 	      jmp	MLOOP
+    233  7935
+    234  7ffa					      org	$7ffa
+    235  7ffa		       00 78		      dc.w	NMI
+    236  7ffc		       10 79		      dc.w	START
+    237  7ffe		       10 79		      dc.w	START
+    238  8000
+    239  8000
+    240  8000
