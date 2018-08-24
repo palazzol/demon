@@ -16,7 +16,7 @@ parser.add_argument('-p','--port',help='Serial Port Name',required=False)
 parser.add_argument('-r','--rate',help='Serial Port Baud Rate',required=False)
 parser.add_argument('--rtscts',help='Serial Port RTS/CTS handshaking',required=False,action="store_true")
 parser.add_argument('-s','--sim',help='Simulation only mode',required=False,action="store_true")
-parser.add_argument('-c','--chip',default='Z80',help='CPU architecture (Z80 or CP1610)',required=True)
+parser.add_argument('-c','--chip',default='Z80',help='CPU architecture (Z80, 6502, or CP1610)',required=True)
 global_args = parser.parse_args()
 
 if global_args.chip == 'Z80':
@@ -25,8 +25,11 @@ if global_args.chip == 'Z80':
 elif global_args.chip == 'CP1610':
     global_args.mode = 16
     global_args.enable_port_io = False
+elif global_args.chip == '6502':
+    global_args.mode = 8
+    global_args.enable_port_io = False
 else:
-    print("Sorry, chip must be Z80 or CP1610")
+    print("Sorry, chip must be Z80, 6502, or CP1610")
     sys.exit(-1)
     
 hextable = '0123456789ABCDEF'
@@ -403,7 +406,11 @@ def DoCommand(s):
     s = s.upper()
     cmd = s[0]
     ops = s[1:]
-    if cmd in 'QDSMCFIOLHW':
+    if global_args.enable_port_io:
+        cmdstring = 'QDSMCFIOLHW'
+    else:
+        cmdstring = 'QDSMCFLHW'
+    if cmd in cmdstring:
         rv = False
         if cmd == 'Q':
             return True
@@ -417,11 +424,10 @@ def DoCommand(s):
             rv = DoCall(ops)
         elif cmd == 'F':
             rv = DoFill(ops)
-        elif global_args.enable_port_io == True:
-            if cmd == 'I':
-                rv = DoIn(ops)
-            elif cmd == 'O':
-                rv = DoOut(ops)
+        elif cmd == 'I':
+            rv = DoIn(ops)
+        elif cmd == 'O':
+            rv = DoOut(ops)
         elif cmd == 'L':
             rv = DoLoad(ops)
         elif cmd == 'H':
