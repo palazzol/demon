@@ -30,7 +30,7 @@ The Arduino acts as a Serial to I2C Slave bridge.  It is simply a standard Ardui
 
 ## Alternate Configuration:
 
-For systems that already have a Serial port, it is possible to bypass the entire I2C business, and connect directly to code on the native platform that speaks serial.  This was done on the Mattel Intellivision game console. Joe Zbiciak wrote a special cartridge image to do this, which runs on his excellent LTO Flash cartridge.
+For systems that already have a Serial port, it is possible to bypass the entire I2C business, and connect directly to code on the native platform that speaks serial.  This was done on the Mattel Intellivision game console. Joe Zbiciak wrote a special cartridge image to do this, which runs on his excellent [LTO Flash](http://ltoflash.leftturnonly.info/) cartridge.
 
 ## Future:
 
