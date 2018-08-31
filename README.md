@@ -28,6 +28,12 @@ The Arduino acts as a Serial to I2C Slave bridge.  It is simply a standard Ardui
 
 ![Image](img/demon_arch.png)
 
+## Videos
+
+[Sega Sound Board test](https://www.youtube.com/watch?v=uYlbb8uPjoU) Quality is not very good, but the Arduino module is next to the laptop
+
+[Intellivision Demo](https://www.youtube.com/watch?v=_8YfCMpHLhY) Better quality, no Arduino needed using native serialport on the LTO Flash cart.
+
 ## Alternate Configuration:
 
 For systems that already have a Serial port, it is possible to bypass the entire I2C business, and connect directly to code on the native platform that speaks serial.  This was done on the Mattel Intellivision game console. Joe Zbiciak wrote a special cartridge image to do this, which runs on his excellent [LTO Flash](http://ltoflash.leftturnonly.info/) cartridge.
