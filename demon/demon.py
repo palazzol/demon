@@ -13,11 +13,13 @@ import kbhit
 # Parsing the arguments
 parser = argparse.ArgumentParser(description = 'Demon Debugger')
 parser.add_argument('-p','--port',help='Serial Port Name',required=False)
-parser.add_argument('-r','--rate',help='Serial Port Baud Rate',required=False)
+parser.add_argument('-r','--rate',default=250000,help='Serial Port Baud Rate',required=False)
 parser.add_argument('--rtscts',help='Serial Port RTS/CTS handshaking',required=False,action="store_true")
 parser.add_argument('-s','--sim',help='Simulation only mode',required=False,action="store_true")
-parser.add_argument('-c','--chip',default='Z80',help='CPU architecture (Z80, 6502, or CP1610)',required=True)
+parser.add_argument('-c','--chip',default='',help='CPU architecture (Z80, 6502, or CP1610)',required=True)
 global_args = parser.parse_args()
+
+global_args.chip = global_args.chip.upper()
 
 if global_args.chip == 'Z80':
     global_args.mode = 8
@@ -25,6 +27,7 @@ if global_args.chip == 'Z80':
 elif global_args.chip == 'CP1610':
     global_args.mode = 16
     global_args.enable_port_io = False
+    global_args.rtscts = True # Required for reliable hi-speed comms on the LTO Flash
 elif global_args.chip == '6502':
     global_args.mode = 8
     global_args.enable_port_io = False
@@ -33,21 +36,53 @@ else:
     sys.exit(-1)
     
 hextable = '0123456789ABCDEF'
+
+class FakeSerial:
+    def __init__(self):
+        self.simram = [0] * 0x10000
+        self.simportram = [0] * 0x10000
+    def write(self, cmd):
+        self.cmd = cmd
+    def read(self, response):
+        if global_args.mode == 16:
+            if self.cmd[0] == ord("R"):
+                return [ord(c) for c in '{0:04X}'.format(self.simram[int(self.cmd[1:5],16)])]
+            elif self.cmd[0] == ord("W"):
+                self.simram[int(self.cmd[1:5],16)] = int(self.cmd[5:9],16)
+                return [ self.cmd[0] ]
+            elif self.cmd[0] == ord("I"):
+                return [ord(c) for c in '{0:04X}'.format(self.simportram[int(self.cmd[1:5],16)])]
+            elif self.cmd[0] == ord("O"):
+                self.simportram[int(self.cmd[1:5],16)] = int(self.cmd[5:9],16)
+                return [ self.cmd[0] ]
+            elif self.cmd[0] == ord("C"):
+                return [ self.cmd[0] ]
+        else:
+            if self.cmd[0] == ord("R"):
+                return [ self.simram[int(self.cmd[1:5],16)] ]
+            elif self.cmd[0] == ord("W"):
+                self.simram[int(self.cmd[1:5],16)] = int(self.cmd[5:7],16)
+                return [ self.cmd[0] ]
+            elif self.cmd[0] == ord("I"):
+                return [ self.simportram[int(self.cmd[1:5],16)] ]
+            elif self.cmd[0] == ord("O"):
+                self.simportram[int(self.cmd[1:5],16)] = int(self.cmd[5:7],16)
+                return [ self.cmd[0] ]
+            elif self.cmd[0] == ord("C"):
+                return [ self.cmd[0] ]
             
 if global_args.sim == False:
-    if global_args.port and global_args.rate:
+    if global_args.port:
         ser = serial.Serial(global_args.port, global_args.rate, rtscts=global_args.rtscts, timeout=1)
     else:
-        print("Port and Rate are required fields, unless using Simulation Mode")
+        print("Port is a required field, unless using Simulation Mode")
         sys.exit(-1)
 else:
-    simram = [0] * 0x10000
+    ser = FakeSerial()
             
 kb = kbhit.KBHit()
 
 def MemoryRead(addr):
-    if global_args.sim:
-        return simram[addr]
     cmd = 'R{0:04X}\n'.format(addr)
     ser.write(cmd.encode('ascii'))
     if global_args.mode == 16:
@@ -58,34 +93,27 @@ def MemoryRead(addr):
             v += hextable.find(chr(rv[i]))
         return v
     else:
-        return ser.read()[0]    
+        return ser.read(1)[0]    
 
 def MemoryWrite(addr,data):
-    if global_args.sim:
-        simram[addr] = data
-        return ord('W')
     if global_args.mode == 16:
         cmd = 'W{0:04X}{1:04X}\n'.format(addr,data)
         ser.write(cmd.encode('ascii'))
-        return ser.read()[0]
+        return ser.read(1)[0]
     else:
         cmd = 'W{0:04X}{1:02X}\n'.format(addr,data)
         ser.write(cmd.encode('ascii'))
-        return ser.read()[0]        
+        return ser.read(1)[0]        
 
 def PortRead(addr):
-    if global_args.sim:
-        return 0xaa
     cmd = 'I{0:04X}\n'.format(addr)
     ser.write(cmd.encode('ascii'))
-    return ser.read()[0]
+    return ser.read(1)[0]
 
 def PortWrite(addr,data):
-    if global_args.sim:
-        return ord('O')
-    cmd = 'I{0:04X}{1:02X}\n'.format(addr,data)
+    cmd = 'O{0:04X}{1:02X}\n'.format(addr,data)
     ser.write(cmd.encode('ascii'))
-    return ser.read()[0]
+    return ser.read(1)[0]
 
 def RemoteCall(addr):
     if global_args.sim:
@@ -93,7 +121,8 @@ def RemoteCall(addr):
     cmd = 'C{0:04X}\n'.format(addr)
     for c in cmd:
         ser.write(c.encode('ascii'))
-    return ser.read()[0]
+    #return ord(ser.read())
+    return
     
 def ReadInput(s):
     global kb
@@ -115,7 +144,7 @@ def DisplayWord(i):
     print('{0:04X}'.format(i), end='', flush=True)
 
 def DisplayBanner():
-    DisplayString('DEMON for '+global_args.chip+', v0.9\n')
+    DisplayString('DEMON for '+global_args.chip+', v1.0\n')
 
 def Parse(ops):
     current = 0
@@ -143,8 +172,6 @@ def Parse(ops):
 def DoDump(ops):
     args = Parse(ops)
     if len(args) != 2:
-        return False
-    if args[0] > args[1]:
         return False
     if global_args.mode == 16:
         for i in range(args[0],args[1]+1,8):
@@ -180,8 +207,6 @@ def DoDump(ops):
 def DoChecksum(ops):
     args = Parse(ops)
     if len(args) != 2:
-        return False
-    if args[0] > args[1]:
         return False
     checksum = 0
     for addr in range(args[0],args[1]+1):   
@@ -284,8 +309,6 @@ def DoFill(ops):
     args = Parse(ops)
     if len(args) != 3:
         return False
-    if args[0] > args[1]:
-        return False
     if global_args.mode == 16:
         data = args[2]%0x10000
     else:
@@ -334,8 +357,6 @@ def DoLoad(ops):
 def DoWrite(ops):
     args = Parse(ops)
     if len(args) != 2:
-        return False
-    if args[0] > args[1]:
         return False
     fn = ReadInput("Filename? ")
     fp = open(fn,'wb')
