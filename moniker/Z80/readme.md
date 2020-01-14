@@ -1,1 +1,1 @@
-# Z80 target - as used on Sega Star Trek CPU board
+# Z80 targets
