@@ -5,11 +5,6 @@
 ;
         .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
 
-SCLSET	.equ	0xc001		; Sets the SR latch for the clock line
-SCLCLR	.equ	0xc002		; Clears the SR latch for the clock line
-SDACLR	.equ	0xc004		; Sets the SR latch for the data line
-SDASET	.equ	0xc008		; Clears the SR latch for the data line
-
 DATAIN	.equ	0xa000		; where to read data in from
 
 CMDBUF  .equ    0x77f0      ; Need only 4 bytes of ram for command buffer
