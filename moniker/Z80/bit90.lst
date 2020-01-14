@@ -1,5 +1,5 @@
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 1
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 
 
@@ -10,345 +10,340 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
                               5 ;
                               6         .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
                               7 
-                     C001     8 SCLSET	.equ	0xc001		; Sets the SR latch for the clock line
-                     C002     9 SCLCLR	.equ	0xc002		; Clears the SR latch for the clock line
-                     C004    10 SDACLR	.equ	0xc004		; Sets the SR latch for the data line
-                     C008    11 SDASET	.equ	0xc008		; Clears the SR latch for the data line
-                             12 
-                     A000    13 DATAIN	.equ	0xa000		; where to read data in from
+                     A000     8 DATAIN	.equ	0xa000		; where to read data in from
+                              9 
+                     77F0    10 CMDBUF  .equ    0x77f0      ; Need only 4 bytes of ram for command buffer
+                             11                             ; (We will save 12 more just in case)
+                     77FF    12 OUTBUF  .equ    0x77ff
+                     77F0    13 SSTACK  .equ    0x77f0      ; Start of stack
                              14 
-                     77F0    15 CMDBUF  .equ    0x77f0      ; Need only 4 bytes of ram for command buffer
-                             16                             ; (We will save 12 more just in case)
-                     77FF    17 OUTBUF  .equ    0x77ff
-                     77F0    18 SSTACK  .equ    0x77f0      ; Start of stack
+                     0011    15 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
+                     0010    16 I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
+                             17 
+                     0180    18 BIGDEL  .equ    0x0180      ; bigger delay, for now still fairly small
                              19 
-                     0011    20 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
-                     0010    21 I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
-                             22 
-                     0180    23 BIGDEL  .equ    0x0180      ; bigger delay, for now still fairly small
-                             24 
-   8000                      25         .org    0x8000	    ; cartridge start
-                             26     		
-   8000 AA                   27     	.db	0xaa	    ; cartridge signature
-   8001 55                   28     	.db	0x55
-                             29     	
-   8002 00 00                30     	.dw     0x0000
-   8004 00 00                31     	.dw     0x0000
-   8006 00 00                32     	.dw     0x0000
-   8008 00 00                33     	.dw     0x0000
-   800A 46 80                34     	.dw     START
-   800C C3 08 00      [10]   35     	JP      0x0008
-   800F C3 10 00      [10]   36     	JP      0x0010
-   8012 C3 18 00      [10]   37     	JP      0x0018
-   8015 C3 20 00      [10]   38     	JP      0x0020
-   8018 C3 28 00      [10]   39     	JP      0x0028
-   801B C3 30 00      [10]   40     	JP      0x0030
-   801E C3 38 00      [10]   41     	JP      0x0038
-   8021 C3 66 00      [10]   42     	JP      0x0066
-                             43     	
-   8024 42 59 3A 20 45 56    44     	.ascii  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
+   8000                      20         .org    0x8000	    ; cartridge start
+                             21     		
+   8000 AA                   22     	.db	0xaa	    ; cartridge signature
+   8001 55                   23     	.db	0x55
+                             24     	
+   8002 00 00                25     	.dw     0x0000
+   8004 00 00                26     	.dw     0x0000
+   8006 00 00                27     	.dw     0x0000
+   8008 00 00                28     	.dw     0x0000
+   800A 46 80                29     	.dw     START
+   800C C3 08 00      [10]   30     	JP      0x0008
+   800F C3 10 00      [10]   31     	JP      0x0010
+   8012 C3 18 00      [10]   32     	JP      0x0018
+   8015 C3 20 00      [10]   33     	JP      0x0020
+   8018 C3 28 00      [10]   34     	JP      0x0028
+   801B C3 30 00      [10]   35     	JP      0x0030
+   801E C3 38 00      [10]   36     	JP      0x0038
+   8021 C3 66 00      [10]   37     	JP      0x0066
+                             38     	
+   8024 42 59 3A 20 45 56    39     	.ascii  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
         41 4E 26 46 52 41
         4E 4B 2F 44 45 4D
         4F 4E 20 44 45 42
         55 47 47 45 52 2F
         32 30 31 39
-                             45     	
-   8046 F3            [ 4]   46 START:  DI                  ; Disable interrupts - we don't handle them
-   8047 C3 7A 81      [10]   47         JP      INIT        ; go to initialization code
-                             48     
-                             49 ; Set the SCL pin high
-                             50 ; D is the global coin counter buffer
+                             40     	
+   8046 F3            [ 4]   41 START:  DI                  ; Disable interrupts - we don't handle them
+   8047 C3 7A 81      [10]   42         JP      INIT        ; go to initialization code
+                             43     
+                             44 ; Set the SCL pin high
+                             45 ; D is the global buffer
+                             46 ; Destroys A
+   804A                      47 SETSCL:
+   804A 7A            [ 4]   48         LD      A,D
+   804B F6 01         [ 7]   49         OR      0x01
+   804D 57            [ 4]   50         LD      D,A
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 2
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 
 
-                             51 ; Destroys A
-   804A                      52 SETSCL:
-   804A 7A            [ 4]   53         LD      A,D
-   804B F6 01         [ 7]   54         OR      0x01
-   804D 57            [ 4]   55         LD      D,A
-   804E E5            [11]   56         PUSH    HL
-   804F 26 C0         [ 7]   57         LD      H,0xc0
-   8051 6F            [ 4]   58         LD      L,A
-   8052 7E            [ 7]   59         LD      A,(HL)
-   8053 E1            [10]   60         POP     HL
-   8054 CD 89 80      [17]   61         CALL    I2CDELAY
-   8057 C9            [10]   62         RET
-                             63     
-                             64 ; Set the SCL pin low
-                             65 ; D is the global coin counter buffer
-                             66 ; Destroys A
-   8058                      67 CLRSCL:
-   8058 7A            [ 4]   68         LD      A,D
-   8059 E6 FE         [ 7]   69         AND     0xfe
-   805B 57            [ 4]   70         LD      D,A
-   805C E5            [11]   71         PUSH    HL
-   805D 26 C0         [ 7]   72         LD      H,0xc0
-   805F 6F            [ 4]   73         LD      L,A
-   8060 7E            [ 7]   74         LD      A,(HL)
-   8061 E1            [10]   75         POP     HL
-   8062 CD 89 80      [17]   76         CALL    I2CDELAY
-   8065 C9            [10]   77         RET
-                             78 
-                             79 ; Set the DOUT pin low
-                             80 ; D is the global buffer
-                             81 ; Destroys A 
-   8066                      82 SETSDA:
-   8066 7A            [ 4]   83         LD      A,D
-   8067 E6 FD         [ 7]   84         AND     0xfd
-   8069 57            [ 4]   85         LD      D,A
-   806A E5            [11]   86         PUSH    HL
-   806B 26 C0         [ 7]   87         LD      H,0xc0
-   806D 6F            [ 4]   88         LD      L,A
-   806E 7E            [ 7]   89         LD      A,(HL)
-   806F E1            [10]   90         POP     HL
-   8070 CD 89 80      [17]   91         CALL    I2CDELAY
-   8073 C9            [10]   92         RET
-                             93 
-                             94 ; Set the DOUT pin high
-                             95 ; D is the global buffer
-                             96 ; Destroys A  
-   8074                      97 CLRSDA:
-   8074 7A            [ 4]   98         LD      A,D
-   8075 F6 02         [ 7]   99         OR      0x02
-   8077 57            [ 4]  100         LD      D,A
-   8078 E5            [11]  101         PUSH    HL
-   8079 26 C0         [ 7]  102         LD      H,0xc0
-   807B 6F            [ 4]  103         LD      L,A
-   807C 7E            [ 7]  104         LD      A,(HL)
-   807D E1            [10]  105         POP     HL
+   804E E5            [11]   51         PUSH    HL
+   804F 26 C0         [ 7]   52         LD      H,0xc0
+   8051 6F            [ 4]   53         LD      L,A
+   8052 7E            [ 7]   54         LD      A,(HL)
+   8053 E1            [10]   55         POP     HL
+   8054 CD 89 80      [17]   56         CALL    I2CDELAY
+   8057 C9            [10]   57         RET
+                             58     
+                             59 ; Set the SCL pin low
+                             60 ; D is the global buffer
+                             61 ; Destroys A
+   8058                      62 CLRSCL:
+   8058 7A            [ 4]   63         LD      A,D
+   8059 E6 FE         [ 7]   64         AND     0xfe
+   805B 57            [ 4]   65         LD      D,A
+   805C E5            [11]   66         PUSH    HL
+   805D 26 C0         [ 7]   67         LD      H,0xc0
+   805F 6F            [ 4]   68         LD      L,A
+   8060 7E            [ 7]   69         LD      A,(HL)
+   8061 E1            [10]   70         POP     HL
+   8062 CD 89 80      [17]   71         CALL    I2CDELAY
+   8065 C9            [10]   72         RET
+                             73 
+                             74 ; Set the DOUT pin low
+                             75 ; D is the global buffer
+                             76 ; Destroys A 
+   8066                      77 SETSDA:
+   8066 7A            [ 4]   78         LD      A,D
+   8067 E6 FD         [ 7]   79         AND     0xfd
+   8069 57            [ 4]   80         LD      D,A
+   806A E5            [11]   81         PUSH    HL
+   806B 26 C0         [ 7]   82         LD      H,0xc0
+   806D 6F            [ 4]   83         LD      L,A
+   806E 7E            [ 7]   84         LD      A,(HL)
+   806F E1            [10]   85         POP     HL
+   8070 CD 89 80      [17]   86         CALL    I2CDELAY
+   8073 C9            [10]   87         RET
+                             88 
+                             89 ; Set the DOUT pin high
+                             90 ; D is the global buffer
+                             91 ; Destroys A  
+   8074                      92 CLRSDA:
+   8074 7A            [ 4]   93         LD      A,D
+   8075 F6 02         [ 7]   94         OR      0x02
+   8077 57            [ 4]   95         LD      D,A
+   8078 E5            [11]   96         PUSH    HL
+   8079 26 C0         [ 7]   97         LD      H,0xc0
+   807B 6F            [ 4]   98         LD      L,A
+   807C 7E            [ 7]   99         LD      A,(HL)
+   807D E1            [10]  100         POP     HL
+   807E CD 89 80      [17]  101         CALL    I2CDELAY
+   8081 C9            [10]  102         RET
+                            103 
+                            104 ; Read the DIN pin 
+                            105 ; returns bit in carry flag    
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 3
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 
 
-   807E CD 89 80      [17]  106         CALL    I2CDELAY
-   8081 C9            [10]  107         RET
-                            108 
-                            109 ; Read the DIN pin 
-                            110 ; returns bit in carry flag    
-   8082                     111 READSDA:
-   8082 21 00 A0      [10]  112         LD      HL,DATAIN
-   8085 7E            [ 7]  113         LD      A,(HL)      ;perform a read into bit0
-   8086 CB 3F         [ 8]  114         SRL     A           ;carry flag
-   8088 C9            [10]  115         RET
-                            116     
-                            117 ; Delay for half a bit time
-   8089                     118 I2CDELAY:
-   8089 C9            [10]  119         RET     ; This is plenty
-                            120 
-                            121 ; I2C Start Condition
-                            122 ; Uses HL
-                            123 ; Destroys A
-   808A                     124 I2CSTART:
-   808A CD 74 80      [17]  125         CALL    CLRSDA      
-   808D CD 58 80      [17]  126         CALL    CLRSCL
-   8090 C9            [10]  127         RET
-                            128 
-                            129 ; I2C Stop Condition
-                            130 ; Uses HL
-                            131 ; Destroys A
-   8091                     132 I2CSTOP:
-   8091 CD 74 80      [17]  133         CALL    CLRSDA
-   8094 CD 4A 80      [17]  134         CALL    SETSCL
-   8097 CD 66 80      [17]  135         CALL    SETSDA
-   809A C9            [10]  136         RET
-                            137 
-                            138 ; I2C Read Bit routine
-                            139 ; Returns bit in carry blag
-                            140 ; Destroys A
-   809B                     141 I2CRBIT:
-   809B CD 66 80      [17]  142         CALL    SETSDA
-   809E CD 4A 80      [17]  143         CALL    SETSCL
-   80A1 CD 82 80      [17]  144         CALL    READSDA
-   80A4 F5            [11]  145         PUSH    AF          ; save carry flag
-   80A5 CD 58 80      [17]  146         CALL    CLRSCL
-   80A8 F1            [10]  147         POP     AF          ; rv in carry flag
-   80A9 C9            [10]  148         RET
-                            149 
-                            150 ; I2C Write Bit routine
-                            151 ; Takes carry flag
-                            152 ; Destroys A
-   80AA                     153 I2CWBIT:
-   80AA 30 05         [12]  154         JR      NC,DOCLR
-   80AC CD 66 80      [17]  155         CALL    SETSDA
-   80AF 18 03         [12]  156         JR      AHEAD
-   80B1                     157 DOCLR:
-   80B1 CD 74 80      [17]  158         CALL    CLRSDA
-   80B4                     159 AHEAD:
-   80B4 CD 4A 80      [17]  160         CALL    SETSCL
+   8082                     106 READSDA:
+   8082 21 00 A0      [10]  107         LD      HL,DATAIN
+   8085 7E            [ 7]  108         LD      A,(HL)      ;perform a read into bit0
+   8086 CB 3F         [ 8]  109         SRL     A           ;carry flag
+   8088 C9            [10]  110         RET
+                            111     
+                            112 ; Delay for half a bit time
+   8089                     113 I2CDELAY:
+   8089 C9            [10]  114         RET     ; This is plenty
+                            115 
+                            116 ; I2C Start Condition
+                            117 ; Uses HL
+                            118 ; Destroys A
+   808A                     119 I2CSTART:
+   808A CD 74 80      [17]  120         CALL    CLRSDA      
+   808D CD 58 80      [17]  121         CALL    CLRSCL
+   8090 C9            [10]  122         RET
+                            123 
+                            124 ; I2C Stop Condition
+                            125 ; Uses HL
+                            126 ; Destroys A
+   8091                     127 I2CSTOP:
+   8091 CD 74 80      [17]  128         CALL    CLRSDA
+   8094 CD 4A 80      [17]  129         CALL    SETSCL
+   8097 CD 66 80      [17]  130         CALL    SETSDA
+   809A C9            [10]  131         RET
+                            132 
+                            133 ; I2C Read Bit routine
+                            134 ; Returns bit in carry blag
+                            135 ; Destroys A
+   809B                     136 I2CRBIT:
+   809B CD 66 80      [17]  137         CALL    SETSDA
+   809E CD 4A 80      [17]  138         CALL    SETSCL
+   80A1 CD 82 80      [17]  139         CALL    READSDA
+   80A4 F5            [11]  140         PUSH    AF          ; save carry flag
+   80A5 CD 58 80      [17]  141         CALL    CLRSCL
+   80A8 F1            [10]  142         POP     AF          ; rv in carry flag
+   80A9 C9            [10]  143         RET
+                            144 
+                            145 ; I2C Write Bit routine
+                            146 ; Takes carry flag
+                            147 ; Destroys A
+   80AA                     148 I2CWBIT:
+   80AA 30 05         [12]  149         JR      NC,DOCLR
+   80AC CD 66 80      [17]  150         CALL    SETSDA
+   80AF 18 03         [12]  151         JR      AHEAD
+   80B1                     152 DOCLR:
+   80B1 CD 74 80      [17]  153         CALL    CLRSDA
+   80B4                     154 AHEAD:
+   80B4 CD 4A 80      [17]  155         CALL    SETSCL
+   80B7 CD 58 80      [17]  156         CALL    CLRSCL
+   80BA C9            [10]  157         RET
+                            158 
+                            159 ; I2C Write Byte routine
+                            160 ; Takes A
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 4
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 
 
-   80B7 CD 58 80      [17]  161         CALL    CLRSCL
-   80BA C9            [10]  162         RET
-                            163 
-                            164 ; I2C Write Byte routine
-                            165 ; Takes A
-                            166 ; Destroys B
-                            167 ; Returns carry bit
-   80BB                     168 I2CWBYTE:
-   80BB 06 08         [ 7]  169         LD      B,8
-   80BD                     170 ILOOP:
-   80BD C5            [11]  171         PUSH    BC          ; save B
-   80BE CB 07         [ 8]  172         RLC     A    
-   80C0 F5            [11]  173         PUSH    AF          ; save A
-   80C1 CD AA 80      [17]  174         CALL    I2CWBIT
-   80C4 F1            [10]  175         POP     AF
-   80C5 C1            [10]  176         POP     BC
-   80C6 10 F5         [13]  177         DJNZ    ILOOP
-   80C8 CD 9B 80      [17]  178         CALL    I2CRBIT
-   80CB C9            [10]  179         RET
-                            180 
-                            181 ; I2C Read Byte routine
-                            182 ; Destroys BC
-                            183 ; Returns A
-   80CC                     184 I2CRBYTE:
-   80CC 06 08         [ 7]  185         LD      B,8
-   80CE 0E 00         [ 7]  186         LD      C,0
-   80D0                     187 LOOP3:
-   80D0 C5            [11]  188         PUSH    BC
-   80D1 CD 9B 80      [17]  189         CALL    I2CRBIT     ; get bit in carry flag
-   80D4 C1            [10]  190         POP     BC
-   80D5 CB 11         [ 8]  191         RL      C           ; rotate carry into bit0 of C register
-   80D7 10 F7         [13]  192         DJNZ    LOOP3
-   80D9 AF            [ 4]  193         XOR     A           ; clear carry flag              
-   80DA C5            [11]  194         PUSH    BC
-   80DB CD AA 80      [17]  195         CALL    I2CWBIT
-   80DE C1            [10]  196         POP     BC
-   80DF 79            [ 4]  197         LD      A,C
-   80E0 C9            [10]  198         RET
-                            199 ;
-                            200 
-                            201 ; Read 4-byte I2C Command from device into CMDBUF
-                            202 ; Uses HL
-                            203 ; Destroys A,BC,HL
-   80E1                     204 I2CRREQ:
-   80E1 CD 8A 80      [17]  205         CALL    I2CSTART
-   80E4 3E 11         [ 7]  206         LD      A,I2CRADR
-   80E6 CD BB 80      [17]  207         CALL    I2CWBYTE
-   80E9 38 1A         [12]  208         JR      C,SKIP
-   80EB CD CC 80      [17]  209         CALL    I2CRBYTE
-   80EE DD 77 00      [19]  210         LD      (IX),A
-   80F1 CD CC 80      [17]  211         CALL    I2CRBYTE
-   80F4 DD 77 01      [19]  212         LD      (IX+1),A  
-   80F7 CD CC 80      [17]  213         CALL    I2CRBYTE
-   80FA DD 77 02      [19]  214         LD      (IX+2),A
-   80FD CD CC 80      [17]  215         CALL    I2CRBYTE
+                            161 ; Destroys B
+                            162 ; Returns carry bit
+   80BB                     163 I2CWBYTE:
+   80BB 06 08         [ 7]  164         LD      B,8
+   80BD                     165 ILOOP:
+   80BD C5            [11]  166         PUSH    BC          ; save B
+   80BE CB 07         [ 8]  167         RLC     A    
+   80C0 F5            [11]  168         PUSH    AF          ; save A
+   80C1 CD AA 80      [17]  169         CALL    I2CWBIT
+   80C4 F1            [10]  170         POP     AF
+   80C5 C1            [10]  171         POP     BC
+   80C6 10 F5         [13]  172         DJNZ    ILOOP
+   80C8 CD 9B 80      [17]  173         CALL    I2CRBIT
+   80CB C9            [10]  174         RET
+                            175 
+                            176 ; I2C Read Byte routine
+                            177 ; Destroys BC
+                            178 ; Returns A
+   80CC                     179 I2CRBYTE:
+   80CC 06 08         [ 7]  180         LD      B,8
+   80CE 0E 00         [ 7]  181         LD      C,0
+   80D0                     182 LOOP3:
+   80D0 C5            [11]  183         PUSH    BC
+   80D1 CD 9B 80      [17]  184         CALL    I2CRBIT     ; get bit in carry flag
+   80D4 C1            [10]  185         POP     BC
+   80D5 CB 11         [ 8]  186         RL      C           ; rotate carry into bit0 of C register
+   80D7 10 F7         [13]  187         DJNZ    LOOP3
+   80D9 AF            [ 4]  188         XOR     A           ; clear carry flag              
+   80DA C5            [11]  189         PUSH    BC
+   80DB CD AA 80      [17]  190         CALL    I2CWBIT
+   80DE C1            [10]  191         POP     BC
+   80DF 79            [ 4]  192         LD      A,C
+   80E0 C9            [10]  193         RET
+                            194 ;
+                            195 
+                            196 ; Read 4-byte I2C Command from device into CMDBUF
+                            197 ; Uses HL
+                            198 ; Destroys A,BC,HL
+   80E1                     199 I2CRREQ:
+   80E1 CD 8A 80      [17]  200         CALL    I2CSTART
+   80E4 3E 11         [ 7]  201         LD      A,I2CRADR
+   80E6 CD BB 80      [17]  202         CALL    I2CWBYTE
+   80E9 38 1A         [12]  203         JR      C,SKIP
+   80EB CD CC 80      [17]  204         CALL    I2CRBYTE
+   80EE DD 77 00      [19]  205         LD      (IX),A
+   80F1 CD CC 80      [17]  206         CALL    I2CRBYTE
+   80F4 DD 77 01      [19]  207         LD      (IX+1),A  
+   80F7 CD CC 80      [17]  208         CALL    I2CRBYTE
+   80FA DD 77 02      [19]  209         LD      (IX+2),A
+   80FD CD CC 80      [17]  210         CALL    I2CRBYTE
+   8100 DD 77 03      [19]  211         LD      (IX+3),A
+   8103 18 14         [12]  212         JR      ENDI2C
+                            213     
+   8105                     214 SKIP:                       ; If no device present, fake an idle response
+   8105 3E 2E         [ 7]  215         LD      A,0x2e  ; '.'
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 5
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 
 
-   8100 DD 77 03      [19]  216         LD      (IX+3),A
-   8103 18 14         [12]  217         JR      ENDI2C
-                            218     
-   8105                     219 SKIP:                       ; If no device present, fake an idle response
-   8105 3E 2E         [ 7]  220         LD      A,0x2e  ; '.'
-   8107 DD 77 00      [19]  221         LD      (IX),A
-   810A 18 0D         [12]  222         JR      ENDI2C
-                            223 
-   810C                     224 I2CSRESP:
-   810C F5            [11]  225         PUSH    AF
-   810D CD 8A 80      [17]  226         CALL    I2CSTART
-   8110 3E 10         [ 7]  227         LD      A,I2CWADR
-   8112 CD BB 80      [17]  228         CALL    I2CWBYTE
-   8115 F1            [10]  229         POP     AF
-   8116 CD BB 80      [17]  230         CALL    I2CWBYTE
-   8119                     231 ENDI2C:
-   8119 CD 91 80      [17]  232         CALL    I2CSTOP
-   811C C9            [10]  233         RET
-                            234 ;
-                            235 
-                            236 ; Main Polling loop
-                            237 ; Return carry flag if we got a valid command (not idle)
-   811D                     238 POLL:
-   811D CD E1 80      [17]  239         CALL    I2CRREQ
-   8120 DD 7E 00      [19]  240         LD      A,(IX)
-   8123 FE 52         [ 7]  241         CP      0x52    ; 'R' - Read memory
-   8125 28 1B         [12]  242         JR      Z,MREAD
-   8127 FE 57         [ 7]  243         CP      0x57    ; 'W' - Write memory
-   8129 28 1D         [12]  244         JR      Z,MWRITE
-   812B FE 49         [ 7]  245         CP      0x49    ; 'I' - Input from port
-   812D 28 2D         [12]  246         JR      Z,PREAD
-   812F FE 4F         [ 7]  247         CP      0x4F    ; 'O' - Output from port
-   8131 28 30         [12]  248         JR      Z,PWRITE
-   8133 FE 43         [ 7]  249         CP      0x43    ; 'C' - Call subroutine
-   8135 28 3B         [12]  250         JR      Z,REMCALL
-   8137 3F            [ 4]  251         CCF
-   8138 C9            [10]  252         RET
-   8139                     253 LOADHL:
-   8139 DD 7E 01      [19]  254         LD      A,(IX+1)
-   813C 67            [ 4]  255         LD      H,A
-   813D DD 7E 02      [19]  256         LD      A,(IX+2)
-   8140 6F            [ 4]  257         LD      L,A
-   8141 C9            [10]  258         RET    
-   8142                     259 MREAD:
-   8142 CD 53 81      [17]  260         CALL    LOADBC
-   8145 0A            [ 7]  261         LD      A,(BC)
-   8146 18 25         [12]  262         JR      SRESP
-   8148                     263 MWRITE:
-   8148 CD 53 81      [17]  264         CALL    LOADBC
-   814B DD 7E 03      [19]  265         LD      A,(IX+3)
-   814E 02            [ 7]  266         LD      (BC),A
-   814F 3E 57         [ 7]  267         LD      A,0x57  ;'W'
-   8151 18 1A         [12]  268         JR      SRESP
-   8153                     269 LOADBC:
-   8153 DD 7E 01      [19]  270         LD      A,(IX+1)
+   8107 DD 77 00      [19]  216         LD      (IX),A
+   810A 18 0D         [12]  217         JR      ENDI2C
+                            218 
+   810C                     219 I2CSRESP:
+   810C F5            [11]  220         PUSH    AF
+   810D CD 8A 80      [17]  221         CALL    I2CSTART
+   8110 3E 10         [ 7]  222         LD      A,I2CWADR
+   8112 CD BB 80      [17]  223         CALL    I2CWBYTE
+   8115 F1            [10]  224         POP     AF
+   8116 CD BB 80      [17]  225         CALL    I2CWBYTE
+   8119                     226 ENDI2C:
+   8119 CD 91 80      [17]  227         CALL    I2CSTOP
+   811C C9            [10]  228         RET
+                            229 ;
+                            230 
+                            231 ; Main Polling loop
+                            232 ; Return carry flag if we got a valid command (not idle)
+   811D                     233 POLL:
+   811D CD E1 80      [17]  234         CALL    I2CRREQ
+   8120 DD 7E 00      [19]  235         LD      A,(IX)
+   8123 FE 52         [ 7]  236         CP      0x52    ; 'R' - Read memory
+   8125 28 1B         [12]  237         JR      Z,MREAD
+   8127 FE 57         [ 7]  238         CP      0x57    ; 'W' - Write memory
+   8129 28 1D         [12]  239         JR      Z,MWRITE
+   812B FE 49         [ 7]  240         CP      0x49    ; 'I' - Input from port
+   812D 28 2D         [12]  241         JR      Z,PREAD
+   812F FE 4F         [ 7]  242         CP      0x4F    ; 'O' - Output from port
+   8131 28 30         [12]  243         JR      Z,PWRITE
+   8133 FE 43         [ 7]  244         CP      0x43    ; 'C' - Call subroutine
+   8135 28 3B         [12]  245         JR      Z,REMCALL
+   8137 3F            [ 4]  246         CCF
+   8138 C9            [10]  247         RET
+   8139                     248 LOADHL:
+   8139 DD 7E 01      [19]  249         LD      A,(IX+1)
+   813C 67            [ 4]  250         LD      H,A
+   813D DD 7E 02      [19]  251         LD      A,(IX+2)
+   8140 6F            [ 4]  252         LD      L,A
+   8141 C9            [10]  253         RET    
+   8142                     254 MREAD:
+   8142 CD 53 81      [17]  255         CALL    LOADBC
+   8145 0A            [ 7]  256         LD      A,(BC)
+   8146 18 25         [12]  257         JR      SRESP
+   8148                     258 MWRITE:
+   8148 CD 53 81      [17]  259         CALL    LOADBC
+   814B DD 7E 03      [19]  260         LD      A,(IX+3)
+   814E 02            [ 7]  261         LD      (BC),A
+   814F 3E 57         [ 7]  262         LD      A,0x57  ;'W'
+   8151 18 1A         [12]  263         JR      SRESP
+   8153                     264 LOADBC:
+   8153 DD 7E 01      [19]  265         LD      A,(IX+1)
+   8156 47            [ 4]  266         LD      B,A
+   8157 DD 7E 02      [19]  267         LD      A,(IX+2)
+   815A 4F            [ 4]  268         LD      C,A
+   815B C9            [10]  269         RET
+   815C                     270 PREAD:
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 6
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 
 
-   8156 47            [ 4]  271         LD      B,A
-   8157 DD 7E 02      [19]  272         LD      A,(IX+2)
-   815A 4F            [ 4]  273         LD      C,A
-   815B C9            [10]  274         RET
-   815C                     275 PREAD:
-   815C CD 53 81      [17]  276         CALL    LOADBC
-   815F ED 78         [12]  277         IN      A,(C)
-   8161 18 0A         [12]  278         JR      SRESP
-   8163                     279 PWRITE:
-   8163 CD 53 81      [17]  280         CALL    LOADBC
-   8166 DD 7E 03      [19]  281         LD      A,(IX+3)
-   8169 ED 79         [12]  282         OUT     (C),A
-   816B 3E 4F         [ 7]  283         LD      A,0x4F  ;'O'
-   816D                     284 SRESP:
-   816D CD 0C 81      [17]  285         CALL    I2CSRESP
-   8170                     286 RHERE:
-   8170 37            [ 4]  287         SCF
-   8171 C9            [10]  288         RET
-   8172                     289 REMCALL:
-   8172 21 46 80      [10]  290         LD      HL,START
-   8175 E5            [11]  291         PUSH    HL
-   8176 CD 39 81      [17]  292         CALL    LOADHL
-   8179 E9            [ 4]  293         JP      (HL)
-                            294     
-   817A                     295 INIT:
-   817A 31 F0 77      [10]  296         LD      SP,SSTACK   ; have to set valid SP
-   817D DD 21 F0 77   [14]  297         LD      IX,CMDBUF   ; Easy to index command buffer
+   815C CD 53 81      [17]  271         CALL    LOADBC
+   815F ED 78         [12]  272         IN      A,(C)
+   8161 18 0A         [12]  273         JR      SRESP
+   8163                     274 PWRITE:
+   8163 CD 53 81      [17]  275         CALL    LOADBC
+   8166 DD 7E 03      [19]  276         LD      A,(IX+3)
+   8169 ED 79         [12]  277         OUT     (C),A
+   816B 3E 4F         [ 7]  278         LD      A,0x4F  ;'O'
+   816D                     279 SRESP:
+   816D CD 0C 81      [17]  280         CALL    I2CSRESP
+   8170                     281 RHERE:
+   8170 37            [ 4]  282         SCF
+   8171 C9            [10]  283         RET
+   8172                     284 REMCALL:
+   8172 21 46 80      [10]  285         LD      HL,START
+   8175 E5            [11]  286         PUSH    HL
+   8176 CD 39 81      [17]  287         CALL    LOADHL
+   8179 E9            [ 4]  288         JP      (HL)
+                            289     
+   817A                     290 INIT:
+   817A 31 F0 77      [10]  291         LD      SP,SSTACK   ; have to set valid SP
+   817D DD 21 F0 77   [14]  292         LD      IX,CMDBUF   ; Easy to index command buffer
+                            293         
+                            294 ; Main routine
+   8181                     295 MAIN:
+   8181 CD 1D 81      [17]  296         CALL    POLL
+   8184 38 FB         [12]  297         JR      C,MAIN
                             298         
-                            299 ; Main routine
-   8181                     300 MAIN:
-   8181 CD 1D 81      [17]  301         CALL    POLL
-   8184 38 FB         [12]  302         JR      C,MAIN
-                            303         
-   8186 01 80 01      [10]  304         LD      BC,BIGDEL
-   8189                     305 MLOOP:
-   8189 0B            [ 6]  306         DEC     BC
-   818A 79            [ 4]  307         LD      A,C
-   818B B0            [ 4]  308         OR      B
-   818C 20 FB         [12]  309         JR      NZ,MLOOP
-   818E 18 F1         [12]  310         JR      MAIN
-                            311 
-                            312 
-                            313     
-                            314 
+   8186 01 80 01      [10]  299         LD      BC,BIGDEL
+   8189                     300 MLOOP:
+   8189 0B            [ 6]  301         DEC     BC
+   818A 79            [ 4]  302         LD      A,C
+   818B B0            [ 4]  303         OR      B
+   818C 20 FB         [12]  304         JR      NZ,MLOOP
+   818E 18 F1         [12]  305         JR      MAIN
+                            306 
+                            307 
+                            308     
+                            309 
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 7
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 Symbol Table
 
@@ -371,15 +366,13 @@ Symbol Table
     OUTBUF         =   77FF     |   2 POLL               811D R
   2 PREAD              815C R   |   2 PWRITE             8163 R
   2 READSDA            8082 R   |   2 REMCALL            8172 R
-  2 RHERE              8170 R   |     SCLCLR         =   C002 
-    SCLSET         =   C001     |     SDACLR         =   C004 
-    SDASET         =   C008     |   2 SETSCL             804A R
+  2 RHERE              8170 R   |   2 SETSCL             804A R
   2 SETSDA             8066 R   |   2 SKIP               8105 R
   2 SRESP              816D R   |     SSTACK         =   77F0 
   2 START              8046 R
 
 ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 8
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
+Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
 
 Area Table
 
