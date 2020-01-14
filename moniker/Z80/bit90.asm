@@ -42,7 +42,7 @@ START:  DI                  ; Disable interrupts - we don't handle them
         JP      INIT        ; go to initialization code
     
 ; Set the SCL pin high
-; D is the global coin counter buffer
+; D is the global buffer
 ; Destroys A
 SETSCL:
         LD      A,D
@@ -57,7 +57,7 @@ SETSCL:
         RET
     
 ; Set the SCL pin low
-; D is the global coin counter buffer
+; D is the global buffer
 ; Destroys A
 CLRSCL:
         LD      A,D
