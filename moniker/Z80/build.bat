@@ -11,3 +11,6 @@ tools\asz80.exe -o -l sraider.asm
 tools\aslink.exe -s sraider.rel
 tools\srec2bin sraider.s19 sraider.bin
 
+tools\asz80.exe -o -l gorf.asm
+tools\aslink.exe -s gorf.rel
+tools\srec2bin gorf.s19 gorf.bin
