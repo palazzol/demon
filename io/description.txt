@@ -1,0 +1,51 @@
+
+New ROM-based I/O interface for Demon Debugger!
+
+As the type of targets expand beyond Arcade PCBs, it becomes more
+difficult to identify I/O pins to use for communication on the target.
+
+Since we are generally replacing code with a ROM containing the target code,
+why not make an interface that looks like part of the ROM space?
+
+Here is the general idea:
+
+1) Demon Debugger code easily fits into 512 bytes for all targets
+2) A 2716-style 2K ROM interface is generic enough to be adapted for most targets
+3) Sometimes we need code at the front of memory (ex. Z80 startup, NMI handler, etc.) and
+   sometimes the end of memory (ex. 6502 reset vector)
+4) So, we use a 2K memory space, but put a "hole" in the middle for I/O
+
+Memory Map for I/O interface:
+
+2K Total Memory Space:
+
+0x000 - 0x3FF:  "Front" ROM Space - pass thru to our EPROM
+0x400 - 0x5FF:  Special I/O Area
+0x600 - 0x7ff:  "Back" ROM Space - pass thru to our EPROM
+
+The I/O interface works by "Reading" from an address in the Special range.
+
+Bit A0 of these reads is Latched to CLK
+Bit A1 of these reads is Latched to DOUT
+Bit D0 of these reads comes from DIN
+
+So, for example, reading the following addresses would do I/O:
+
+0x400: Set DOUT,CLK to 0,0 - Return DIN as bit0
+0x401: Set DOUT,CLK to 0,1 - Return DIN as bit0
+0x402: Set DOUT,CLK to 1,0 - Return DIN as bit0
+0x403: Set DOUT,CLK to 1,1 - Return DIN as bit0
+
+The interface can be built from standard parts:
+    2716 or bigger EPROM, to store target code
+    74LS139 and 74LS10 - address decoding
+    74LS244 - D0 input mux
+    74LS74 - A0, A1 output latch
+
+As a bonus, we can put the 2N7000 FET on this board instead of the Arduino,
+and use the standard Arduino I2C interface for communication
+
+The first target using the new interface is in the form of a Bally Astrocade cartridge
+
+
+
