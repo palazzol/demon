@@ -14,3 +14,7 @@ tools\srec2bin sraider.s19 sraider.bin
 tools\asz80.exe -o -l gorf.asm
 tools\aslink.exe -s gorf.rel
 tools\srec2bin gorf.s19 gorf.bin
+
+tools\asz80.exe -o -l astrocade.asm
+tools\aslink.exe -s astrocade.rel
+tools\srec2bin -o 2000 astrocade.s19 astrocade.bin
