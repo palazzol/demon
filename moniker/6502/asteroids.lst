@@ -1,4 +1,4 @@
-------- FILE moniker.asm LEVEL 1 PASS 2
+------- FILE asteroids.asm LEVEL 1 PASS 2
       1  8000 ????						;
       2  8000 ????						; Moniker - 6502 Version
       3  8000 ????						; by Frank Palazzolo
