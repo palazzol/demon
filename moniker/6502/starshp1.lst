@@ -1,0 +1,296 @@
+------- FILE starshp1.asm LEVEL 1 PASS 2
+      1  10000 ????						;
+      2  10000 ????						; Moniker - 6502 Version
+      3  10000 ????						; by Frank Palazzolo
+      4  10000 ????						; For ROM IO Hardware - Atari Starship 1
+      5  10000 ????						;
+      6  10000 ????				       processor	6502
+      7  10000 ????
+      8  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      9  10000 ????						; You may need to adjust these variables for different targets
+     10  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     11  10000 ????
+     12  10000 ????						; RAM SETTINGS - usually in zero page
+     13  10000 ????
+     14  10000 ????		00 00	    RAMSTRT    equ	$00	;start of ram, needs 7 bytes starting here
+     15  10000 ????		00 ff	    SSTACK     equ	$ff	;start of stack, needs some memory below this address
+     16  10000 ????
+     17  10000 ????						; ROM SETTINGS - usually the last 2K of memory for 6502
+     18  10000 ????
+     19  10000 ????		f8 00	    SCHIP      equ	$f800	;start of chip memory mapping
+     20  10000 ????
+     21  10000 ????		fc 00	    IOREG      equ	SCHIP+$0400	;reserved region for IO
+     22  10000 ????
+     23  10000 ????						; TIMER SETTING
+     24  10000 ????		01 80	    BIGDEL     equ	$0180	;delay factor
+     25  10000 ????
+     26  10000 ????		00 11	    I2CRADR    equ	$11	;I2C read address  - I2C address 0x08
+     27  10000 ????		00 10	    I2CWADR    equ	$10	;I2C write address - I2C address 0x08
+     28  10000 ????
+     29  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     30  10000 ????						; RAM Variables
+     31  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     32  10000 ????
+     33  10000 ????		00 00	    OUTBUF     equ	RAMSTRT	;buffer for output states
+     34  10000 ????		00 01	    B	       equ	RAMSTRT+$01	;general purpose
+     35  10000 ????		00 02	    C	       equ	RAMSTRT+$02	;general purpose
+     36  10000 ????		00 03	    CMDBUF0    equ	RAMSTRT+$03	;command buffer
+     37  10000 ????		00 04	    CMDBUF1    equ	RAMSTRT+$04	;command buffer
+     38  10000 ????		00 05	    CMDBUF2    equ	RAMSTRT+$05	;command buffer
+     39  10000 ????		00 06	    CMDBUF3    equ	RAMSTRT+$06	;command buffer
+     40  10000 ????
+     41  f800					      org	SCHIP	;last 2K of memory starts here
+     42  f800
+     43  f800		       ff ff ff ff*	      ds	$0600,$ff	; fill front and io regions with $FF
+     44  fe00
+     45  fe00							; Code fits into the last 512 bytes of memory
+     46  fe00					      org	SCHIP+$0600	;code starts here
+     47  fe00
+     48  fe00							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     49  fe00							; This function is called once, and should be used do any game-specific
+     50  fe00							; initialization that is required
+     51  fe00							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     52  fe00
+     53  fe00				   ONCE
+     54  fe00							;	 YOUR CODE CAN GO HERE
+     55  fe00		       60		      rts
+     56  fe01
+     57  fe01							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     58  fe01							; This function is called every time during the polling loop.	It can be
+     59  fe01							; used to run watchdog code, etc.  I have provided a simple delay loop
+     60  fe01							; so that the I2C slave is not overwhelmed
+     61  fe01							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     62  fe01
+     63  fe01				   EVERY
+     64  fe01							; reset the starshp1 watchdog
+     65  fe01		       a9 01		      lda	#$01
+     66  fe03		       8d 06 dc 	      sta	$dc06
+     67  fe06		       a9 fe		      lda	#$fe
+     68  fe08		       8d 00 cc 	      sta	$cc00
+     69  fe0b		       8d 06 dc 	      sta	$dc06
+     70  fe0e
+     71  fe0e		       60		      rts
+     72  fe0f
+     73  fe0f							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     74  fe0f							; Main Program code starts here
+     75  fe0f							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     76  fe0f
+     77  fe0f							; NMI Handler
+     78  fe0f		       40	   NMI	      rti		;Don't do anything on an NMI
+     79  fe10
+     80  fe10		       a5 00	   SETSCL     lda	OUTBUF
+     81  fe12		       09 01		      ora	#$01
+     82  fe14		       85 00		      sta	OUTBUF
+     83  fe16		       aa		      tax
+     84  fe17		       bd 00 fc 	      lda	IOREG,X
+     85  fe1a		       20 4c fe 	      jsr	I2CDLY
+     86  fe1d		       60		      rts
+     87  fe1e
+     88  fe1e		       a5 00	   CLRSCL     lda	OUTBUF
+     89  fe20		       29 fe		      and	#$fe
+     90  fe22		       85 00		      sta	OUTBUF
+     91  fe24		       aa		      tax
+     92  fe25		       bd 00 fc 	      lda	IOREG,X
+     93  fe28		       60		      rts
+     94  fe29
+     95  fe29		       a5 00	   SETSDA     lda	OUTBUF
+     96  fe2b		       29 fd		      and	#$fd
+     97  fe2d		       85 00		      sta	OUTBUF
+     98  fe2f		       aa		      tax
+     99  fe30		       bd 00 fc 	      lda	IOREG,X
+    100  fe33		       20 4c fe 	      jsr	I2CDLY
+    101  fe36		       60		      rts
+    102  fe37
+    103  fe37		       a5 00	   CLRSDA     lda	OUTBUF
+    104  fe39		       09 02		      ora	#$02
+    105  fe3b		       85 00		      sta	OUTBUF
+    106  fe3d		       aa		      tax
+    107  fe3e		       bd 00 fc 	      lda	IOREG,X
+    108  fe41		       20 4c fe 	      jsr	I2CDLY
+    109  fe44		       60		      rts
+    110  fe45
+    111  fe45		       a6 00	   READSDA    ldx	OUTBUF
+    112  fe47		       bd 00 fc 	      lda	IOREG,X
+    113  fe4a		       6a		      ror
+    114  fe4b		       60		      rts
+    115  fe4c
+    116  fe4c							; Delay for half a bit time
+    117  fe4c		       60	   I2CDLY     rts		; TBD - this is plenty?
+    118  fe4d
+    119  fe4d							; I2C Start Condition
+    120  fe4d				   I2CSTART
+    121  fe4d		       20 37 fe 	      jsr	CLRSDA
+    122  fe50		       20 1e fe 	      jsr	CLRSCL
+    123  fe53		       60		      rts
+    124  fe54
+    125  fe54							; I2C Stop Condition
+    126  fe54							; Uses HL
+    127  fe54							; Destroys A
+    128  fe54				   I2CSTOP
+    129  fe54		       20 37 fe 	      jsr	CLRSDA
+    130  fe57		       20 10 fe 	      jsr	SETSCL
+    131  fe5a		       20 29 fe 	      jsr	SETSDA
+    132  fe5d		       60		      rts
+    133  fe5e
+    134  fe5e				   I2CRBIT
+    135  fe5e		       20 29 fe 	      jsr	SETSDA
+    136  fe61		       20 10 fe 	      jsr	SETSCL
+    137  fe64		       20 45 fe 	      jsr	READSDA	; sets/clears carry flag
+    138  fe67		       20 1e fe 	      jsr	CLRSCL
+    139  fe6a		       60		      rts		; carry flag still good here
+    140  fe6b
+    141  fe6b				   I2CWBIT
+    142  fe6b		       90 06		      bcc	DOCLR
+    143  fe6d		       20 29 fe 	      jsr	SETSDA
+    144  fe70		       4c 76 fe 	      jmp	AHEAD
+    145  fe73				   DOCLR
+    146  fe73		       20 37 fe 	      jsr	CLRSDA
+    147  fe76				   AHEAD
+    148  fe76		       20 10 fe 	      jsr	SETSCL
+    149  fe79		       20 1e fe 	      jsr	CLRSCL
+    150  fe7c		       60		      rts
+    151  fe7d
+    152  fe7d				   I2CWBYTE
+    153  fe7d		       48		      pha
+    154  fe7e		       a9 08		      lda	#$08
+    155  fe80		       85 01		      sta	B
+    156  fe82		       68		      pla
+    157  fe83				   ILOOP
+    158  fe83		       2a		      rol
+    159  fe84		       48		      pha
+    160  fe85		       20 6b fe 	      jsr	I2CWBIT
+    161  fe88		       68		      pla
+    162  fe89		       c6 01		      dec	B
+    163  fe8b		       d0 f6		      bne	ILOOP
+    164  fe8d		       20 5e fe 	      jsr	I2CRBIT
+    165  fe90		       60		      rts
+    166  fe91
+    167  fe91				   I2CRBYTE
+    168  fe91		       a9 08		      lda	#$08
+    169  fe93		       85 01		      sta	B
+    170  fe95		       a9 00		      lda	#$00
+    171  fe97		       85 02		      sta	C
+    172  fe99				   LOOP3
+    173  fe99		       20 5e fe 	      jsr	I2CRBIT	; get bit in carry flag
+    174  fe9c		       26 02		      rol	C	; rotate carry into bit0 of C register
+    175  fe9e		       c6 01		      dec	B
+    176  fea0		       d0 f7		      bne	LOOP3
+    177  fea2		       18		      clc		; clear carry flag
+    178  fea3		       20 6b fe 	      jsr	I2CWBIT
+    179  fea6		       a5 02		      lda	C
+    180  fea8		       60		      rts
+    181  fea9
+    182  fea9				   I2CRREQ
+    183  fea9		       20 4d fe 	      jsr	I2CSTART
+    184  feac		       a9 11		      lda	#I2CRADR
+    185  feae		       20 7d fe 	      jsr	I2CWBYTE
+    186  feb1		       b0 17		      bcs	SKIP
+    187  feb3		       20 91 fe 	      jsr	I2CRBYTE
+    188  feb6		       85 03		      sta	CMDBUF0
+    189  feb8		       20 91 fe 	      jsr	I2CRBYTE
+    190  febb		       85 04		      sta	CMDBUF1
+    191  febd		       20 91 fe 	      jsr	I2CRBYTE
+    192  fec0		       85 05		      sta	CMDBUF2
+    193  fec2		       20 91 fe 	      jsr	I2CRBYTE
+    194  fec5		       85 06		      sta	CMDBUF3
+    195  fec7		       4c de fe 	      jmp	ENDI2C
+    196  feca
+    197  feca				   SKIP 		; If no device present, fake an idle response
+    198  feca		       a9 2e		      lda	#$2e	; '.'
+    199  fecc		       85 03		      sta	CMDBUF0
+    200  fece		       4c de fe 	      jmp	ENDI2C
+    201  fed1
+    202  fed1				   I2CSRESP
+    203  fed1		       48		      pha
+    204  fed2		       20 4d fe 	      jsr	I2CSTART
+    205  fed5		       a9 10		      lda	#I2CWADR
+    206  fed7		       20 7d fe 	      jsr	I2CWBYTE
+    207  feda		       68		      pla
+    208  fedb		       20 7d fe 	      jsr	I2CWBYTE
+    209  fede				   ENDI2C
+    210  fede		       20 54 fe 	      jsr	I2CSTOP
+    211  fee1		       60		      rts
+    212  fee2
+    213  fee2				   POLL
+    214  fee2		       20 a9 fe 	      jsr	I2CRREQ
+    215  fee5		       a5 03		      lda	CMDBUF0
+    216  fee7		       c9 52		      cmp	#$52	; 'R' - Read memory
+    217  fee9		       f0 0a		      beq	MREAD
+    218  feeb		       c9 57		      cmp	#$57	; 'W' - Write memory
+    219  feed		       f0 10		      beq	MWRITE
+    220  feef		       c9 43		      cmp	#$43	; 'C' - Call subroutine
+    221  fef1		       f0 26		      beq	REMCALL
+    222  fef3		       18		      clc
+    223  fef4		       60		      rts
+    224  fef5
+    225  fef5				   MREAD
+    226  fef5		       20 0b ff 	      jsr	LOADBC
+    227  fef8		       a0 00		      ldy	#$00
+    228  fefa		       b1 01		      lda	(B),Y
+    229  fefc		       4c 14 ff 	      jmp	SRESP
+    230  feff				   MWRITE
+    231  feff		       20 0b ff 	      jsr	LOADBC
+    232  ff02		       a5 06		      lda	CMDBUF3
+    233  ff04		       91 01		      sta	(B),Y
+    234  ff06		       a9 57		      lda	#$57	;'W'
+    235  ff08		       4c 14 ff 	      jmp	SRESP
+    236  ff0b				   LOADBC
+    237  ff0b		       a5 05		      lda	CMDBUF2
+    238  ff0d		       85 01		      sta	B
+    239  ff0f		       a5 04		      lda	CMDBUF1
+    240  ff11		       85 02		      sta	C
+    241  ff13		       60		      rts
+    242  ff14
+    243  ff14				   SRESP
+    244  ff14		       20 d1 fe 	      jsr	I2CSRESP
+    245  ff17				   RHERE
+    246  ff17		       38		      sec
+    247  ff18		       60		      rts
+    248  ff19				   REMCALL
+    249  ff19		       a9 ff		      lda	#(START-1)>>8
+    250  ff1b		       48		      pha
+    251  ff1c		       a9 24		      lda	#(START-1)%256
+    252  ff1e		       48		      pha
+    253  ff1f		       20 0b ff 	      jsr	LOADBC
+    254  ff22		       6c 01 00 	      jmp	(B)
+    255  ff25
+    256  ff25							;;;;;;;;;;
+    257  ff25
+    258  ff25				   START		; TBD- INIT Stack Pointer!
+    259  ff25		       a2 ff		      ldx	#SSTACK
+    260  ff27		       9a		      txs		; Init stack
+    261  ff28		       d8		      cld		; No Decimal
+    262  ff29		       20 00 fe 	      jsr	ONCE
+    263  ff2c
+    264  ff2c							; Main routine
+    265  ff2c				   MAIN
+    266  ff2c		       20 01 fe 	      jsr	EVERY
+    267  ff2f		       20 e2 fe 	      jsr	POLL
+    268  ff32		       b0 f8		      bcs	MAIN
+    269  ff34
+    270  ff34		       a9 01		      lda	#BIGDEL>>8
+    271  ff36		       85 01		      sta	B
+    272  ff38		       a9 80		      lda	#BIGDEL%256
+    273  ff3a		       85 02		      sta	C
+    274  ff3c				   MLOOP
+    275  ff3c		       a5 02		      lda	C
+    276  ff3e		       f0 05		      beq	DECBOTH
+    277  ff40		       c6 02		      dec	C
+    278  ff42		       4c 3c ff 	      jmp	MLOOP
+    279  ff45				   DECBOTH
+    280  ff45		       a5 01		      lda	B
+    281  ff47		       f0 e3		      beq	MAIN
+    282  ff49		       c6 02		      dec	C
+    283  ff4b		       c6 01		      dec	B
+    284  ff4d		       4c 3c ff 	      jmp	MLOOP
+    285  ff50
+    286  ff50							;	 vectors
+    287  ff50
+    288  fffa					      org	SCHIP+$07fa
+    289  fffa
+    290  fffa		       0f fe		      dc.w	NMI
+    291  fffc		       25 ff		      dc.w	START
+    292  fffe		       25 ff		      dc.w	START
+    293  10000
+    294  10000
+    295  10000
