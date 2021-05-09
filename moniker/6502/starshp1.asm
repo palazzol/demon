@@ -66,6 +66,25 @@ EVERY:
 	sta     $dc06
 	lda     #$fe
 	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
+	sta     $cc00
 	sta     $dc06
 
         rts

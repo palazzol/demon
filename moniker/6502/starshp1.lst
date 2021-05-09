@@ -67,230 +67,249 @@
      66  fe03		       8d 06 dc 	      sta	$dc06
      67  fe06		       a9 fe		      lda	#$fe
      68  fe08		       8d 00 cc 	      sta	$cc00
-     69  fe0b		       8d 06 dc 	      sta	$dc06
-     70  fe0e
-     71  fe0e		       60		      rts
-     72  fe0f
-     73  fe0f							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     74  fe0f							; Main Program code starts here
-     75  fe0f							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     76  fe0f
-     77  fe0f							; NMI Handler
-     78  fe0f		       40	   NMI	      rti		;Don't do anything on an NMI
-     79  fe10
-     80  fe10		       a5 00	   SETSCL     lda	OUTBUF
-     81  fe12		       09 01		      ora	#$01
-     82  fe14		       85 00		      sta	OUTBUF
-     83  fe16		       aa		      tax
-     84  fe17		       bd 00 fc 	      lda	IOREG,X
-     85  fe1a		       20 4c fe 	      jsr	I2CDLY
-     86  fe1d		       60		      rts
-     87  fe1e
-     88  fe1e		       a5 00	   CLRSCL     lda	OUTBUF
-     89  fe20		       29 fe		      and	#$fe
-     90  fe22		       85 00		      sta	OUTBUF
-     91  fe24		       aa		      tax
-     92  fe25		       bd 00 fc 	      lda	IOREG,X
-     93  fe28		       60		      rts
-     94  fe29
-     95  fe29		       a5 00	   SETSDA     lda	OUTBUF
-     96  fe2b		       29 fd		      and	#$fd
-     97  fe2d		       85 00		      sta	OUTBUF
-     98  fe2f		       aa		      tax
-     99  fe30		       bd 00 fc 	      lda	IOREG,X
-    100  fe33		       20 4c fe 	      jsr	I2CDLY
-    101  fe36		       60		      rts
-    102  fe37
-    103  fe37		       a5 00	   CLRSDA     lda	OUTBUF
-    104  fe39		       09 02		      ora	#$02
-    105  fe3b		       85 00		      sta	OUTBUF
-    106  fe3d		       aa		      tax
-    107  fe3e		       bd 00 fc 	      lda	IOREG,X
-    108  fe41		       20 4c fe 	      jsr	I2CDLY
-    109  fe44		       60		      rts
-    110  fe45
-    111  fe45		       a6 00	   READSDA    ldx	OUTBUF
-    112  fe47		       bd 00 fc 	      lda	IOREG,X
-    113  fe4a		       6a		      ror
-    114  fe4b		       60		      rts
-    115  fe4c
-    116  fe4c							; Delay for half a bit time
-    117  fe4c		       60	   I2CDLY     rts		; TBD - this is plenty?
-    118  fe4d
-    119  fe4d							; I2C Start Condition
-    120  fe4d				   I2CSTART
-    121  fe4d		       20 37 fe 	      jsr	CLRSDA
-    122  fe50		       20 1e fe 	      jsr	CLRSCL
-    123  fe53		       60		      rts
-    124  fe54
-    125  fe54							; I2C Stop Condition
-    126  fe54							; Uses HL
-    127  fe54							; Destroys A
-    128  fe54				   I2CSTOP
-    129  fe54		       20 37 fe 	      jsr	CLRSDA
-    130  fe57		       20 10 fe 	      jsr	SETSCL
-    131  fe5a		       20 29 fe 	      jsr	SETSDA
-    132  fe5d		       60		      rts
-    133  fe5e
-    134  fe5e				   I2CRBIT
-    135  fe5e		       20 29 fe 	      jsr	SETSDA
-    136  fe61		       20 10 fe 	      jsr	SETSCL
-    137  fe64		       20 45 fe 	      jsr	READSDA	; sets/clears carry flag
-    138  fe67		       20 1e fe 	      jsr	CLRSCL
-    139  fe6a		       60		      rts		; carry flag still good here
-    140  fe6b
-    141  fe6b				   I2CWBIT
-    142  fe6b		       90 06		      bcc	DOCLR
-    143  fe6d		       20 29 fe 	      jsr	SETSDA
-    144  fe70		       4c 76 fe 	      jmp	AHEAD
-    145  fe73				   DOCLR
-    146  fe73		       20 37 fe 	      jsr	CLRSDA
-    147  fe76				   AHEAD
-    148  fe76		       20 10 fe 	      jsr	SETSCL
-    149  fe79		       20 1e fe 	      jsr	CLRSCL
-    150  fe7c		       60		      rts
-    151  fe7d
-    152  fe7d				   I2CWBYTE
-    153  fe7d		       48		      pha
-    154  fe7e		       a9 08		      lda	#$08
-    155  fe80		       85 01		      sta	B
-    156  fe82		       68		      pla
-    157  fe83				   ILOOP
-    158  fe83		       2a		      rol
-    159  fe84		       48		      pha
-    160  fe85		       20 6b fe 	      jsr	I2CWBIT
-    161  fe88		       68		      pla
-    162  fe89		       c6 01		      dec	B
-    163  fe8b		       d0 f6		      bne	ILOOP
-    164  fe8d		       20 5e fe 	      jsr	I2CRBIT
-    165  fe90		       60		      rts
-    166  fe91
-    167  fe91				   I2CRBYTE
-    168  fe91		       a9 08		      lda	#$08
-    169  fe93		       85 01		      sta	B
-    170  fe95		       a9 00		      lda	#$00
-    171  fe97		       85 02		      sta	C
-    172  fe99				   LOOP3
-    173  fe99		       20 5e fe 	      jsr	I2CRBIT	; get bit in carry flag
-    174  fe9c		       26 02		      rol	C	; rotate carry into bit0 of C register
-    175  fe9e		       c6 01		      dec	B
-    176  fea0		       d0 f7		      bne	LOOP3
-    177  fea2		       18		      clc		; clear carry flag
-    178  fea3		       20 6b fe 	      jsr	I2CWBIT
-    179  fea6		       a5 02		      lda	C
-    180  fea8		       60		      rts
-    181  fea9
-    182  fea9				   I2CRREQ
-    183  fea9		       20 4d fe 	      jsr	I2CSTART
-    184  feac		       a9 11		      lda	#I2CRADR
-    185  feae		       20 7d fe 	      jsr	I2CWBYTE
-    186  feb1		       b0 17		      bcs	SKIP
-    187  feb3		       20 91 fe 	      jsr	I2CRBYTE
-    188  feb6		       85 03		      sta	CMDBUF0
-    189  feb8		       20 91 fe 	      jsr	I2CRBYTE
-    190  febb		       85 04		      sta	CMDBUF1
-    191  febd		       20 91 fe 	      jsr	I2CRBYTE
-    192  fec0		       85 05		      sta	CMDBUF2
-    193  fec2		       20 91 fe 	      jsr	I2CRBYTE
-    194  fec5		       85 06		      sta	CMDBUF3
-    195  fec7		       4c de fe 	      jmp	ENDI2C
-    196  feca
-    197  feca				   SKIP 		; If no device present, fake an idle response
-    198  feca		       a9 2e		      lda	#$2e	; '.'
-    199  fecc		       85 03		      sta	CMDBUF0
-    200  fece		       4c de fe 	      jmp	ENDI2C
-    201  fed1
-    202  fed1				   I2CSRESP
-    203  fed1		       48		      pha
-    204  fed2		       20 4d fe 	      jsr	I2CSTART
-    205  fed5		       a9 10		      lda	#I2CWADR
-    206  fed7		       20 7d fe 	      jsr	I2CWBYTE
-    207  feda		       68		      pla
-    208  fedb		       20 7d fe 	      jsr	I2CWBYTE
-    209  fede				   ENDI2C
-    210  fede		       20 54 fe 	      jsr	I2CSTOP
-    211  fee1		       60		      rts
-    212  fee2
-    213  fee2				   POLL
-    214  fee2		       20 a9 fe 	      jsr	I2CRREQ
-    215  fee5		       a5 03		      lda	CMDBUF0
-    216  fee7		       c9 52		      cmp	#$52	; 'R' - Read memory
-    217  fee9		       f0 0a		      beq	MREAD
-    218  feeb		       c9 57		      cmp	#$57	; 'W' - Write memory
-    219  feed		       f0 10		      beq	MWRITE
-    220  feef		       c9 43		      cmp	#$43	; 'C' - Call subroutine
-    221  fef1		       f0 26		      beq	REMCALL
-    222  fef3		       18		      clc
-    223  fef4		       60		      rts
-    224  fef5
-    225  fef5				   MREAD
-    226  fef5		       20 0b ff 	      jsr	LOADBC
-    227  fef8		       a0 00		      ldy	#$00
-    228  fefa		       b1 01		      lda	(B),Y
-    229  fefc		       4c 14 ff 	      jmp	SRESP
-    230  feff				   MWRITE
-    231  feff		       20 0b ff 	      jsr	LOADBC
-    232  ff02		       a5 06		      lda	CMDBUF3
-    233  ff04		       91 01		      sta	(B),Y
-    234  ff06		       a9 57		      lda	#$57	;'W'
-    235  ff08		       4c 14 ff 	      jmp	SRESP
-    236  ff0b				   LOADBC
-    237  ff0b		       a5 05		      lda	CMDBUF2
-    238  ff0d		       85 01		      sta	B
-    239  ff0f		       a5 04		      lda	CMDBUF1
-    240  ff11		       85 02		      sta	C
-    241  ff13		       60		      rts
-    242  ff14
-    243  ff14				   SRESP
-    244  ff14		       20 d1 fe 	      jsr	I2CSRESP
-    245  ff17				   RHERE
-    246  ff17		       38		      sec
-    247  ff18		       60		      rts
-    248  ff19				   REMCALL
-    249  ff19		       a9 ff		      lda	#(START-1)>>8
-    250  ff1b		       48		      pha
-    251  ff1c		       a9 24		      lda	#(START-1)%256
-    252  ff1e		       48		      pha
-    253  ff1f		       20 0b ff 	      jsr	LOADBC
-    254  ff22		       6c 01 00 	      jmp	(B)
-    255  ff25
-    256  ff25							;;;;;;;;;;
-    257  ff25
-    258  ff25				   START		; TBD- INIT Stack Pointer!
-    259  ff25		       a2 ff		      ldx	#SSTACK
-    260  ff27		       9a		      txs		; Init stack
-    261  ff28		       d8		      cld		; No Decimal
-    262  ff29		       20 00 fe 	      jsr	ONCE
-    263  ff2c
-    264  ff2c							; Main routine
-    265  ff2c				   MAIN
-    266  ff2c		       20 01 fe 	      jsr	EVERY
-    267  ff2f		       20 e2 fe 	      jsr	POLL
-    268  ff32		       b0 f8		      bcs	MAIN
-    269  ff34
-    270  ff34		       a9 01		      lda	#BIGDEL>>8
-    271  ff36		       85 01		      sta	B
-    272  ff38		       a9 80		      lda	#BIGDEL%256
-    273  ff3a		       85 02		      sta	C
-    274  ff3c				   MLOOP
-    275  ff3c		       a5 02		      lda	C
-    276  ff3e		       f0 05		      beq	DECBOTH
-    277  ff40		       c6 02		      dec	C
-    278  ff42		       4c 3c ff 	      jmp	MLOOP
-    279  ff45				   DECBOTH
-    280  ff45		       a5 01		      lda	B
-    281  ff47		       f0 e3		      beq	MAIN
-    282  ff49		       c6 02		      dec	C
-    283  ff4b		       c6 01		      dec	B
-    284  ff4d		       4c 3c ff 	      jmp	MLOOP
-    285  ff50
-    286  ff50							;	 vectors
-    287  ff50
-    288  fffa					      org	SCHIP+$07fa
-    289  fffa
-    290  fffa		       0f fe		      dc.w	NMI
-    291  fffc		       25 ff		      dc.w	START
-    292  fffe		       25 ff		      dc.w	START
-    293  10000
-    294  10000
-    295  10000
+     69  fe0b		       8d 00 cc 	      sta	$cc00
+     70  fe0e		       8d 00 cc 	      sta	$cc00
+     71  fe11		       8d 00 cc 	      sta	$cc00
+     72  fe14		       8d 00 cc 	      sta	$cc00
+     73  fe17		       8d 00 cc 	      sta	$cc00
+     74  fe1a		       8d 00 cc 	      sta	$cc00
+     75  fe1d		       8d 00 cc 	      sta	$cc00
+     76  fe20		       8d 00 cc 	      sta	$cc00
+     77  fe23		       8d 00 cc 	      sta	$cc00
+     78  fe26		       8d 00 cc 	      sta	$cc00
+     79  fe29		       8d 00 cc 	      sta	$cc00
+     80  fe2c		       8d 00 cc 	      sta	$cc00
+     81  fe2f		       8d 00 cc 	      sta	$cc00
+     82  fe32		       8d 00 cc 	      sta	$cc00
+     83  fe35		       8d 00 cc 	      sta	$cc00
+     84  fe38		       8d 00 cc 	      sta	$cc00
+     85  fe3b		       8d 00 cc 	      sta	$cc00
+     86  fe3e		       8d 00 cc 	      sta	$cc00
+     87  fe41		       8d 00 cc 	      sta	$cc00
+     88  fe44		       8d 06 dc 	      sta	$dc06
+     89  fe47
+     90  fe47		       60		      rts
+     91  fe48
+     92  fe48							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     93  fe48							; Main Program code starts here
+     94  fe48							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     95  fe48
+     96  fe48							; NMI Handler
+     97  fe48		       40	   NMI	      rti		;Don't do anything on an NMI
+     98  fe49
+     99  fe49		       a5 00	   SETSCL     lda	OUTBUF
+    100  fe4b		       09 01		      ora	#$01
+    101  fe4d		       85 00		      sta	OUTBUF
+    102  fe4f		       aa		      tax
+    103  fe50		       bd 00 fc 	      lda	IOREG,X
+    104  fe53		       20 85 fe 	      jsr	I2CDLY
+    105  fe56		       60		      rts
+    106  fe57
+    107  fe57		       a5 00	   CLRSCL     lda	OUTBUF
+    108  fe59		       29 fe		      and	#$fe
+    109  fe5b		       85 00		      sta	OUTBUF
+    110  fe5d		       aa		      tax
+    111  fe5e		       bd 00 fc 	      lda	IOREG,X
+    112  fe61		       60		      rts
+    113  fe62
+    114  fe62		       a5 00	   SETSDA     lda	OUTBUF
+    115  fe64		       29 fd		      and	#$fd
+    116  fe66		       85 00		      sta	OUTBUF
+    117  fe68		       aa		      tax
+    118  fe69		       bd 00 fc 	      lda	IOREG,X
+    119  fe6c		       20 85 fe 	      jsr	I2CDLY
+    120  fe6f		       60		      rts
+    121  fe70
+    122  fe70		       a5 00	   CLRSDA     lda	OUTBUF
+    123  fe72		       09 02		      ora	#$02
+    124  fe74		       85 00		      sta	OUTBUF
+    125  fe76		       aa		      tax
+    126  fe77		       bd 00 fc 	      lda	IOREG,X
+    127  fe7a		       20 85 fe 	      jsr	I2CDLY
+    128  fe7d		       60		      rts
+    129  fe7e
+    130  fe7e		       a6 00	   READSDA    ldx	OUTBUF
+    131  fe80		       bd 00 fc 	      lda	IOREG,X
+    132  fe83		       6a		      ror
+    133  fe84		       60		      rts
+    134  fe85
+    135  fe85							; Delay for half a bit time
+    136  fe85		       60	   I2CDLY     rts		; TBD - this is plenty?
+    137  fe86
+    138  fe86							; I2C Start Condition
+    139  fe86				   I2CSTART
+    140  fe86		       20 70 fe 	      jsr	CLRSDA
+    141  fe89		       20 57 fe 	      jsr	CLRSCL
+    142  fe8c		       60		      rts
+    143  fe8d
+    144  fe8d							; I2C Stop Condition
+    145  fe8d							; Uses HL
+    146  fe8d							; Destroys A
+    147  fe8d				   I2CSTOP
+    148  fe8d		       20 70 fe 	      jsr	CLRSDA
+    149  fe90		       20 49 fe 	      jsr	SETSCL
+    150  fe93		       20 62 fe 	      jsr	SETSDA
+    151  fe96		       60		      rts
+    152  fe97
+    153  fe97				   I2CRBIT
+    154  fe97		       20 62 fe 	      jsr	SETSDA
+    155  fe9a		       20 49 fe 	      jsr	SETSCL
+    156  fe9d		       20 7e fe 	      jsr	READSDA	; sets/clears carry flag
+    157  fea0		       20 57 fe 	      jsr	CLRSCL
+    158  fea3		       60		      rts		; carry flag still good here
+    159  fea4
+    160  fea4				   I2CWBIT
+    161  fea4		       90 06		      bcc	DOCLR
+    162  fea6		       20 62 fe 	      jsr	SETSDA
+    163  fea9		       4c af fe 	      jmp	AHEAD
+    164  feac				   DOCLR
+    165  feac		       20 70 fe 	      jsr	CLRSDA
+    166  feaf				   AHEAD
+    167  feaf		       20 49 fe 	      jsr	SETSCL
+    168  feb2		       20 57 fe 	      jsr	CLRSCL
+    169  feb5		       60		      rts
+    170  feb6
+    171  feb6				   I2CWBYTE
+    172  feb6		       48		      pha
+    173  feb7		       a9 08		      lda	#$08
+    174  feb9		       85 01		      sta	B
+    175  febb		       68		      pla
+    176  febc				   ILOOP
+    177  febc		       2a		      rol
+    178  febd		       48		      pha
+    179  febe		       20 a4 fe 	      jsr	I2CWBIT
+    180  fec1		       68		      pla
+    181  fec2		       c6 01		      dec	B
+    182  fec4		       d0 f6		      bne	ILOOP
+    183  fec6		       20 97 fe 	      jsr	I2CRBIT
+    184  fec9		       60		      rts
+    185  feca
+    186  feca				   I2CRBYTE
+    187  feca		       a9 08		      lda	#$08
+    188  fecc		       85 01		      sta	B
+    189  fece		       a9 00		      lda	#$00
+    190  fed0		       85 02		      sta	C
+    191  fed2				   LOOP3
+    192  fed2		       20 97 fe 	      jsr	I2CRBIT	; get bit in carry flag
+    193  fed5		       26 02		      rol	C	; rotate carry into bit0 of C register
+    194  fed7		       c6 01		      dec	B
+    195  fed9		       d0 f7		      bne	LOOP3
+    196  fedb		       18		      clc		; clear carry flag
+    197  fedc		       20 a4 fe 	      jsr	I2CWBIT
+    198  fedf		       a5 02		      lda	C
+    199  fee1		       60		      rts
+    200  fee2
+    201  fee2				   I2CRREQ
+    202  fee2		       20 86 fe 	      jsr	I2CSTART
+    203  fee5		       a9 11		      lda	#I2CRADR
+    204  fee7		       20 b6 fe 	      jsr	I2CWBYTE
+    205  feea		       b0 17		      bcs	SKIP
+    206  feec		       20 ca fe 	      jsr	I2CRBYTE
+    207  feef		       85 03		      sta	CMDBUF0
+    208  fef1		       20 ca fe 	      jsr	I2CRBYTE
+    209  fef4		       85 04		      sta	CMDBUF1
+    210  fef6		       20 ca fe 	      jsr	I2CRBYTE
+    211  fef9		       85 05		      sta	CMDBUF2
+    212  fefb		       20 ca fe 	      jsr	I2CRBYTE
+    213  fefe		       85 06		      sta	CMDBUF3
+    214  ff00		       4c 17 ff 	      jmp	ENDI2C
+    215  ff03
+    216  ff03				   SKIP 		; If no device present, fake an idle response
+    217  ff03		       a9 2e		      lda	#$2e	; '.'
+    218  ff05		       85 03		      sta	CMDBUF0
+    219  ff07		       4c 17 ff 	      jmp	ENDI2C
+    220  ff0a
+    221  ff0a				   I2CSRESP
+    222  ff0a		       48		      pha
+    223  ff0b		       20 86 fe 	      jsr	I2CSTART
+    224  ff0e		       a9 10		      lda	#I2CWADR
+    225  ff10		       20 b6 fe 	      jsr	I2CWBYTE
+    226  ff13		       68		      pla
+    227  ff14		       20 b6 fe 	      jsr	I2CWBYTE
+    228  ff17				   ENDI2C
+    229  ff17		       20 8d fe 	      jsr	I2CSTOP
+    230  ff1a		       60		      rts
+    231  ff1b
+    232  ff1b				   POLL
+    233  ff1b		       20 e2 fe 	      jsr	I2CRREQ
+    234  ff1e		       a5 03		      lda	CMDBUF0
+    235  ff20		       c9 52		      cmp	#$52	; 'R' - Read memory
+    236  ff22		       f0 0a		      beq	MREAD
+    237  ff24		       c9 57		      cmp	#$57	; 'W' - Write memory
+    238  ff26		       f0 10		      beq	MWRITE
+    239  ff28		       c9 43		      cmp	#$43	; 'C' - Call subroutine
+    240  ff2a		       f0 26		      beq	REMCALL
+    241  ff2c		       18		      clc
+    242  ff2d		       60		      rts
+    243  ff2e
+    244  ff2e				   MREAD
+    245  ff2e		       20 44 ff 	      jsr	LOADBC
+    246  ff31		       a0 00		      ldy	#$00
+    247  ff33		       b1 01		      lda	(B),Y
+    248  ff35		       4c 4d ff 	      jmp	SRESP
+    249  ff38				   MWRITE
+    250  ff38		       20 44 ff 	      jsr	LOADBC
+    251  ff3b		       a5 06		      lda	CMDBUF3
+    252  ff3d		       91 01		      sta	(B),Y
+    253  ff3f		       a9 57		      lda	#$57	;'W'
+    254  ff41		       4c 4d ff 	      jmp	SRESP
+    255  ff44				   LOADBC
+    256  ff44		       a5 05		      lda	CMDBUF2
+    257  ff46		       85 01		      sta	B
+    258  ff48		       a5 04		      lda	CMDBUF1
+    259  ff4a		       85 02		      sta	C
+    260  ff4c		       60		      rts
+    261  ff4d
+    262  ff4d				   SRESP
+    263  ff4d		       20 0a ff 	      jsr	I2CSRESP
+    264  ff50				   RHERE
+    265  ff50		       38		      sec
+    266  ff51		       60		      rts
+    267  ff52				   REMCALL
+    268  ff52		       a9 ff		      lda	#(START-1)>>8
+    269  ff54		       48		      pha
+    270  ff55		       a9 5d		      lda	#(START-1)%256
+    271  ff57		       48		      pha
+    272  ff58		       20 44 ff 	      jsr	LOADBC
+    273  ff5b		       6c 01 00 	      jmp	(B)
+    274  ff5e
+    275  ff5e							;;;;;;;;;;
+    276  ff5e
+    277  ff5e				   START		; TBD- INIT Stack Pointer!
+    278  ff5e		       a2 ff		      ldx	#SSTACK
+    279  ff60		       9a		      txs		; Init stack
+    280  ff61		       d8		      cld		; No Decimal
+    281  ff62		       20 00 fe 	      jsr	ONCE
+    282  ff65
+    283  ff65							; Main routine
+    284  ff65				   MAIN
+    285  ff65		       20 01 fe 	      jsr	EVERY
+    286  ff68		       20 1b ff 	      jsr	POLL
+    287  ff6b		       b0 f8		      bcs	MAIN
+    288  ff6d
+    289  ff6d		       a9 01		      lda	#BIGDEL>>8
+    290  ff6f		       85 01		      sta	B
+    291  ff71		       a9 80		      lda	#BIGDEL%256
+    292  ff73		       85 02		      sta	C
+    293  ff75				   MLOOP
+    294  ff75		       a5 02		      lda	C
+    295  ff77		       f0 05		      beq	DECBOTH
+    296  ff79		       c6 02		      dec	C
+    297  ff7b		       4c 75 ff 	      jmp	MLOOP
+    298  ff7e				   DECBOTH
+    299  ff7e		       a5 01		      lda	B
+    300  ff80		       f0 e3		      beq	MAIN
+    301  ff82		       c6 02		      dec	C
+    302  ff84		       c6 01		      dec	B
+    303  ff86		       4c 75 ff 	      jmp	MLOOP
+    304  ff89
+    305  ff89							;	 vectors
+    306  ff89
+    307  fffa					      org	SCHIP+$07fa
+    308  fffa
+    309  fffa		       48 fe		      dc.w	NMI
+    310  fffc		       5e ff		      dc.w	START
+    311  fffe		       5e ff		      dc.w	START
+    312  10000
+    313  10000
+    314  10000
