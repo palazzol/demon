@@ -6,6 +6,8 @@
 #define I2C_ADDRESS 0x08
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
   Serial.begin(250000);
   
   Wire.begin(I2C_ADDRESS);    // join i2c bus with address
@@ -16,12 +18,21 @@ void setup() {
 const byte idle[4] = { 0x2E, 0x2E, 0x2E, 0x2E };
 byte xmit_buffer[4] = { 0x2E, 0x2E, 0x2E, 0x2E };
 
+int i2c_led_counter = 0;
+
 void loop() {
+  if (i2c_led_counter == 0)
+      digitalWrite(LED_BUILTIN, LOW);
+  else {
+      digitalWrite(LED_BUILTIN, HIGH);
+      i2c_led_counter--;
+  }
 }
 
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void requestEvent() {
+  i2c_led_counter = 1000;  // This keeps the I2C LED on long enough to be seen
   Wire.write(xmit_buffer,4);
   memcpy(xmit_buffer,idle,4);
 }
@@ -71,4 +82,3 @@ void serialEvent() {
     }
   }
 }
-
