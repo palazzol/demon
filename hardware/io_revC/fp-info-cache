@@ -1,4 +1,4 @@
-19871457927310203
+19873104312955432
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -51359,20 +51359,6 @@ Inductor
 2
 2
 Evan's misc parts
-Jaguar ABC
-
-
-0
-10
-2
-Evan's misc parts
-Jaguar Dpad
-
-
-0
-4
-2
-Evan's misc parts
 LED_XZM2CRKM2DGFBB45SCCB
 
 
@@ -51540,6 +51526,27 @@ electronicsgoldmine_numpad
 0
 36
 36
+Evan's misc parts
+jaguar abc
+
+
+0
+32
+2
+Evan's misc parts
+jaguar dpad
+
+
+0
+4
+2
+Evan's misc parts
+jaguar keypad button
+
+
+0
+12
+2
 Evan's misc parts
 northstar db25
 09683535612-1
