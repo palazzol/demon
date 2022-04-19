@@ -24,27 +24,27 @@ class FakeSerial:
                 return [ord(c) for c in '{0:04X}'.format(self.simram[int(self.cmd[1:5],16)])]
             elif self.cmd[0] == ord("W"):
                 self.simram[int(self.cmd[1:5],16)] = int(self.cmd[5:9],16)
-                return [ self.cmd[0] ]
+                return [ord(c) for c in '{0:01X}\n'.format(self.cmd[0])]
             elif self.cmd[0] == ord("I"):
                 return [ord(c) for c in '{0:04X}'.format(self.simportram[int(self.cmd[1:5],16)])]
             elif self.cmd[0] == ord("O"):
                 self.simportram[int(self.cmd[1:5],16)] = int(self.cmd[5:9],16)
-                return [ self.cmd[0] ]
+                return [ord(c) for c in '{0:01X}\n'.format(self.cmd[0])]
             elif self.cmd[0] == ord("C"):
-                return [ self.cmd[0] ]
+                return []
         else:
             if self.cmd[0] == ord("R"):
-                return [ self.simram[int(self.cmd[1:5],16)] ]
+                return [ord(c) for c in '{0:02X}\n'.format(self.simram[int(self.cmd[1:5],16)])]
             elif self.cmd[0] == ord("W"):
                 self.simram[int(self.cmd[1:5],16)] = int(self.cmd[5:7],16)
-                return [ self.cmd[0] ]
+                return [ord(c) for c in '{0:01X}\n'.format(self.cmd[0])]
             elif self.cmd[0] == ord("I"):
-                return [ self.simportram[int(self.cmd[1:5],16)] ]
+                return [ord(c) for c in '{0:02X}\n'.format(self.simportram[int(self.cmd[1:5],16)])]
             elif self.cmd[0] == ord("O"):
                 self.simportram[int(self.cmd[1:5],16)] = int(self.cmd[5:7],16)
-                return [ self.cmd[0] ]
+                return [ord(c) for c in '{0:01X}\n'.format(self.cmd[0])]
             elif self.cmd[0] == ord("C"):
-                return [ self.cmd[0] ]
+                return []
     
 def DisplayString(s):
     print(s, end='', flush=True)
@@ -93,38 +93,50 @@ class DemonDebugger:
         print("BYE!")
         self.kb.set_normal_term()
 
+    def Read8Bits(self):
+        rv = self.ser.read(3)
+        v = 0
+        for i in range(0,2):
+            v <<= 4
+            v += hextable.find(chr(rv[i]))
+        return v
+
+    def Read16Bits(self):
+        # TBD - add cr later
+        rv = self.ser.read(4)
+        v = 0
+        for i in range(0,4):
+            v <<= 4
+            v += hextable.find(chr(rv[i]))
+        return v
+
     def MemoryRead(self,addr):
         cmd = 'R{0:04X}\n'.format(addr)
         self.ser.write(cmd.encode('ascii'))
         if self.global_args.mode == 16:
-            rv = self.ser.read(4)
-            v = 0
-            for i in range(0,4):
-                v <<= 4
-                v += hextable.find(chr(rv[i]))
-            return v
+            return self.Read16Bits()
         else:
-            return self.ser.read(1)[0]    
+            return self.Read8Bits() 
     
     def MemoryWrite(self,addr,data):
         if self.global_args.mode == 16:
             cmd = 'W{0:04X}{1:04X}\n'.format(addr,data)
             self.ser.write(cmd.encode('ascii'))
-            return self.ser.read(1)[0]
+            return self.Read8Bits()
         else:
             cmd = 'W{0:04X}{1:02X}\n'.format(addr,data)
             self.ser.write(cmd.encode('ascii'))
-            return self.ser.read(1)[0]        
+            return self.Read8Bits()        
     
     def PortRead(self,addr):
         cmd = 'I{0:04X}\n'.format(addr)
         self.ser.write(cmd.encode('ascii'))
-        return self.ser.read(1)[0]
+        return self.Read8Bits() 
     
     def PortWrite(self,addr,data):
         cmd = 'O{0:04X}{1:02X}\n'.format(addr,data)
         self.ser.write(cmd.encode('ascii'))
-        return self.ser.read(1)[0]
+        return self.Read8Bits() 
     
     def RemoteCall(self,addr):
         if self.global_args.sim:
