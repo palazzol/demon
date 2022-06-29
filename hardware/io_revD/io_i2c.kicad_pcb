@@ -1264,7 +1264,7 @@
 
   (footprint "Package_DIP:DIP-16_W7.62mm" (layer "F.Cu")
     (tedit 5A02E8C5) (tstamp 4078df6e-1c06-47bf-bc56-7d87a909499a)
-    (at 210.82 107.188)
+    (at 86.116 146.065)
     (descr "16-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)")
     (tags "THT DIP DIL PDIP 2.54mm 7.62mm 300mil")
     (property "Sheetfile" "io_i2c.kicad_sch")
