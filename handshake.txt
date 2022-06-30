@@ -1,0 +1,47 @@
+
+register read from target, write from arduino - wait, implemented in arduino
+        write also sets data from arduino ready
+        read clears data from arduino ready
+
+register write from target, read from arduino
+        write sets data from target ready
+        read clears data from target ready 
+
+2 status flipflops, read from either
+        data from target ready
+        data from arduino ready
+
+---
+
+cycles:
+
+target-
+
+400-47f read data from arduino, clear arduino data ready
+480-4ff read status bits
+500-5ff write to arduino, set target data ready
+
+arduino-
+
+Target/Ram 
+Read/Write 
+Control/Data 
+
+T,R,C read status bits
+T,R,D read data from target, clear target data ready
+T,W,D write data to target, set arduino data ready
+
+R,W,C clear counter
+R,R,D read ram data, inc counter
+R,W,D write ram data, inc counter
+
+T,W,C - write status?
+R,R,C - read counter?
+
+----
+
+Original version - needs new rom code, arduino, fet
+ROM IO I2C version - needs new rom code, product
+ROM IO parallel version - needs new rom code (uploaded), product
+
+

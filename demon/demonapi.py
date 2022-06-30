@@ -13,7 +13,7 @@ from ds1054z import DS1054Z
 import json
 
 # Set up comm with Rigol Scope
-scope = DS1054Z('192.168.1.110')
+scope = DS1054Z('192.168.4.72')
 print(scope.idn)
 chan1 = scope.get_waveform_samples(1)
 
@@ -21,7 +21,7 @@ chan1 = scope.get_waveform_samples(1)
 class args:
     pass
 
-args.port = 'COM11'
+args.port = 'COM4'
 args.chip = 'Z80'
 
 # These should be defaults
@@ -30,8 +30,11 @@ args.rate = 250000
 args.rtscts = False
 
 dd = DemonDebugger(args)
-sleep(1)
+print('A')
 
+sleep(3)
+
+"""
 # Load and Run Colortest program
 print('Loading')
 dd.Load(0xdf00,'colortest.bin')
@@ -39,10 +42,12 @@ sleep(1)
 print('Calling')
 dd.DoCall('DF00')
 sleep(1)
+"""
 
 # Reset color 0, gets rid of lingering colorburst
 dd.DoOut('0000 00')
 sleep(0.1)
+print('B')
 
 """
 # Now, cycle through all colors and record 3 channels of data

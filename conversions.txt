@@ -1,0 +1,7 @@
+
+
+// binary to hex
+srec_cat.exe -O XXXX.hex -Intel -address_length=2 -output_block_size=16 XXXX.bin -binary
+
+// hex to binary
+srec_cat.exe -O XXXX.bin -binary XXXX.hex -Intel

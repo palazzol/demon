@@ -1,0 +1,14 @@
+
+Z80:
+	astrocade cart image, romio
+	old sraider? - old romio
+	bit90 cart image? - old romio
+	refactor colortest?
+
+6502:
+	move ram to 0x7f
+	ref6502
+	asteroids - io, startup?
+	starshp1 - romio, watchdog
+
+others?
