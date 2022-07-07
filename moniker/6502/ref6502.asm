@@ -3,7 +3,7 @@
 ; by Frank Palazzolo
 ; For ROM IO Hardware
 ;
-	processor	6502
+        .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; You may need to adjust these variables for different targets
@@ -11,40 +11,36 @@
 
 ; RAM SETTINGS - usually in zero page
 
-RAMSTRT equ     $00     ;start of ram, needs 7 bytes starting here
-SSTACK	equ	$ff	;start of stack, needs some memory below this address
+RAMSTRT .equ    0x00    ;start of ram, needs 7 bytes starting here
+SSTACK	.equ	0xff	;start of stack, needs some memory below this address
 
 ; ROM SETTINGS - usually the last 2K of memory for 6502
 
-SCHIP   equ     $f800   ;start of chip memory mapping
+SCHIP   .equ     0xf800   ;start of chip memory mapping
 
-IOREG	equ	SCHIP+$0400	;reserved region for IO
-VECTORS	equ	SCHIP+$07fa	;reserved for vectors
+IOREGR	.equ	SCHIP+0x07a0	;reserved region for IO Read
+IOREGW	.equ	SCHIP+0x07c0	;reserved region for IO Write
+VECTORS	.equ	SCHIP+0x07fa	;reserved for vectors
 
 ; TIMER SETTING
-BIGDEL	equ	$0180   ;delay factor
+BIGDEL	.equ	0x0180   ;delay factor
 
-I2CRADR equ     $11    ;I2C read address  - I2C address 0x08
-I2CWADR equ     $10    ;I2C write address - I2C address 0x08
+I2CRADR .equ     0x11    ;I2C read address  - I2C address 0x08
+I2CWADR .equ     0x10    ;I2C write address - I2C address 0x08
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; RAM Variables	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-OUTBUF	equ	RAMSTRT	        ;buffer for output states
-B	equ	RAMSTRT+$01	;general purpose
-C	equ	RAMSTRT+$02	;general purpose
-CMDBUF0 equ	RAMSTRT+$03	;command buffer
-CMDBUF1 equ	RAMSTRT+$04	;command buffer
-CMDBUF2 equ	RAMSTRT+$05	;command buffer
-CMDBUF3 equ	RAMSTRT+$06	;command buffer
+OUTBUF	.equ	RAMSTRT	        ;buffer for output states
+B	.equ	RAMSTRT+0x01	;general purpose
+C	.equ	RAMSTRT+0x02	;general purpose
+CMDBUF0 .equ	RAMSTRT+0x03	;command buffer
+CMDBUF1 .equ	RAMSTRT+0x04	;command buffer
+CMDBUF2 .equ	RAMSTRT+0x05	;command buffer
+CMDBUF3 .equ	RAMSTRT+0x06	;command buffer
 
-	org	SCHIP	;last 2K of memory starts here
-
-        ds      $0600,$ff       ; fill front and io regions with $FF
-
-        ; Code fits into the last 512 bytes of memory
-        org     SCHIP+$0600     ;code starts here
+	.org	SCHIP	;last 2K of memory starts here
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This function is called once, and should be used do any game-specific
@@ -70,46 +66,46 @@ EVERY:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; NMI Handler
-NMI	rti             ;Don't do anything on an NMI
+NMI:	rti             ;Don't do anything on an NMI
 
-SETSCL	lda	OUTBUF
-	ora	#$01
+SETSCL:	lda	OUTBUF
+	ora	#0x01
         sta     OUTBUF
         tax
-        lda     IOREG,X
+        lda     IOREGW,X
 	jsr	I2CDLY
 	rts
 
-CLRSCL	lda	OUTBUF
-	and	#$fe
+CLRSCL:	lda	OUTBUF
+	and	#0xfe
 	sta	OUTBUF
         tax
-        lda     IOREG,X
+        lda     IOREGW,X
 	rts
 
-SETSDA	lda	OUTBUF
-	and	#$fd
+SETSDA:	lda	OUTBUF
+	and	#0xfd
         sta     OUTBUF
         tax
-        lda     IOREG,X
+        lda     IOREGW,X
 	jsr	I2CDLY
 	rts
 
-CLRSDA	lda	OUTBUF
-	ora	#$02
+CLRSDA:	lda	OUTBUF
+	ora	#0x02
         sta     OUTBUF
         tax
-        lda     IOREG,X
+        lda     IOREGW,X
 	jsr	I2CDLY
 	rts
 
-READSDA	ldx	OUTBUF
-        lda     IOREG,X
+READSDA:	ldx	OUTBUF
+        lda     IOREGR,X
         ror
 	rts				
 
 ; Delay for half a bit time
-I2CDLY	rts		; TBD - this is plenty?
+I2CDLY:	rts		; TBD - this is plenty?
 
 ; I2C Start Condition
 I2CSTART:
@@ -146,7 +142,7 @@ AHEAD:
         
 I2CWBYTE:
 	pha
-	lda	#$08
+	lda	#0x08
 	sta	B
 	pla
 ILOOP:
@@ -160,9 +156,9 @@ ILOOP:
 	rts
 	
 I2CRBYTE:
-        lda	#$08
+        lda	#0x08
 	sta	B
-	lda	#$00
+	lda	#0x00
 	sta	C
 LOOP3:
         jsr     I2CRBIT     ; get bit in carry flag
@@ -190,7 +186,7 @@ I2CRREQ:
         jmp     ENDI2C
     
 SKIP:                       ; If no device present, fake an idle response
-        lda     #$2e  ; '.'
+        lda     #0x2e  ; '.'
         sta     CMDBUF0
         jmp     ENDI2C
 
@@ -208,25 +204,25 @@ ENDI2C:
 POLL:
         jsr     I2CRREQ
         lda     CMDBUF0
-        cmp     #$52    	; 'R' - Read memory
+        cmp     #0x52    	; 'R' - Read memory
         beq     MREAD
-        cmp     #$57    	; 'W' - Write memory
+        cmp     #0x57    	; 'W' - Write memory
         beq	MWRITE
-        cmp     #$43    	; 'C' - Call subroutine
+        cmp     #0x43    	; 'C' - Call subroutine
         beq	REMCALL
         clc
         rts
 
 MREAD:
         jsr     LOADBC
-        ldy	#$00
-        lda	(B),Y
+        ldy	#0x00
+        lda	[B],Y
         jmp     SRESP
 MWRITE:
         jsr     LOADBC
         lda     CMDBUF3
-        sta     (B),Y
-        lda     #$57  	;'W'
+        sta     [B],Y
+        lda     #0x57  	;'W'
         jmp     SRESP
 LOADBC:
 	lda	CMDBUF2
@@ -241,16 +237,17 @@ RHERE:
         sec
         rts
 REMCALL:
-	lda	#(START-1)>>8
+	lda	#>(START-1)
         pha
-        lda	#(START-1)%256
+        lda	#<(START-1)
         pha
         jsr     LOADBC
-        jmp     (B)
+        jmp     [B]
         
 ;;;;;;;;;;
 	
-START	; TBD- INIT Stack Pointer!
+START:
+        sei             ; disable interrupts
 	ldx	#SSTACK
 	txs		; Init stack
 	cld		; No Decimal
@@ -261,7 +258,6 @@ MAIN:
         jsr     EVERY
         jsr     POLL
         bcs     MAIN
-
         lda	#BIGDEL>>8
         sta	B
         lda	#BIGDEL%256
@@ -278,13 +274,18 @@ DECBOTH:
 	dec	B
 	jmp	MLOOP
 
+        .org    IOREGW
+        
+        .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
+        .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
+
 ;       vectors
 
-	org	SCHIP+$07fa
+	.org	SCHIP+0x07fa
 
-	dc.w	NMI
-	dc.w	START
-	dc.w	START
+	.dw	NMI
+	.dw	START
+	.dw	START
 	
 	
 	

@@ -1,291 +1,369 @@
-------- FILE ref6502.asm LEVEL 1 PASS 2
-      1  10000 ????						;
-      2  10000 ????						; Moniker - 6502 Version
-      3  10000 ????						; by Frank Palazzolo
-      4  10000 ????						; For ROM IO Hardware
-      5  10000 ????						;
-      6  10000 ????				       processor	6502
-      7  10000 ????
-      8  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      9  10000 ????						; You may need to adjust these variables for different targets
-     10  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     11  10000 ????
-     12  10000 ????						; RAM SETTINGS - usually in zero page
-     13  10000 ????
-     14  10000 ????		00 00	    RAMSTRT    equ	$00	;start of ram, needs 7 bytes starting here
-     15  10000 ????		00 ff	    SSTACK     equ	$ff	;start of stack, needs some memory below this address
-     16  10000 ????
-     17  10000 ????						; ROM SETTINGS - usually the last 2K of memory for 6502
-     18  10000 ????
-     19  10000 ????		f8 00	    SCHIP      equ	$f800	;start of chip memory mapping
-     20  10000 ????
-     21  10000 ????		fc 00	    IOREG      equ	SCHIP+$0400	;reserved region for IO
-     22  10000 ????		ff fa	    VECTORS    equ	SCHIP+$07fa	;reserved for vectors
-     23  10000 ????
-     24  10000 ????						; TIMER SETTING
-     25  10000 ????		01 80	    BIGDEL     equ	$0180	;delay factor
-     26  10000 ????
-     27  10000 ????		00 11	    I2CRADR    equ	$11	;I2C read address  - I2C address 0x08
-     28  10000 ????		00 10	    I2CWADR    equ	$10	;I2C write address - I2C address 0x08
-     29  10000 ????
-     30  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     31  10000 ????						; RAM Variables
-     32  10000 ????						;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     33  10000 ????
-     34  10000 ????		00 00	    OUTBUF     equ	RAMSTRT	;buffer for output states
-     35  10000 ????		00 01	    B	       equ	RAMSTRT+$01	;general purpose
-     36  10000 ????		00 02	    C	       equ	RAMSTRT+$02	;general purpose
-     37  10000 ????		00 03	    CMDBUF0    equ	RAMSTRT+$03	;command buffer
-     38  10000 ????		00 04	    CMDBUF1    equ	RAMSTRT+$04	;command buffer
-     39  10000 ????		00 05	    CMDBUF2    equ	RAMSTRT+$05	;command buffer
-     40  10000 ????		00 06	    CMDBUF3    equ	RAMSTRT+$06	;command buffer
-     41  10000 ????
-     42  f800					      org	SCHIP	;last 2K of memory starts here
-     43  f800
-     44  f800		       ff ff ff ff*	      ds	$0600,$ff	; fill front and io regions with $FF
-     45  fe00
-     46  fe00							; Code fits into the last 512 bytes of memory
-     47  fe00					      org	SCHIP+$0600	;code starts here
-     48  fe00
-     49  fe00							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     50  fe00							; This function is called once, and should be used do any game-specific
-     51  fe00							; initialization that is required
-     52  fe00							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     53  fe00
-     54  fe00				   ONCE
-     55  fe00							;	 YOUR CODE CAN GO HERE
-     56  fe00		       60		      rts
-     57  fe01
-     58  fe01							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     59  fe01							; This function is called every time during the polling loop.	It can be
-     60  fe01							; used to run watchdog code, etc.  I have provided a simple delay loop
-     61  fe01							; so that the I2C slave is not overwhelmed
-     62  fe01							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     63  fe01
-     64  fe01				   EVERY
-     65  fe01							;	 YOUR CODE CAN GO HERE
-     66  fe01		       60		      rts
-     67  fe02
-     68  fe02							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     69  fe02							; Main Program code starts here
-     70  fe02							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     71  fe02
-     72  fe02							; NMI Handler
-     73  fe02		       40	   NMI	      rti		;Don't do anything on an NMI
-     74  fe03
-     75  fe03		       a5 00	   SETSCL     lda	OUTBUF
-     76  fe05		       09 01		      ora	#$01
-     77  fe07		       85 00		      sta	OUTBUF
-     78  fe09		       aa		      tax
-     79  fe0a		       bd 00 fc 	      lda	IOREG,X
-     80  fe0d		       20 3f fe 	      jsr	I2CDLY
-     81  fe10		       60		      rts
-     82  fe11
-     83  fe11		       a5 00	   CLRSCL     lda	OUTBUF
-     84  fe13		       29 fe		      and	#$fe
-     85  fe15		       85 00		      sta	OUTBUF
-     86  fe17		       aa		      tax
-     87  fe18		       bd 00 fc 	      lda	IOREG,X
-     88  fe1b		       60		      rts
-     89  fe1c
-     90  fe1c		       a5 00	   SETSDA     lda	OUTBUF
-     91  fe1e		       29 fd		      and	#$fd
-     92  fe20		       85 00		      sta	OUTBUF
-     93  fe22		       aa		      tax
-     94  fe23		       bd 00 fc 	      lda	IOREG,X
-     95  fe26		       20 3f fe 	      jsr	I2CDLY
-     96  fe29		       60		      rts
-     97  fe2a
-     98  fe2a		       a5 00	   CLRSDA     lda	OUTBUF
-     99  fe2c		       09 02		      ora	#$02
-    100  fe2e		       85 00		      sta	OUTBUF
-    101  fe30		       aa		      tax
-    102  fe31		       bd 00 fc 	      lda	IOREG,X
-    103  fe34		       20 3f fe 	      jsr	I2CDLY
-    104  fe37		       60		      rts
-    105  fe38
-    106  fe38		       a6 00	   READSDA    ldx	OUTBUF
-    107  fe3a		       bd 00 fc 	      lda	IOREG,X
-    108  fe3d		       6a		      ror
-    109  fe3e		       60		      rts
-    110  fe3f
-    111  fe3f							; Delay for half a bit time
-    112  fe3f		       60	   I2CDLY     rts		; TBD - this is plenty?
-    113  fe40
-    114  fe40							; I2C Start Condition
-    115  fe40				   I2CSTART
-    116  fe40		       20 2a fe 	      jsr	CLRSDA
-    117  fe43		       20 11 fe 	      jsr	CLRSCL
-    118  fe46		       60		      rts
-    119  fe47
-    120  fe47							; I2C Stop Condition
-    121  fe47							; Uses HL
-    122  fe47							; Destroys A
-    123  fe47				   I2CSTOP
-    124  fe47		       20 2a fe 	      jsr	CLRSDA
-    125  fe4a		       20 03 fe 	      jsr	SETSCL
-    126  fe4d		       20 1c fe 	      jsr	SETSDA
-    127  fe50		       60		      rts
-    128  fe51
-    129  fe51				   I2CRBIT
-    130  fe51		       20 1c fe 	      jsr	SETSDA
-    131  fe54		       20 03 fe 	      jsr	SETSCL
-    132  fe57		       20 38 fe 	      jsr	READSDA	; sets/clears carry flag
-    133  fe5a		       20 11 fe 	      jsr	CLRSCL
-    134  fe5d		       60		      rts		; carry flag still good here
-    135  fe5e
-    136  fe5e				   I2CWBIT
-    137  fe5e		       90 06		      bcc	DOCLR
-    138  fe60		       20 1c fe 	      jsr	SETSDA
-    139  fe63		       4c 69 fe 	      jmp	AHEAD
-    140  fe66				   DOCLR
-    141  fe66		       20 2a fe 	      jsr	CLRSDA
-    142  fe69				   AHEAD
-    143  fe69		       20 03 fe 	      jsr	SETSCL
-    144  fe6c		       20 11 fe 	      jsr	CLRSCL
-    145  fe6f		       60		      rts
-    146  fe70
-    147  fe70				   I2CWBYTE
-    148  fe70		       48		      pha
-    149  fe71		       a9 08		      lda	#$08
-    150  fe73		       85 01		      sta	B
-    151  fe75		       68		      pla
-    152  fe76				   ILOOP
-    153  fe76		       2a		      rol
-    154  fe77		       48		      pha
-    155  fe78		       20 5e fe 	      jsr	I2CWBIT
-    156  fe7b		       68		      pla
-    157  fe7c		       c6 01		      dec	B
-    158  fe7e		       d0 f6		      bne	ILOOP
-    159  fe80		       20 51 fe 	      jsr	I2CRBIT
-    160  fe83		       60		      rts
-    161  fe84
-    162  fe84				   I2CRBYTE
-    163  fe84		       a9 08		      lda	#$08
-    164  fe86		       85 01		      sta	B
-    165  fe88		       a9 00		      lda	#$00
-    166  fe8a		       85 02		      sta	C
-    167  fe8c				   LOOP3
-    168  fe8c		       20 51 fe 	      jsr	I2CRBIT	; get bit in carry flag
-    169  fe8f		       26 02		      rol	C	; rotate carry into bit0 of C register
-    170  fe91		       c6 01		      dec	B
-    171  fe93		       d0 f7		      bne	LOOP3
-    172  fe95		       18		      clc		; clear carry flag
-    173  fe96		       20 5e fe 	      jsr	I2CWBIT
-    174  fe99		       a5 02		      lda	C
-    175  fe9b		       60		      rts
-    176  fe9c
-    177  fe9c				   I2CRREQ
-    178  fe9c		       20 40 fe 	      jsr	I2CSTART
-    179  fe9f		       a9 11		      lda	#I2CRADR
-    180  fea1		       20 70 fe 	      jsr	I2CWBYTE
-    181  fea4		       b0 17		      bcs	SKIP
-    182  fea6		       20 84 fe 	      jsr	I2CRBYTE
-    183  fea9		       85 03		      sta	CMDBUF0
-    184  feab		       20 84 fe 	      jsr	I2CRBYTE
-    185  feae		       85 04		      sta	CMDBUF1
-    186  feb0		       20 84 fe 	      jsr	I2CRBYTE
-    187  feb3		       85 05		      sta	CMDBUF2
-    188  feb5		       20 84 fe 	      jsr	I2CRBYTE
-    189  feb8		       85 06		      sta	CMDBUF3
-    190  feba		       4c d1 fe 	      jmp	ENDI2C
-    191  febd
-    192  febd				   SKIP 		; If no device present, fake an idle response
-    193  febd		       a9 2e		      lda	#$2e	; '.'
-    194  febf		       85 03		      sta	CMDBUF0
-    195  fec1		       4c d1 fe 	      jmp	ENDI2C
-    196  fec4
-    197  fec4				   I2CSRESP
-    198  fec4		       48		      pha
-    199  fec5		       20 40 fe 	      jsr	I2CSTART
-    200  fec8		       a9 10		      lda	#I2CWADR
-    201  feca		       20 70 fe 	      jsr	I2CWBYTE
-    202  fecd		       68		      pla
-    203  fece		       20 70 fe 	      jsr	I2CWBYTE
-    204  fed1				   ENDI2C
-    205  fed1		       20 47 fe 	      jsr	I2CSTOP
-    206  fed4		       60		      rts
-    207  fed5
-    208  fed5				   POLL
-    209  fed5		       20 9c fe 	      jsr	I2CRREQ
-    210  fed8		       a5 03		      lda	CMDBUF0
-    211  feda		       c9 52		      cmp	#$52	; 'R' - Read memory
-    212  fedc		       f0 0a		      beq	MREAD
-    213  fede		       c9 57		      cmp	#$57	; 'W' - Write memory
-    214  fee0		       f0 10		      beq	MWRITE
-    215  fee2		       c9 43		      cmp	#$43	; 'C' - Call subroutine
-    216  fee4		       f0 26		      beq	REMCALL
-    217  fee6		       18		      clc
-    218  fee7		       60		      rts
-    219  fee8
-    220  fee8				   MREAD
-    221  fee8		       20 fe fe 	      jsr	LOADBC
-    222  feeb		       a0 00		      ldy	#$00
-    223  feed		       b1 01		      lda	(B),Y
-    224  feef		       4c 07 ff 	      jmp	SRESP
-    225  fef2				   MWRITE
-    226  fef2		       20 fe fe 	      jsr	LOADBC
-    227  fef5		       a5 06		      lda	CMDBUF3
-    228  fef7		       91 01		      sta	(B),Y
-    229  fef9		       a9 57		      lda	#$57	;'W'
-    230  fefb		       4c 07 ff 	      jmp	SRESP
-    231  fefe				   LOADBC
-    232  fefe		       a5 05		      lda	CMDBUF2
-    233  ff00		       85 01		      sta	B
-    234  ff02		       a5 04		      lda	CMDBUF1
-    235  ff04		       85 02		      sta	C
-    236  ff06		       60		      rts
-    237  ff07
-    238  ff07				   SRESP
-    239  ff07		       20 c4 fe 	      jsr	I2CSRESP
-    240  ff0a				   RHERE
-    241  ff0a		       38		      sec
-    242  ff0b		       60		      rts
-    243  ff0c				   REMCALL
-    244  ff0c		       a9 ff		      lda	#(START-1)>>8
-    245  ff0e		       48		      pha
-    246  ff0f		       a9 17		      lda	#(START-1)%256
-    247  ff11		       48		      pha
-    248  ff12		       20 fe fe 	      jsr	LOADBC
-    249  ff15		       6c 01 00 	      jmp	(B)
-    250  ff18
-    251  ff18							;;;;;;;;;;
-    252  ff18
-    253  ff18				   START		; TBD- INIT Stack Pointer!
-    254  ff18		       a2 ff		      ldx	#SSTACK
-    255  ff1a		       9a		      txs		; Init stack
-    256  ff1b		       d8		      cld		; No Decimal
-    257  ff1c		       20 00 fe 	      jsr	ONCE
-    258  ff1f
-    259  ff1f							; Main routine
-    260  ff1f				   MAIN
-    261  ff1f		       20 01 fe 	      jsr	EVERY
-    262  ff22		       20 d5 fe 	      jsr	POLL
-    263  ff25		       b0 f8		      bcs	MAIN
-    264  ff27
-    265  ff27		       a9 01		      lda	#BIGDEL>>8
-    266  ff29		       85 01		      sta	B
-    267  ff2b		       a9 80		      lda	#BIGDEL%256
-    268  ff2d		       85 02		      sta	C
-    269  ff2f				   MLOOP
-    270  ff2f		       a5 02		      lda	C
-    271  ff31		       f0 05		      beq	DECBOTH
-    272  ff33		       c6 02		      dec	C
-    273  ff35		       4c 2f ff 	      jmp	MLOOP
-    274  ff38				   DECBOTH
-    275  ff38		       a5 01		      lda	B
-    276  ff3a		       f0 e3		      beq	MAIN
-    277  ff3c		       c6 02		      dec	C
-    278  ff3e		       c6 01		      dec	B
-    279  ff40		       4c 2f ff 	      jmp	MLOOP
-    280  ff43
-    281  ff43							;	 vectors
-    282  ff43
-    283  fffa					      org	SCHIP+$07fa
-    284  fffa
-    285  fffa		       02 fe		      dc.w	NMI
-    286  fffc		       18 ff		      dc.w	START
-    287  fffe		       18 ff		      dc.w	START
-    288  10000
-    289  10000
-    290  10000
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 1
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+
+
+                              1 ;
+                              2 ; Moniker - 6502 Version
+                              3 ; by Frank Palazzolo
+                              4 ; For ROM IO Hardware
+                              5 ;
+                              6         .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
+                              7 
+                              8 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              9 ; You may need to adjust these variables for different targets
+                             10 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             11 
+                             12 ; RAM SETTINGS - usually in zero page
+                             13 
+                     0000    14 RAMSTRT .equ    0x00    ;start of ram, needs 7 bytes starting here
+                     00FF    15 SSTACK	.equ	0xff	;start of stack, needs some memory below this address
+                             16 
+                             17 ; ROM SETTINGS - usually the last 2K of memory for 6502
+                             18 
+                     F800    19 SCHIP   .equ     0xf800   ;start of chip memory mapping
+                             20 
+                     FFA0    21 IOREGR	.equ	SCHIP+0x07a0	;reserved region for IO Read
+                     FFC0    22 IOREGW	.equ	SCHIP+0x07c0	;reserved region for IO Write
+                     FFFA    23 VECTORS	.equ	SCHIP+0x07fa	;reserved for vectors
+                             24 
+                             25 ; TIMER SETTING
+                     0180    26 BIGDEL	.equ	0x0180   ;delay factor
+                             27 
+                     0011    28 I2CRADR .equ     0x11    ;I2C read address  - I2C address 0x08
+                     0010    29 I2CWADR .equ     0x10    ;I2C write address - I2C address 0x08
+                             30 
+                             31 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             32 ; RAM Variables	
+                             33 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             34 
+                     0000    35 OUTBUF	.equ	RAMSTRT	        ;buffer for output states
+                     0001    36 B	.equ	RAMSTRT+0x01	;general purpose
+                     0002    37 C	.equ	RAMSTRT+0x02	;general purpose
+                     0003    38 CMDBUF0 .equ	RAMSTRT+0x03	;command buffer
+                     0004    39 CMDBUF1 .equ	RAMSTRT+0x04	;command buffer
+                     0005    40 CMDBUF2 .equ	RAMSTRT+0x05	;command buffer
+                     0006    41 CMDBUF3 .equ	RAMSTRT+0x06	;command buffer
+                             42 
+   F800                      43 	.org	SCHIP	;last 2K of memory starts here
+                             44 
+                             45 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             46 ; This function is called once, and should be used do any game-specific
+                             47 ; initialization that is required
+                             48 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             49 
+   F800                      50 ONCE:
+                             51 ;       YOUR CODE CAN GO HERE
+   F800 60            [ 6]   52         rts
+                             53 
+                             54 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             55 ; This function is called every time during the polling loop.  It can be
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 2
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+
+
+                             56 ; used to run watchdog code, etc.  I have provided a simple delay loop
+                             57 ; so that the I2C slave is not overwhelmed
+                             58 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             59 
+   F801                      60 EVERY:
+                             61 ;       YOUR CODE CAN GO HERE
+   F801 60            [ 6]   62         rts
+                             63 
+                             64 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             65 ; Main Program code starts here
+                             66 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             67 
+                             68 ; NMI Handler
+   F802 40            [ 6]   69 NMI:	rti             ;Don't do anything on an NMI
+                             70 
+   F803 A5 00         [ 3]   71 SETSCL:	lda	OUTBUF
+   F805 09 01         [ 2]   72 	ora	#0x01
+   F807 85 00         [ 3]   73         sta     OUTBUF
+   F809 AA            [ 2]   74         tax
+   F80A BD C0 FF      [ 5]   75         lda     IOREGW,X
+   F80D 20 3F F8      [ 6]   76 	jsr	I2CDLY
+   F810 60            [ 6]   77 	rts
+                             78 
+   F811 A5 00         [ 3]   79 CLRSCL:	lda	OUTBUF
+   F813 29 FE         [ 2]   80 	and	#0xfe
+   F815 85 00         [ 3]   81 	sta	OUTBUF
+   F817 AA            [ 2]   82         tax
+   F818 BD C0 FF      [ 5]   83         lda     IOREGW,X
+   F81B 60            [ 6]   84 	rts
+                             85 
+   F81C A5 00         [ 3]   86 SETSDA:	lda	OUTBUF
+   F81E 29 FD         [ 2]   87 	and	#0xfd
+   F820 85 00         [ 3]   88         sta     OUTBUF
+   F822 AA            [ 2]   89         tax
+   F823 BD C0 FF      [ 5]   90         lda     IOREGW,X
+   F826 20 3F F8      [ 6]   91 	jsr	I2CDLY
+   F829 60            [ 6]   92 	rts
+                             93 
+   F82A A5 00         [ 3]   94 CLRSDA:	lda	OUTBUF
+   F82C 09 02         [ 2]   95 	ora	#0x02
+   F82E 85 00         [ 3]   96         sta     OUTBUF
+   F830 AA            [ 2]   97         tax
+   F831 BD C0 FF      [ 5]   98         lda     IOREGW,X
+   F834 20 3F F8      [ 6]   99 	jsr	I2CDLY
+   F837 60            [ 6]  100 	rts
+                            101 
+   F838 A6 00         [ 3]  102 READSDA:	ldx	OUTBUF
+   F83A BD A0 FF      [ 5]  103         lda     IOREGR,X
+   F83D 6A            [ 2]  104         ror
+   F83E 60            [ 6]  105 	rts				
+                            106 
+                            107 ; Delay for half a bit time
+   F83F 60            [ 6]  108 I2CDLY:	rts		; TBD - this is plenty?
+                            109 
+                            110 ; I2C Start Condition
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 3
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+
+
+   F840                     111 I2CSTART:
+   F840 20 2A F8      [ 6]  112         jsr    CLRSDA      
+   F843 20 11 F8      [ 6]  113         jsr    CLRSCL
+   F846 60            [ 6]  114         rts
+                            115 
+                            116 ; I2C Stop Condition
+                            117 ; Uses HL
+                            118 ; Destroys A
+   F847                     119 I2CSTOP:
+   F847 20 2A F8      [ 6]  120         jsr    CLRSDA
+   F84A 20 03 F8      [ 6]  121         jsr    SETSCL
+   F84D 20 1C F8      [ 6]  122         jsr    SETSDA
+   F850 60            [ 6]  123         rts
+                            124         
+   F851                     125 I2CRBIT:
+   F851 20 1C F8      [ 6]  126 	jsr	SETSDA
+   F854 20 03 F8      [ 6]  127 	jsr	SETSCL
+   F857 20 38 F8      [ 6]  128 	jsr	READSDA	; sets/clears carry flag
+   F85A 20 11 F8      [ 6]  129 	jsr     CLRSCL
+   F85D 60            [ 6]  130 	rts		; carry flag still good here
+                            131 
+   F85E                     132 I2CWBIT:
+   F85E 90 06         [ 4]  133 	bcc	DOCLR
+   F860 20 1C F8      [ 6]  134 	jsr	SETSDA
+   F863 4C 69 F8      [ 3]  135 	jmp	AHEAD
+   F866                     136 DOCLR:
+   F866 20 2A F8      [ 6]  137 	jsr	CLRSDA
+   F869                     138 AHEAD:
+   F869 20 03 F8      [ 6]  139 	jsr	SETSCL
+   F86C 20 11 F8      [ 6]  140 	jsr	CLRSCL
+   F86F 60            [ 6]  141 	rts
+                            142         
+   F870                     143 I2CWBYTE:
+   F870 48            [ 3]  144 	pha
+   F871 A9 08         [ 2]  145 	lda	#0x08
+   F873 85 01         [ 3]  146 	sta	B
+   F875 68            [ 4]  147 	pla
+   F876                     148 ILOOP:
+   F876 2A            [ 2]  149 	rol
+   F877 48            [ 3]  150 	pha
+   F878 20 5E F8      [ 6]  151 	jsr	I2CWBIT
+   F87B 68            [ 4]  152 	pla
+   F87C C6 01         [ 5]  153 	dec	B
+   F87E D0 F6         [ 4]  154 	bne	ILOOP
+   F880 20 51 F8      [ 6]  155 	jsr	I2CRBIT
+   F883 60            [ 6]  156 	rts
+                            157 	
+   F884                     158 I2CRBYTE:
+   F884 A9 08         [ 2]  159         lda	#0x08
+   F886 85 01         [ 3]  160 	sta	B
+   F888 A9 00         [ 2]  161 	lda	#0x00
+   F88A 85 02         [ 3]  162 	sta	C
+   F88C                     163 LOOP3:
+   F88C 20 51 F8      [ 6]  164         jsr     I2CRBIT     ; get bit in carry flag
+   F88F 26 02         [ 5]  165         rol     C           ; rotate carry into bit0 of C register
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 4
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+
+
+   F891 C6 01         [ 5]  166         dec	B
+   F893 D0 F7         [ 4]  167         bne    	LOOP3
+   F895 18            [ 2]  168         clc           	    ; clear carry flag              
+   F896 20 5E F8      [ 6]  169         jsr   	I2CWBIT
+   F899 A5 02         [ 3]  170         lda  	C
+   F89B 60            [ 6]  171         rts
+                            172 
+   F89C                     173 I2CRREQ:
+   F89C 20 40 F8      [ 6]  174         jsr     I2CSTART
+   F89F A9 11         [ 2]  175         lda	#I2CRADR
+   F8A1 20 70 F8      [ 6]  176         jsr     I2CWBYTE
+   F8A4 B0 17         [ 4]  177         bcs     SKIP
+   F8A6 20 84 F8      [ 6]  178         jsr     I2CRBYTE
+   F8A9 85 03         [ 3]  179         sta     CMDBUF0
+   F8AB 20 84 F8      [ 6]  180         jsr     I2CRBYTE
+   F8AE 85 04         [ 3]  181         sta     CMDBUF1
+   F8B0 20 84 F8      [ 6]  182         jsr     I2CRBYTE
+   F8B3 85 05         [ 3]  183         sta     CMDBUF2
+   F8B5 20 84 F8      [ 6]  184         jsr     I2CRBYTE
+   F8B8 85 06         [ 3]  185         sta     CMDBUF3
+   F8BA 4C D1 F8      [ 3]  186         jmp     ENDI2C
+                            187     
+   F8BD                     188 SKIP:                       ; If no device present, fake an idle response
+   F8BD A9 2E         [ 2]  189         lda     #0x2e  ; '.'
+   F8BF 85 03         [ 3]  190         sta     CMDBUF0
+   F8C1 4C D1 F8      [ 3]  191         jmp     ENDI2C
+                            192 
+   F8C4                     193 I2CSRESP:
+   F8C4 48            [ 3]  194         pha
+   F8C5 20 40 F8      [ 6]  195         jsr     I2CSTART
+   F8C8 A9 10         [ 2]  196         lda     #I2CWADR
+   F8CA 20 70 F8      [ 6]  197         jsr     I2CWBYTE
+   F8CD 68            [ 4]  198         pla
+   F8CE 20 70 F8      [ 6]  199         jsr     I2CWBYTE
+   F8D1                     200 ENDI2C:
+   F8D1 20 47 F8      [ 6]  201         jsr     I2CSTOP
+   F8D4 60            [ 6]  202         rts
+                            203 
+   F8D5                     204 POLL:
+   F8D5 20 9C F8      [ 6]  205         jsr     I2CRREQ
+   F8D8 A5 03         [ 3]  206         lda     CMDBUF0
+   F8DA C9 52         [ 2]  207         cmp     #0x52    	; 'R' - Read memory
+   F8DC F0 0A         [ 4]  208         beq     MREAD
+   F8DE C9 57         [ 2]  209         cmp     #0x57    	; 'W' - Write memory
+   F8E0 F0 10         [ 4]  210         beq	MWRITE
+   F8E2 C9 43         [ 2]  211         cmp     #0x43    	; 'C' - Call subroutine
+   F8E4 F0 26         [ 4]  212         beq	REMCALL
+   F8E6 18            [ 2]  213         clc
+   F8E7 60            [ 6]  214         rts
+                            215 
+   F8E8                     216 MREAD:
+   F8E8 20 FE F8      [ 6]  217         jsr     LOADBC
+   F8EB A0 00         [ 2]  218         ldy	#0x00
+   F8ED B1 01         [ 6]  219         lda	[B],Y
+   F8EF 4C 07 F9      [ 3]  220         jmp     SRESP
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 5
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+
+
+   F8F2                     221 MWRITE:
+   F8F2 20 FE F8      [ 6]  222         jsr     LOADBC
+   F8F5 A5 06         [ 3]  223         lda     CMDBUF3
+   F8F7 91 01         [ 6]  224         sta     [B],Y
+   F8F9 A9 57         [ 2]  225         lda     #0x57  	;'W'
+   F8FB 4C 07 F9      [ 3]  226         jmp     SRESP
+   F8FE                     227 LOADBC:
+   F8FE A5 05         [ 3]  228 	lda	CMDBUF2
+   F900 85 01         [ 3]  229 	sta	B
+   F902 A5 04         [ 3]  230 	lda	CMDBUF1
+   F904 85 02         [ 3]  231 	sta	C
+   F906 60            [ 6]  232 	rts
+                            233 	
+   F907                     234 SRESP:
+   F907 20 C4 F8      [ 6]  235         jsr    I2CSRESP
+   F90A                     236 RHERE:
+   F90A 38            [ 2]  237         sec
+   F90B 60            [ 6]  238         rts
+   F90C                     239 REMCALL:
+   F90C A9 F9         [ 2]  240 	lda	#>(START-1)
+   F90E 48            [ 3]  241         pha
+   F90F A9 17         [ 2]  242         lda	#<(START-1)
+   F911 48            [ 3]  243         pha
+   F912 20 FE F8      [ 6]  244         jsr     LOADBC
+   F915 6C 01 00      [ 5]  245         jmp     [B]
+                            246         
+                            247 ;;;;;;;;;;
+                            248 	
+   F918                     249 START:
+   F918 78            [ 2]  250         sei             ; disable interrupts
+   F919 A2 FF         [ 2]  251 	ldx	#SSTACK
+   F91B 9A            [ 2]  252 	txs		; Init stack
+   F91C D8            [ 2]  253 	cld		; No Decimal
+   F91D 20 00 F8      [ 6]  254         jsr     ONCE
+                            255 
+                            256 ; Main routine
+   F920                     257 MAIN:
+   F920 20 01 F8      [ 6]  258         jsr     EVERY
+   F923 20 D5 F8      [ 6]  259         jsr     POLL
+   F926 B0 F8         [ 4]  260         bcs     MAIN
+   F928 A9 01         [ 2]  261         lda	#BIGDEL>>8
+   F92A 85 01         [ 3]  262         sta	B
+   F92C A9 80         [ 2]  263         lda	#BIGDEL%256
+   F92E 85 02         [ 3]  264         sta	C
+   F930                     265 MLOOP:
+   F930 A5 02         [ 3]  266         lda	C
+   F932 F0 05         [ 4]  267         beq	DECBOTH
+   F934 C6 02         [ 5]  268         dec	C
+   F936 4C 30 F9      [ 3]  269         jmp	MLOOP
+   F939                     270 DECBOTH:
+   F939 A5 01         [ 3]  271 	lda	B
+   F93B F0 E3         [ 4]  272 	beq	MAIN
+   F93D C6 02         [ 5]  273 	dec	C
+   F93F C6 01         [ 5]  274 	dec	B
+   F941 4C 30 F9      [ 3]  275 	jmp	MLOOP
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 6
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+
+
+                            276 
+   FFC0                     277         .org    IOREGW
+                            278         
+   FFC0 00 01 02 03 04 05   279         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
+        06 07 08 09 0A 0B
+        0C 0D 0E 0F
+   FFD0 10 11 12 13 14 15   280         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
+        16 17 18 19 1A 1B
+        1C 1D 1E 1F
+                            281 
+                            282 ;       vectors
+                            283 
+   FFFA                     284 	.org	SCHIP+0x07fa
+                            285 
+   FFFA 02 F8               286 	.dw	NMI
+   FFFC 18 F9               287 	.dw	START
+   FFFE 18 F9               288 	.dw	START
+                            289 	
+                            290 	
+                            291 	
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 7
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+Symbol Table
+
+    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
+    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
+  2 AHEAD              F869 R   |     B              =   0001 
+    BIGDEL         =   0180     |     C              =   0002 
+  2 CLRSCL             F811 R   |   2 CLRSDA             F82A R
+    CMDBUF0        =   0003     |     CMDBUF1        =   0004 
+    CMDBUF2        =   0005     |     CMDBUF3        =   0006 
+  2 DECBOTH            F939 R   |   2 DOCLR              F866 R
+  2 ENDI2C             F8D1 R   |   2 EVERY              F801 R
+  2 I2CDLY             F83F R   |     I2CRADR        =   0011 
+  2 I2CRBIT            F851 R   |   2 I2CRBYTE           F884 R
+  2 I2CRREQ            F89C R   |   2 I2CSRESP           F8C4 R
+  2 I2CSTART           F840 R   |   2 I2CSTOP            F847 R
+    I2CWADR        =   0010     |   2 I2CWBIT            F85E R
+  2 I2CWBYTE           F870 R   |   2 ILOOP              F876 R
+    IOREGR         =   FFA0     |     IOREGW         =   FFC0 
+  2 LOADBC             F8FE R   |   2 LOOP3              F88C R
+  2 MAIN               F920 R   |   2 MLOOP              F930 R
+  2 MREAD              F8E8 R   |   2 MWRITE             F8F2 R
+  2 NMI                F802 R   |   2 ONCE               F800 R
+    OUTBUF         =   0000     |   2 POLL               F8D5 R
+    RAMSTRT        =   0000     |   2 READSDA            F838 R
+  2 REMCALL            F90C R   |   2 RHERE              F90A R
+    SCHIP          =   F800     |   2 SETSCL             F803 R
+  2 SETSDA             F81C R   |   2 SKIP               F8BD R
+  2 SRESP              F907 R   |     SSTACK         =   00FF 
+  2 START              F918 R   |     VECTORS        =   FFFA 
+
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 8
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+
+Area Table
+
+[_CSEG]
+   0 _CODE            size    0   flags C080
+   2 CODE1            size    0   flags  908
+[_DSEG]
+   1 _DATA            size    0   flags C0C0
+

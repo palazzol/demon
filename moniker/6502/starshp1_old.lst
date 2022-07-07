@@ -1,0 +1,446 @@
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 1
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+
+
+                              1 ;
+                              2 ; Moniker - 6502 Version
+                              3 ; by Frank Palazzolo
+                              4 ; For ROM IO Hardware
+                              5 ;
+                              6         .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
+                              7 
+                              8 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                              9 ; You may need to adjust these variables for different targets
+                             10 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             11 
+                             12 ; RAM SETTINGS - usually in zero page
+                             13 
+                     0000    14 RAMSTRT .equ    0x00    ;start of ram, needs 7 bytes starting here
+                     00FF    15 SSTACK	.equ	0xff	;start of stack, needs some memory below this address
+                             16 
+                             17 ; ROM SETTINGS - usually the last 2K of memory for 6502
+                             18 
+                     F800    19 SCHIP   .equ     0xf800   ;start of chip memory mapping
+                             20 
+                     FC00    21 IOREGR	.equ	SCHIP+0x0400	;reserved region for IO Read
+                     FD00    22 IOREGW	.equ	SCHIP+0x0500	;reserved region for IO Write
+                     FFFA    23 VECTORS	.equ	SCHIP+0x07fa	;reserved for vectors
+                             24 
+                             25 ; TIMER SETTING
+                     0180    26 BIGDEL	.equ	0x0180   ;delay factor
+                             27 
+                     0011    28 I2CRADR .equ     0x11    ;I2C read address  - I2C address 0x08
+                     0010    29 I2CWADR .equ     0x10    ;I2C write address - I2C address 0x08
+                             30 
+                             31 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             32 ; RAM Variables	
+                             33 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             34 
+                     0000    35 OUTBUF	.equ	RAMSTRT	        ;buffer for output states
+                     0001    36 B	.equ	RAMSTRT+0x01	;general purpose
+                     0002    37 C	.equ	RAMSTRT+0x02	;general purpose
+                     0003    38 CMDBUF0 .equ	RAMSTRT+0x03	;command buffer
+                     0004    39 CMDBUF1 .equ	RAMSTRT+0x04	;command buffer
+                     0005    40 CMDBUF2 .equ	RAMSTRT+0x05	;command buffer
+                     0006    41 CMDBUF3 .equ	RAMSTRT+0x06	;command buffer
+                             42 
+                             43 ;	.org	SCHIP	;last 2K of memory starts here
+                             44 
+                             45 ;        .ds     0x0500,0xff       ; fill front and io read region with $FF
+                             46 
+   FD00                      47         .org    IOREGW
+                             48         
+   FD00 00 01 02 03 04 05    49         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
+        06 07 08 09 0A 0B
+        0C 0D 0E 0F
+   FD10 10 11 12 13 14 15    50         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
+        16 17 18 19 1A 1B
+        1C 1D 1E 1F
+   FD20 20 21 22 23 24 25    51         .DB     0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2a,0x2b,0x2c,0x2d,0x2e,0x2f
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 2
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+
+
+        26 27 28 29 2A 2B
+        2C 2D 2E 2F
+   FD30 30 31 32 33 34 35    52         .DB     0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3a,0x3b,0x3c,0x3d,0x3e,0x3f
+        36 37 38 39 3A 3B
+        3C 3D 3E 3F
+   FD40 40 41 42 43 44 45    53         .DB     0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x4b,0x4c,0x4d,0x4e,0x4f
+        46 47 48 49 4A 4B
+        4C 4D 4E 4F
+   FD50 50 51 52 53 54 55    54         .DB     0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5a,0x5b,0x5c,0x5d,0x5e,0x5f
+        56 57 58 59 5A 5B
+        5C 5D 5E 5F
+   FD60 60 61 62 63 64 65    55         .DB     0x60,0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f
+        66 67 68 69 6A 6B
+        6C 6D 6E 6F
+   FD70 70 71 72 73 74 75    56         .DB     0x70,0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7a,0x7b,0x7c,0x7d,0x7e,0x7f
+        76 77 78 79 7A 7B
+        7C 7D 7E 7F
+   FD80 80 81 82 83 84 85    57         .DB     0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f
+        86 87 88 89 8A 8B
+        8C 8D 8E 8F
+   FD90 90 91 92 93 94 95    58         .DB     0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9a,0x9b,0x9c,0x9d,0x9e,0x9f
+        96 97 98 99 9A 9B
+        9C 9D 9E 9F
+   FDA0 A0 A1 A2 A3 A4 A5    59         .DB     0xa0,0xa1,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf
+        A6 A7 A8 A9 AA AB
+        AC AD AE AF
+   FDB0 B0 B1 B2 B3 B4 B5    60         .DB     0xb0,0xb1,0xb2,0xb3,0xb4,0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xbb,0xbc,0xbd,0xbe,0xbf
+        B6 B7 B8 B9 BA BB
+        BC BD BE BF
+   FDC0 C0 C1 C2 C3 C4 C5    61         .DB     0xc0,0xc1,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf
+        C6 C7 C8 C9 CA CB
+        CC CD CE CF
+   FDD0 D0 D1 D2 D3 D4 D5    62         .DB     0xd0,0xd1,0xd2,0xd3,0xd4,0xd5,0xd6,0xd7,0xd8,0xd9,0xda,0xdb,0xdc,0xdd,0xde,0xdf
+        D6 D7 D8 D9 DA DB
+        DC DD DE DF
+   FDE0 E0 E1 E2 E3 E4 E5    63         .DB     0xe0,0xe1,0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,0xeb,0xec,0xed,0xee,0xef
+        E6 E7 E8 E9 EA EB
+        EC ED EE EF
+   FDF0 F0 F1 F2 F3 F4 F5    64         .DB     0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xfa,0xfb,0xfc,0xfd,0xfe,0xff
+        F6 F7 F8 F9 FA FB
+        FC FD FE FF
+                             65 
+                             66         ; Code fits into the last 512 bytes of memory
+   FE00                      67         .org     SCHIP+0x0600     ;code starts here
+                             68 
+                             69 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             70 ; This function is called once, and should be used do any game-specific
+                             71 ; initialization that is required
+                             72 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             73 
+   FE00                      74 ONCE:
+                             75 ;       YOUR CODE CAN GO HERE
+   FE00 60            [ 6]   76         rts
+                             77 
+                             78 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 3
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+
+
+                             79 ; This function is called every time during the polling loop.  It can be
+                             80 ; used to run watchdog code, etc.  I have provided a simple delay loop
+                             81 ; so that the I2C slave is not overwhelmed
+                             82 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             83 
+   FE01                      84 EVERY:
+                             85         ; reset the starshp1 watchdog
+   FE01 A9 01         [ 2]   86 	lda     #0x01
+   FE03 8D 06 DC      [ 4]   87 	sta     0xdc06
+   FE06 A9 FE         [ 2]   88 	lda     #0xfe
+   FE08 8D 00 CC      [ 4]   89 	sta     0xcc00
+   FE0B 8D 00 CC      [ 4]   90 	sta     0xcc00
+   FE0E 8D 00 CC      [ 4]   91 	sta     0xcc00
+   FE11 8D 00 CC      [ 4]   92 	sta     0xcc00
+   FE14 8D 00 CC      [ 4]   93 	sta     0xcc00
+   FE17 8D 00 CC      [ 4]   94 	sta     0xcc00
+   FE1A 8D 00 CC      [ 4]   95 	sta     0xcc00
+   FE1D 8D 00 CC      [ 4]   96 	sta     0xcc00
+   FE20 8D 00 CC      [ 4]   97 	sta     0xcc00
+   FE23 8D 00 CC      [ 4]   98 	sta     0xcc00
+   FE26 8D 00 CC      [ 4]   99 	sta     0xcc00
+   FE29 8D 00 CC      [ 4]  100 	sta     0xcc00
+   FE2C 8D 00 CC      [ 4]  101 	sta     0xcc00
+   FE2F 8D 00 CC      [ 4]  102 	sta     0xcc00
+   FE32 8D 00 CC      [ 4]  103 	sta     0xcc00
+   FE35 8D 00 CC      [ 4]  104 	sta     0xcc00
+   FE38 8D 00 CC      [ 4]  105 	sta     0xcc00
+   FE3B 8D 00 CC      [ 4]  106 	sta     0xcc00
+   FE3E 8D 00 CC      [ 4]  107 	sta     0xcc00
+   FE41 8D 00 CC      [ 4]  108 	sta     0xcc00
+   FE44 8D 06 DC      [ 4]  109 	sta     0xdc06
+                            110 
+   FE47 60            [ 6]  111         rts
+                            112 
+                            113 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                            114 ; Main Program code starts here
+                            115 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                            116 
+                            117 ; NMI Handler
+   FE48 40            [ 6]  118 NMI:	rti             ;Don't do anything on an NMI
+                            119 
+   FE49 A5 00         [ 3]  120 SETSCL:	lda	OUTBUF
+   FE4B 09 01         [ 2]  121 	ora	#0x01
+   FE4D 85 00         [ 3]  122         sta     OUTBUF
+   FE4F AA            [ 2]  123         tax
+   FE50 BD 00 FD      [ 5]  124         lda     IOREGW,X
+   FE53 20 85 FE      [ 6]  125 	jsr	I2CDLY
+   FE56 60            [ 6]  126 	rts
+                            127 
+   FE57 A5 00         [ 3]  128 CLRSCL:	lda	OUTBUF
+   FE59 29 FE         [ 2]  129 	and	#0xfe
+   FE5B 85 00         [ 3]  130 	sta	OUTBUF
+   FE5D AA            [ 2]  131         tax
+   FE5E BD 00 FD      [ 5]  132         lda     IOREGW,X
+   FE61 60            [ 6]  133 	rts
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 4
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+
+
+                            134 
+   FE62 A5 00         [ 3]  135 SETSDA:	lda	OUTBUF
+   FE64 29 FD         [ 2]  136 	and	#0xfd
+   FE66 85 00         [ 3]  137         sta     OUTBUF
+   FE68 AA            [ 2]  138         tax
+   FE69 BD 00 FD      [ 5]  139         lda     IOREGW,X
+   FE6C 20 85 FE      [ 6]  140 	jsr	I2CDLY
+   FE6F 60            [ 6]  141 	rts
+                            142 
+   FE70 A5 00         [ 3]  143 CLRSDA:	lda	OUTBUF
+   FE72 09 02         [ 2]  144 	ora	#0x02
+   FE74 85 00         [ 3]  145         sta     OUTBUF
+   FE76 AA            [ 2]  146         tax
+   FE77 BD 00 FD      [ 5]  147         lda     IOREGW,X
+   FE7A 20 85 FE      [ 6]  148 	jsr	I2CDLY
+   FE7D 60            [ 6]  149 	rts
+                            150 
+   FE7E A6 00         [ 3]  151 READSDA:	ldx	OUTBUF
+   FE80 BD 00 FC      [ 5]  152         lda     IOREGR,X
+   FE83 6A            [ 2]  153         ror
+   FE84 60            [ 6]  154 	rts				
+                            155 
+                            156 ; Delay for half a bit time
+   FE85 60            [ 6]  157 I2CDLY:	rts		; TBD - this is plenty?
+                            158 
+                            159 ; I2C Start Condition
+   FE86                     160 I2CSTART:
+   FE86 20 70 FE      [ 6]  161         jsr    CLRSDA      
+   FE89 20 57 FE      [ 6]  162         jsr    CLRSCL
+   FE8C 60            [ 6]  163         rts
+                            164 
+                            165 ; I2C Stop Condition
+                            166 ; Uses HL
+                            167 ; Destroys A
+   FE8D                     168 I2CSTOP:
+   FE8D 20 70 FE      [ 6]  169         jsr    CLRSDA
+   FE90 20 49 FE      [ 6]  170         jsr    SETSCL
+   FE93 20 62 FE      [ 6]  171         jsr    SETSDA
+   FE96 60            [ 6]  172         rts
+                            173         
+   FE97                     174 I2CRBIT:
+   FE97 20 62 FE      [ 6]  175 	jsr	SETSDA
+   FE9A 20 49 FE      [ 6]  176 	jsr	SETSCL
+   FE9D 20 7E FE      [ 6]  177 	jsr	READSDA	; sets/clears carry flag
+   FEA0 20 57 FE      [ 6]  178 	jsr     CLRSCL
+   FEA3 60            [ 6]  179 	rts		; carry flag still good here
+                            180 
+   FEA4                     181 I2CWBIT:
+   FEA4 90 06         [ 4]  182 	bcc	DOCLR
+   FEA6 20 62 FE      [ 6]  183 	jsr	SETSDA
+   FEA9 4C AF FE      [ 3]  184 	jmp	AHEAD
+   FEAC                     185 DOCLR:
+   FEAC 20 70 FE      [ 6]  186 	jsr	CLRSDA
+   FEAF                     187 AHEAD:
+   FEAF 20 49 FE      [ 6]  188 	jsr	SETSCL
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 5
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+
+
+   FEB2 20 57 FE      [ 6]  189 	jsr	CLRSCL
+   FEB5 60            [ 6]  190 	rts
+                            191         
+   FEB6                     192 I2CWBYTE:
+   FEB6 48            [ 3]  193 	pha
+   FEB7 A9 08         [ 2]  194 	lda	#0x08
+   FEB9 85 01         [ 3]  195 	sta	B
+   FEBB 68            [ 4]  196 	pla
+   FEBC                     197 ILOOP:
+   FEBC 2A            [ 2]  198 	rol
+   FEBD 48            [ 3]  199 	pha
+   FEBE 20 A4 FE      [ 6]  200 	jsr	I2CWBIT
+   FEC1 68            [ 4]  201 	pla
+   FEC2 C6 01         [ 5]  202 	dec	B
+   FEC4 D0 F6         [ 4]  203 	bne	ILOOP
+   FEC6 20 97 FE      [ 6]  204 	jsr	I2CRBIT
+   FEC9 60            [ 6]  205 	rts
+                            206 	
+   FECA                     207 I2CRBYTE:
+   FECA A9 08         [ 2]  208         lda	#0x08
+   FECC 85 01         [ 3]  209 	sta	B
+   FECE A9 00         [ 2]  210 	lda	#0x00
+   FED0 85 02         [ 3]  211 	sta	C
+   FED2                     212 LOOP3:
+   FED2 20 97 FE      [ 6]  213         jsr     I2CRBIT     ; get bit in carry flag
+   FED5 26 02         [ 5]  214         rol     C           ; rotate carry into bit0 of C register
+   FED7 C6 01         [ 5]  215         dec	B
+   FED9 D0 F7         [ 4]  216         bne    	LOOP3
+   FEDB 18            [ 2]  217         clc           	    ; clear carry flag              
+   FEDC 20 A4 FE      [ 6]  218         jsr   	I2CWBIT
+   FEDF A5 02         [ 3]  219         lda  	C
+   FEE1 60            [ 6]  220         rts
+                            221 
+   FEE2                     222 I2CRREQ:
+   FEE2 20 86 FE      [ 6]  223         jsr     I2CSTART
+   FEE5 A9 11         [ 2]  224         lda	#I2CRADR
+   FEE7 20 B6 FE      [ 6]  225         jsr     I2CWBYTE
+   FEEA B0 17         [ 4]  226         bcs     SKIP
+   FEEC 20 CA FE      [ 6]  227         jsr     I2CRBYTE
+   FEEF 85 03         [ 3]  228         sta     CMDBUF0
+   FEF1 20 CA FE      [ 6]  229         jsr     I2CRBYTE
+   FEF4 85 04         [ 3]  230         sta     CMDBUF1
+   FEF6 20 CA FE      [ 6]  231         jsr     I2CRBYTE
+   FEF9 85 05         [ 3]  232         sta     CMDBUF2
+   FEFB 20 CA FE      [ 6]  233         jsr     I2CRBYTE
+   FEFE 85 06         [ 3]  234         sta     CMDBUF3
+   FF00 4C 17 FF      [ 3]  235         jmp     ENDI2C
+                            236     
+   FF03                     237 SKIP:                       ; If no device present, fake an idle response
+   FF03 A9 2E         [ 2]  238         lda     #0x2e  ; '.'
+   FF05 85 03         [ 3]  239         sta     CMDBUF0
+   FF07 4C 17 FF      [ 3]  240         jmp     ENDI2C
+                            241 
+   FF0A                     242 I2CSRESP:
+   FF0A 48            [ 3]  243         pha
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 6
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+
+
+   FF0B 20 86 FE      [ 6]  244         jsr     I2CSTART
+   FF0E A9 10         [ 2]  245         lda     #I2CWADR
+   FF10 20 B6 FE      [ 6]  246         jsr     I2CWBYTE
+   FF13 68            [ 4]  247         pla
+   FF14 20 B6 FE      [ 6]  248         jsr     I2CWBYTE
+   FF17                     249 ENDI2C:
+   FF17 20 8D FE      [ 6]  250         jsr     I2CSTOP
+   FF1A 60            [ 6]  251         rts
+                            252 
+   FF1B                     253 POLL:
+   FF1B 20 E2 FE      [ 6]  254         jsr     I2CRREQ
+   FF1E A5 03         [ 3]  255         lda     CMDBUF0
+   FF20 C9 52         [ 2]  256         cmp     #0x52    	; 'R' - Read memory
+   FF22 F0 0A         [ 4]  257         beq     MREAD
+   FF24 C9 57         [ 2]  258         cmp     #0x57    	; 'W' - Write memory
+   FF26 F0 10         [ 4]  259         beq	MWRITE
+   FF28 C9 43         [ 2]  260         cmp     #0x43    	; 'C' - Call subroutine
+   FF2A F0 26         [ 4]  261         beq	REMCALL
+   FF2C 18            [ 2]  262         clc
+   FF2D 60            [ 6]  263         rts
+                            264 
+   FF2E                     265 MREAD:
+   FF2E 20 44 FF      [ 6]  266         jsr     LOADBC
+   FF31 A0 00         [ 2]  267         ldy	#0x00
+   FF33 B1 01         [ 6]  268         lda	[B],Y
+   FF35 4C 4D FF      [ 3]  269         jmp     SRESP
+   FF38                     270 MWRITE:
+   FF38 20 44 FF      [ 6]  271         jsr     LOADBC
+   FF3B A5 06         [ 3]  272         lda     CMDBUF3
+   FF3D 91 01         [ 6]  273         sta     [B],Y
+   FF3F A9 57         [ 2]  274         lda     #0x57  	;'W'
+   FF41 4C 4D FF      [ 3]  275         jmp     SRESP
+   FF44                     276 LOADBC:
+   FF44 A5 05         [ 3]  277 	lda	CMDBUF2
+   FF46 85 01         [ 3]  278 	sta	B
+   FF48 A5 04         [ 3]  279 	lda	CMDBUF1
+   FF4A 85 02         [ 3]  280 	sta	C
+   FF4C 60            [ 6]  281 	rts
+                            282 	
+   FF4D                     283 SRESP:
+   FF4D 20 0A FF      [ 6]  284         jsr    I2CSRESP
+   FF50                     285 RHERE:
+   FF50 38            [ 2]  286         sec
+   FF51 60            [ 6]  287         rts
+   FF52                     288 REMCALL:
+   FF52 A9 FF         [ 2]  289 	lda	#>(START-1)
+   FF54 48            [ 3]  290         pha
+   FF55 A9 5D         [ 2]  291         lda	#<(START-1)
+   FF57 48            [ 3]  292         pha
+   FF58 20 44 FF      [ 6]  293         jsr     LOADBC
+   FF5B 6C 01 00      [ 5]  294         jmp     [B]
+                            295         
+                            296 ;;;;;;;;;;
+                            297 	
+   FF5E                     298 START:
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 7
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+
+
+   FF5E 78            [ 2]  299         sei             ; disable interrupts
+   FF5F A2 FF         [ 2]  300 	ldx	#SSTACK
+   FF61 9A            [ 2]  301 	txs		; Init stack
+   FF62 D8            [ 2]  302 	cld		; No Decimal
+   FF63 20 00 FE      [ 6]  303         jsr     ONCE
+                            304 
+                            305 ; Main routine
+   FF66                     306 MAIN:
+   FF66 20 01 FE      [ 6]  307         jsr     EVERY
+   FF69 20 1B FF      [ 6]  308         jsr     POLL
+   FF6C B0 F8         [ 4]  309         bcs     MAIN
+   FF6E A9 01         [ 2]  310         lda	#BIGDEL>>8
+   FF70 85 01         [ 3]  311         sta	B
+   FF72 A9 80         [ 2]  312         lda	#BIGDEL%256
+   FF74 85 02         [ 3]  313         sta	C
+   FF76                     314 MLOOP:
+   FF76 A5 02         [ 3]  315         lda	C
+   FF78 F0 05         [ 4]  316         beq	DECBOTH
+   FF7A C6 02         [ 5]  317         dec	C
+   FF7C 4C 76 FF      [ 3]  318         jmp	MLOOP
+   FF7F                     319 DECBOTH:
+   FF7F A5 01         [ 3]  320 	lda	B
+   FF81 F0 E3         [ 4]  321 	beq	MAIN
+   FF83 C6 02         [ 5]  322 	dec	C
+   FF85 C6 01         [ 5]  323 	dec	B
+   FF87 4C 76 FF      [ 3]  324 	jmp	MLOOP
+                            325 
+                            326 ;       vectors
+                            327 
+   FFFA                     328 	.org	SCHIP+0x07fa
+                            329 
+   FFFA 48 FE               330 	.dw	NMI
+   FFFC 5E FF               331 	.dw	START
+   FFFE 5E FF               332 	.dw	START
+                            333 	
+                            334 	
+                            335 	
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 8
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+Symbol Table
+
+    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
+    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
+  2 AHEAD              FEAF R   |     B              =   0001 
+    BIGDEL         =   0180     |     C              =   0002 
+  2 CLRSCL             FE57 R   |   2 CLRSDA             FE70 R
+    CMDBUF0        =   0003     |     CMDBUF1        =   0004 
+    CMDBUF2        =   0005     |     CMDBUF3        =   0006 
+  2 DECBOTH            FF7F R   |   2 DOCLR              FEAC R
+  2 ENDI2C             FF17 R   |   2 EVERY              FE01 R
+  2 I2CDLY             FE85 R   |     I2CRADR        =   0011 
+  2 I2CRBIT            FE97 R   |   2 I2CRBYTE           FECA R
+  2 I2CRREQ            FEE2 R   |   2 I2CSRESP           FF0A R
+  2 I2CSTART           FE86 R   |   2 I2CSTOP            FE8D R
+    I2CWADR        =   0010     |   2 I2CWBIT            FEA4 R
+  2 I2CWBYTE           FEB6 R   |   2 ILOOP              FEBC R
+    IOREGR         =   FC00     |     IOREGW         =   FD00 
+  2 LOADBC             FF44 R   |   2 LOOP3              FED2 R
+  2 MAIN               FF66 R   |   2 MLOOP              FF76 R
+  2 MREAD              FF2E R   |   2 MWRITE             FF38 R
+  2 NMI                FE48 R   |   2 ONCE               FE00 R
+    OUTBUF         =   0000     |   2 POLL               FF1B R
+    RAMSTRT        =   0000     |   2 READSDA            FE7E R
+  2 REMCALL            FF52 R   |   2 RHERE              FF50 R
+    SCHIP          =   F800     |   2 SETSCL             FE49 R
+  2 SETSDA             FE62 R   |   2 SKIP               FF03 R
+  2 SRESP              FF4D R   |     SSTACK         =   00FF 
+  2 START              FF5E R   |     VECTORS        =   FFFA 
+
+ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 9
+Hexadecimal [16-Bits]                                 Wed Jul  6 23:40:04 2022
+
+Area Table
+
+[_CSEG]
+   0 _CODE            size    0   flags C080
+   2 CODE1            size    0   flags  908
+[_DSEG]
+   1 _DATA            size    0   flags C0C0
+
