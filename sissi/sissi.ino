@@ -12,7 +12,7 @@
 #define PIN_A8          (4)
 #define PIN_A9          (5)
 #define PIN_A10         (6)
-#define PIN_nWR_ENABLE  (7)
+
 #define PIN_IO_SCL      (8)
 #define PIN_IO_SDA      (9)
 #define PIN_138_ENABLE  (A3)
@@ -29,11 +29,8 @@ BBI2C bbi2c;
 
 void setup() {
   // Disable Write!
-  digitalWrite(PIN_nWR_ENABLE, HIGH);
-  pinMode(PIN_nWR_ENABLE, OUTPUT);
-  
-  pinMode(PIN_PROGRAM_WR, OUTPUT);
   digitalWrite(PIN_PROGRAM_WR, HIGH);
+  pinMode(PIN_PROGRAM_WR, OUTPUT);
 
   pinMode(PIN_PROGRAM_nOE, INPUT);
   pinMode(PIN_A8, INPUT);
@@ -211,8 +208,6 @@ int ProcessUploadLine(char line_buffer[], int buf_length)
     if (checksum != checksum2)
       return 7;
     if (data_type == 0) {
-      // data ready to write
-      digitalWrite(PIN_PROGRAM_WR, LOW);
       for(int j=0;j<data_length;j++)
       {
         uint8_t data = DecodeByte(line_buffer[9+2*j],line_buffer[10+2*j]);
@@ -226,9 +221,10 @@ int ProcessUploadLine(char line_buffer[], int buf_length)
         d[1] = data;
         I2CWrite(&bbi2c, I2C_ADDRESS_IOEXP, &d[0], 2);
         delay(1);
-        digitalWrite(PIN_nWR_ENABLE, LOW);
+        // data write
+        digitalWrite(PIN_PROGRAM_WR, LOW);
         delay(1);
-        digitalWrite(PIN_nWR_ENABLE, HIGH);
+        digitalWrite(PIN_PROGRAM_WR, HIGH);
         //Serial.print(address,HEX);
         //Serial.print(" ");
         //Serial.println(data,HEX);
