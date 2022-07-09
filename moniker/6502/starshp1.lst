@@ -1,5 +1,5 @@
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 1
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 
 
@@ -59,7 +59,7 @@ Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
                              54 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                              55 ; This function is called every time during the polling loop.  It can be
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 2
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 
 
@@ -112,19 +112,19 @@ Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
    F856 60            [ 6]  102 	rts
                             103 
    F857 A5 00         [ 3]  104 CLRSCL:	lda	OUTBUF
-   F859 29 FE         [ 2]  105 	and	#0xfe
+   F859 29 1E         [ 2]  105 	and	#0x1e
    F85B 85 00         [ 3]  106 	sta	OUTBUF
    F85D AA            [ 2]  107         tax
    F85E BD C0 FF      [ 5]  108         lda     IOREGW,X
    F861 60            [ 6]  109 	rts
                             110 
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 3
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 
 
    F862 A5 00         [ 3]  111 SETSDA:	lda	OUTBUF
-   F864 29 FD         [ 2]  112 	and	#0xfd
+   F864 29 1D         [ 2]  112 	and	#0x1d
    F866 85 00         [ 3]  113         sta     OUTBUF
    F868 AA            [ 2]  114         tax
    F869 BD C0 FF      [ 5]  115         lda     IOREGW,X
@@ -179,7 +179,7 @@ Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
    F8AF 20 49 F8      [ 6]  164 	jsr	SETSCL
    F8B2 20 57 F8      [ 6]  165 	jsr	CLRSCL
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 4
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 
 
@@ -239,7 +239,7 @@ Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
    F90A 48            [ 3]  219         pha
    F90B 20 86 F8      [ 6]  220         jsr     I2CSTART
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 5
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 
 
@@ -299,57 +299,59 @@ Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
    F95E                     274 START:
    F95E 78            [ 2]  275         sei             ; disable interrupts
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 6
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 
 
    F95F A2 FF         [ 2]  276 	ldx	#SSTACK
    F961 9A            [ 2]  277 	txs		; Init stack
    F962 D8            [ 2]  278 	cld		; No Decimal
-   F963 20 00 F8      [ 6]  279         jsr     ONCE
-                            280 
-                            281 ; Main routine
-   F966                     282 MAIN:
-   F966 20 01 F8      [ 6]  283         jsr     EVERY
-   F969 20 1B F9      [ 6]  284         jsr     POLL
-   F96C B0 F8         [ 4]  285         bcs     MAIN
-   F96E A9 01         [ 2]  286         lda	#BIGDEL>>8
-   F970 85 01         [ 3]  287         sta	B
-   F972 A9 80         [ 2]  288         lda	#BIGDEL%256
-   F974 85 02         [ 3]  289         sta	C
-   F976                     290 MLOOP:
-   F976 A5 02         [ 3]  291         lda	C
-   F978 F0 05         [ 4]  292         beq	DECBOTH
-   F97A C6 02         [ 5]  293         dec	C
-   F97C 4C 76 F9      [ 3]  294         jmp	MLOOP
-   F97F                     295 DECBOTH:
-   F97F A5 01         [ 3]  296 	lda	B
-   F981 F0 E3         [ 4]  297 	beq	MAIN
-   F983 C6 02         [ 5]  298 	dec	C
-   F985 C6 01         [ 5]  299 	dec	B
-   F987 4C 76 F9      [ 3]  300 	jmp	MLOOP
-                            301 
-   FFC0                     302         .org    IOREGW
-                            303         
-   FFC0 00 01 02 03 04 05   304         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
+   F963 A9 00         [ 2]  279         lda     #0x00
+   F965 85 00         [ 3]  280         sta     OUTBUF
+   F967 20 00 F8      [ 6]  281         jsr     ONCE
+                            282 
+                            283 ; Main routine
+   F96A                     284 MAIN:
+   F96A 20 01 F8      [ 6]  285         jsr     EVERY
+   F96D 20 1B F9      [ 6]  286         jsr     POLL
+   F970 B0 F8         [ 4]  287         bcs     MAIN
+   F972 A9 01         [ 2]  288         lda	#BIGDEL>>8
+   F974 85 01         [ 3]  289         sta	B
+   F976 A9 80         [ 2]  290         lda	#BIGDEL%256
+   F978 85 02         [ 3]  291         sta	C
+   F97A                     292 MLOOP:
+   F97A A5 02         [ 3]  293         lda	C
+   F97C F0 05         [ 4]  294         beq	DECBOTH
+   F97E C6 02         [ 5]  295         dec	C
+   F980 4C 7A F9      [ 3]  296         jmp	MLOOP
+   F983                     297 DECBOTH:
+   F983 A5 01         [ 3]  298 	lda	B
+   F985 F0 E3         [ 4]  299 	beq	MAIN
+   F987 C6 02         [ 5]  300 	dec	C
+   F989 C6 01         [ 5]  301 	dec	B
+   F98B 4C 7A F9      [ 3]  302 	jmp	MLOOP
+                            303 
+   FFC0                     304         .org    IOREGW
+                            305         
+   FFC0 00 01 02 03 04 05   306         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
         06 07 08 09 0A 0B
         0C 0D 0E 0F
-   FFD0 10 11 12 13 14 15   305         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
+   FFD0 10 11 12 13 14 15   307         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
         16 17 18 19 1A 1B
         1C 1D 1E 1F
-                            306 
-                            307 ;       vectors
                             308 
-   FFFA                     309 	.org	SCHIP+0x07fa
+                            309 ;       vectors
                             310 
-   FFFA 48 F8               311 	.dw	NMI
-   FFFC 5E F9               312 	.dw	START
-   FFFE 5E F9               313 	.dw	START
-                            314 	
-                            315 	
+   FFFA                     311 	.org	SCHIP+0x07fa
+                            312 
+   FFFA 48 F8               313 	.dw	NMI
+   FFFC 5E F9               314 	.dw	START
+   FFFE 5E F9               315 	.dw	START
                             316 	
+                            317 	
+                            318 	
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 7
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 Symbol Table
 
@@ -360,7 +362,7 @@ Symbol Table
   2 CLRSCL             F857 R   |   2 CLRSDA             F870 R
     CMDBUF0        =   0003     |     CMDBUF1        =   0004 
     CMDBUF2        =   0005     |     CMDBUF3        =   0006 
-  2 DECBOTH            F97F R   |   2 DOCLR              F8AC R
+  2 DECBOTH            F983 R   |   2 DOCLR              F8AC R
   2 ENDI2C             F917 R   |   2 EVERY              F801 R
   2 I2CDLY             F885 R   |     I2CRADR        =   0011 
   2 I2CRBIT            F897 R   |   2 I2CRBYTE           F8CA R
@@ -370,7 +372,7 @@ Symbol Table
   2 I2CWBYTE           F8B6 R   |   2 ILOOP              F8BC R
     IOREGR         =   FFA0     |     IOREGW         =   FFC0 
   2 LOADBC             F944 R   |   2 LOOP3              F8D2 R
-  2 MAIN               F966 R   |   2 MLOOP              F976 R
+  2 MAIN               F96A R   |   2 MLOOP              F97A R
   2 MREAD              F92E R   |   2 MWRITE             F938 R
   2 NMI                F848 R   |   2 ONCE               F800 R
     OUTBUF         =   0000     |   2 POLL               F91B R
@@ -382,7 +384,7 @@ Symbol Table
   2 START              F95E R   |     VECTORS        =   FFFA 
 
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 8
-Hexadecimal [16-Bits]                                 Wed Jul  6 23:43:29 2022
+Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
 
 Area Table
 

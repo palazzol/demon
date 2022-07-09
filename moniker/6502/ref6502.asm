@@ -77,14 +77,14 @@ SETSCL:	lda	OUTBUF
 	rts
 
 CLRSCL:	lda	OUTBUF
-	and	#0xfe
+	and	#0x1e
 	sta	OUTBUF
         tax
         lda     IOREGW,X
 	rts
 
 SETSDA:	lda	OUTBUF
-	and	#0xfd
+	and	#0x1d
         sta     OUTBUF
         tax
         lda     IOREGW,X
@@ -251,6 +251,8 @@ START:
 	ldx	#SSTACK
 	txs		; Init stack
 	cld		; No Decimal
+        lda     #0x00
+        sta     OUTBUF
         jsr     ONCE
 
 ; Main routine
