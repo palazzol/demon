@@ -1,9 +1,8 @@
-IOREG    .equ   STRTADD+0x0400
-IOREGR   .equ	STRTADD+0x0400    ;reserved region for IO READ
-IOREGW   .equ	STRTADD+0x0500    ;reserved region for IO WRITE
+
+; For Demon Debugger Hardware - Rev D 
 
 ; Set the SCL pin high
-; D is the global coin counter buffer
+; D is the global output buffer
 ; Destroys A
 SETSCL:
         LD      A,D
@@ -11,6 +10,7 @@ SETSCL:
         LD      D,A
         PUSH    HL
         LD      H,#>IOREGW
+        ADD     A,#<IOREGW 
         LD      L,A
         LD      A,(HL)
         POP     HL
@@ -18,28 +18,30 @@ SETSCL:
         RET
     
 ; Set the SCL pin low
-; D is the global coin counter buffer
+; D is the global output buffer
 ; Destroys A
 CLRSCL:
         LD      A,D
-        AND     0xFE
+        AND     0x1E
         LD      D,A
         PUSH    HL
         LD      H,#>IOREGW
+        ADD     A,#<IOREGW 
         LD      L,A
         LD      A,(HL)
         POP     HL
         RET
 
 ; Set the DOUT pin low
-; D is the global coin counter buffer
+; D is the global output buffer
 ; Destroys A 
 SETSDA:
         LD      A,D
-        AND     0xFD
+        AND     0x1D
         LD      D,A
         PUSH    HL
         LD      H,#>IOREGW
+        ADD     A,#<IOREGW 
         LD      L,A
         LD      A,(HL)
         POP     HL
@@ -47,7 +49,7 @@ SETSDA:
         RET
 
 ; Set the DOUT pin high
-; D is the global coin counter buffer
+; D is the global output buffer
 ; Destroys A  
 CLRSDA:
         LD      A,D
@@ -55,6 +57,7 @@ CLRSDA:
         LD      D,A
         PUSH    HL
         LD      H,#>IOREGW
+        ADD     A,#<IOREGW 
         LD      L,A
         LD      A,(HL)
         POP     HL
@@ -67,6 +70,7 @@ READSDA:
         LD      A,D
         PUSH    HL
         LD      H,#>IOREGR
+        ADD     A,#<IOREGR
         LD      L,A
         LD      A,(HL)
         POP     HL

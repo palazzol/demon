@@ -185,6 +185,7 @@ REMCALL:
 INIT:
         LD      SP,RAMADDR  ; have to set valid SP
         LD      IX,CMDBUF   ; Easy to index command buffer
+        LD      D,#0x00     ; initialize D to prevent index overflow
         
         CALL    ONCE
 
