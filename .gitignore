@@ -3,4 +3,8 @@
 *.hlr
 *.rel
 *.s19
+*.lst
+*.sym
+*.map
+
 save/
