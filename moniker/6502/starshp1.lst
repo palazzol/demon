@@ -1,5 +1,5 @@
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 1
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 
 
@@ -59,7 +59,7 @@ Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
                              54 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                              55 ; This function is called every time during the polling loop.  It can be
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 2
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 
 
@@ -119,7 +119,7 @@ Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
    F861 60            [ 6]  109 	rts
                             110 
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 3
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 
 
@@ -179,7 +179,7 @@ Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
    F8AF 20 49 F8      [ 6]  164 	jsr	SETSCL
    F8B2 20 57 F8      [ 6]  165 	jsr	CLRSCL
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 4
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 
 
@@ -239,7 +239,7 @@ Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
    F90A 48            [ 3]  219         pha
    F90B 20 86 F8      [ 6]  220         jsr     I2CSTART
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 5
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 
 
@@ -299,7 +299,7 @@ Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
    F95E                     274 START:
    F95E 78            [ 2]  275         sei             ; disable interrupts
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 6
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 
 
@@ -351,7 +351,7 @@ Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
                             317 	
                             318 	
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 7
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 Symbol Table
 
@@ -384,7 +384,7 @@ Symbol Table
   2 START              F95E R   |     VECTORS        =   FFFA 
 
 ASxxxx Assembler V05.31  (Rockwell 6502/6510/65C02)                     Page 8
-Hexadecimal [16-Bits]                                 Fri Jul  8 21:01:29 2022
+Hexadecimal [16-Bits]                                 Thu Jul 14 08:36:32 2022
 
 Area Table
 
