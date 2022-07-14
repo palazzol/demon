@@ -4,7 +4,7 @@ cd ..
 cd startrek
 call build.bat
 cd ..
-cd sraider2
+cd sraider
 call build.bat
 cd ..
 cd z80ref

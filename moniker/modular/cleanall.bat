@@ -4,7 +4,7 @@ cd ..
 cd startrek
 call ..\tools\clean.bat
 cd ..
-cd sraider2
+cd sraider
 call ..\tools\clean.bat
 cd ..
 cd z80ref
