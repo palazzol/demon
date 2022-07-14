@@ -1,8 +1,3 @@
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 1
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-
-
                               1 ;
                               2 ; Moniker - Z80 Version
                               3 ; by Frank Palazzolo
@@ -58,11 +53,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
    804A 7A            [ 4]   48         LD      A,D
    804B F6 01         [ 7]   49         OR      0x01
    804D 57            [ 4]   50         LD      D,A
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 2
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-
-
    804E E5            [11]   51         PUSH    HL
    804F 26 C0         [ 7]   52         LD      H,0xc0
    8051 6F            [ 4]   53         LD      L,A
@@ -118,11 +108,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
                             103 
                             104 ; Read the DIN pin 
                             105 ; returns bit in carry flag    
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 3
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-
-
    8082                     106 READSDA:
    8082 21 00 A0      [10]  107         LD      HL,DATAIN
    8085 7E            [ 7]  108         LD      A,(HL)      ;perform a read into bit0
@@ -178,11 +163,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
                             158 
                             159 ; I2C Write Byte routine
                             160 ; Takes A
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 4
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-
-
                             161 ; Destroys B
                             162 ; Returns carry bit
    80BB                     163 I2CWBYTE:
@@ -238,11 +218,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
                             213     
    8105                     214 SKIP:                       ; If no device present, fake an idle response
    8105 3E 2E         [ 7]  215         LD      A,0x2e  ; '.'
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 5
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-
-
    8107 DD 77 00      [19]  216         LD      (IX),A
    810A 18 0D         [12]  217         JR      ENDI2C
                             218 
@@ -298,11 +273,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
    815A 4F            [ 4]  268         LD      C,A
    815B C9            [10]  269         RET
    815C                     270 PREAD:
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 6
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-
-
    815C CD 53 81      [17]  271         CALL    LOADBC
    815F ED 78         [12]  272         IN      A,(C)
    8161 18 0A         [12]  273         JR      SRESP
@@ -342,43 +312,3 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
                             307 
                             308     
                             309 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 7
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-Symbol Table
-
-    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
-    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
-  2 AHEAD              80B4 R   |     BIGDEL         =   0180 
-  2 CLRSCL             8058 R   |   2 CLRSDA             8074 R
-    CMDBUF         =   77F0     |     DATAIN         =   A000 
-  2 DOCLR              80B1 R   |   2 ENDI2C             8119 R
-  2 I2CDELAY           8089 R   |     I2CRADR        =   0011 
-  2 I2CRBIT            809B R   |   2 I2CRBYTE           80CC R
-  2 I2CRREQ            80E1 R   |   2 I2CSRESP           810C R
-  2 I2CSTART           808A R   |   2 I2CSTOP            8091 R
-    I2CWADR        =   0010     |   2 I2CWBIT            80AA R
-  2 I2CWBYTE           80BB R   |   2 ILOOP              80BD R
-  2 INIT               817A R   |   2 LOADBC             8153 R
-  2 LOADHL             8139 R   |   2 LOOP3              80D0 R
-  2 MAIN               8181 R   |   2 MLOOP              8189 R
-  2 MREAD              8142 R   |   2 MWRITE             8148 R
-    OUTBUF         =   77FF     |   2 POLL               811D R
-  2 PREAD              815C R   |   2 PWRITE             8163 R
-  2 READSDA            8082 R   |   2 REMCALL            8172 R
-  2 RHERE              8170 R   |   2 SETSCL             804A R
-  2 SETSDA             8066 R   |   2 SKIP               8105 R
-  2 SRESP              816D R   |     SSTACK         =   77F0 
-  2 START              8046 R
-
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 8
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:31:34 2020
-
-Area Table
-
-[_CSEG]
-   0 _CODE            size    0   flags C080
-   2 CODE1            size 8190   flags  908
-[_DSEG]
-   1 _DATA            size    0   flags C0C0
-

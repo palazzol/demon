@@ -1,8 +1,3 @@
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 1
-Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
-
-
-
                               1 ;
                               2 ; Moniker - Z80 Version
                               3 ; by Frank Palazzolo
@@ -58,11 +53,6 @@ Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
    001E C9            [10]   53         RET
                              54 
                              55 ; Set the DOUT pin high
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 2
-Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
-
-
-
                              56 ; Destroys A, B and C 
    001F                      57 CLRSDA:
    001F 06 03         [ 7]   58         LD      B,0x03
@@ -118,11 +108,6 @@ Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
    004F 30 05         [12]  108         JR      NC,DOCLR
    0051 CD 15 00      [17]  109         CALL    SETSDA
    0054 18 03         [12]  110         JR      AHEAD
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 3
-Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
-
-
-
    0056                     111 DOCLR:
    0056 CD 1F 00      [17]  112         CALL    CLRSDA
    0059                     113 AHEAD:
@@ -178,11 +163,6 @@ Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
    008F                     163 I2CRREQ:
    008F CD 2F 00      [17]  164         CALL    I2CSTART
    0092 3E 11         [ 7]  165         LD      A,I2CRADR
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 4
-Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
-
-
-
    0094 CD 69 00      [17]  166         CALL    I2CWBYTE
    0097 38 1A         [12]  167         JR      C,SKIP
    0099 CD 7A 00      [17]  168         CALL    I2CRBYTE
@@ -238,11 +218,6 @@ Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
    00F0                     218 MREAD:
    00F0 CD 01 01      [17]  219         CALL    LOADBC
    00F3 0A            [ 7]  220         LD      A,(BC)
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 5
-Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
-
-
-
    00F4 18 25         [12]  221         JR      SRESP
    00F6                     222 MWRITE:
    00F6 CD 01 01      [17]  223         CALL    LOADBC
@@ -297,43 +272,3 @@ Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
                             272 
                             273     
                             274 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 6
-Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
-
-Symbol Table
-
-    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
-    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
-  2 AHEAD              0059 R   |     BIGDEL         =   0180 
-    CCPORT         =   0016     |   2 CLRSCL             000E R
-  2 CLRSDA             001F R   |     CMDBUF         =   DFF0 
-  2 DOCLR              0056 R   |     DSPORT         =   0013 
-  2 ENDI2C             00C7 R   |   2 I2CDELAY           002E R
-    I2CRADR        =   0011     |   2 I2CRBIT            0040 R
-  2 I2CRBYTE           007A R   |   2 I2CRREQ            008F R
-  2 I2CSRESP           00BA R   |   2 I2CSTART           002F R
-  2 I2CSTOP            0036 R   |     I2CWADR        =   0010 
-  2 I2CWBIT            004F R   |   2 I2CWBYTE           0069 R
-  2 ILOOP              006B R   |   2 INIT               0128 R
-  2 LOADBC             0101 R   |   2 LOADHL             00E7 R
-  2 LOOP3              007E R   |   2 MAIN               012F R
-  2 MLOOP              0139 R   |   2 MREAD              00F0 R
-  2 MWRITE             00F6 R   |   2 NMI                0066 R
-  2 POLL               00CB R   |   2 PREAD              010A R
-  2 PWRITE             0111 R   |   2 READSDA            0029 R
-  2 REMCALL            0120 R   |   2 RHERE              011E R
-  2 SETSCL             0004 R   |   2 SETSDA             0015 R
-  2 SKIP               00B3 R   |   2 SRESP              011B R
-    SSTACK         =   DFF0     |   2 START              0000 R
-
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 7
-Hexadecimal [16-Bits]                                 Sat Jun 13 00:22:47 2020
-
-Area Table
-
-[_CSEG]
-   0 _CODE            size    0   flags C080
-   2 CODE1            size  140   flags  908
-[_DSEG]
-   1 _DATA            size    0   flags C0C0
-

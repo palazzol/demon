@@ -1,8 +1,3 @@
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 1
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-
-
                               1 ;
                               2 ; Moniker - Z80 Version
                               3 ; by Frank Palazzolo
@@ -58,11 +53,6 @@ q  0001 3E 51         [ 7]   30         LD      A,81h
    0018 D3 F9         [11]   53         OUT     (CCPORT),A
    001A C9            [10]   54         RET
                              55 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 2
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-
-
                              56 ; Set the DOUT pin low
                              57 ; D is the global coin counter buffer
                              58 ; Destroys A 
@@ -118,11 +108,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
                             108 
                             109 ; I2C Read Bit routine
                             110 ; Returns bit in carry blag
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 3
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-
-
                             111 ; Destroys A
    004C                     112 I2CRBIT:
    004C CD 1B 00      [17]  113         CALL    SETSDA
@@ -178,11 +163,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
    007E                     163 LOOP3:
    007E C5            [11]  164         PUSH    BC
    007F CD 4C 00      [17]  165         CALL    I2CRBIT     ; get bit in carry flag
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 4
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-
-
    0082 C1            [10]  166         POP     BC
    0083 CB 11         [ 8]  167         RL      C           ; rotate carry into bit0 of C register
    0085 10 F7         [13]  168         DJNZ    LOOP3
@@ -238,11 +218,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
    00D3 28 1B         [12]  218         JR      Z,MREAD
    00D5 FE 57         [ 7]  219         CP      0x57    ; 'W' - Write memory
    00D7 28 1D         [12]  220         JR      Z,MWRITE
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 5
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-
-
    00D9 FE 49         [ 7]  221         CP      0x49    ; 'I' - Input from port
    00DB 28 2D         [12]  222         JR      Z,PREAD
    00DD FE 4F         [ 7]  223         CP      0x4F    ; 'O' - Output from port
@@ -298,11 +273,6 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
    012B DD 21 F0 CF   [14]  273         LD      IX,CMDBUF   ; Easy to index command buffer
                             274         
                             275 ; Main routine
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 6
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-
-
    012F                     276 MAIN:
    012F CD CB 00      [17]  277         CALL    POLL
    0132 38 FB         [12]  278         JR      C,MAIN
@@ -318,43 +288,3 @@ Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
                             288 
                             289     
                             290 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 7
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-Symbol Table
-
-    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
-    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
-  2 AHEAD              0065 R   |     BIGDEL         =   0180 
-    CCPORT         =   00F9     |   2 CLRSCL             0014 R
-  2 CLRSDA             0025 R   |     CMDBUF         =   CFF0 
-  2 DOCLR              0062 R   |     DSPORT         =   00F8 
-  2 ENDI2C             00C7 R   |   2 I2CDELAY           003A R
-    I2CRADR        =   0011     |   2 I2CRBIT            004C R
-  2 I2CRBYTE           007A R   |   2 I2CRREQ            008F R
-  2 I2CSRESP           00BA R   |   2 I2CSTART           003B R
-  2 I2CSTOP            0042 R   |     I2CWADR        =   0010 
-  2 I2CWBIT            005B R   |   2 I2CWBYTE           0069 R
-  2 ILOOP              006B R   |   2 INIT               0128 R
-  2 LOADBC             0101 R   |   2 LOADHL             00E7 R
-  2 LOOP3              007E R   |   2 MAIN               012F R
-  2 MLOOP              0137 R   |   2 MREAD              00F0 R
-  2 MWRITE             00F6 R   |   2 NMI                0066 R
-  2 POLL               00CB R   |   2 PREAD              010A R
-  2 PWRITE             0111 R   |   2 READSDA            002F R
-  2 REMCALL            0120 R   |   2 RHERE              011E R
-  2 SETSCL             000A R   |   2 SETSDA             001B R
-  2 SKIP               00B3 R   |   2 SRESP              011B R
-    SSTACK         =   CFF0     |   2 START              0000 R
-
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 8
-Hexadecimal [16-Bits]                                 Mon Jan 13 21:01:29 2020
-
-Area Table
-
-[_CSEG]
-   0 _CODE            size    0   flags C080
-   2 CODE1            size  13E   flags  908
-[_DSEG]
-   1 _DATA            size    0   flags C0C0
-
