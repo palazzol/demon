@@ -3,68 +3,71 @@
 ; by Frank Palazzolo
 ; For Atari Asteroids
 ;
-; SCL  - WRITE $3200, bit0 ($01) 2 player start lamp - active low only because led is wired to +5V
-; DOUT - WRITE $3200, bit1 ($02) 1 player start lamp - active low only because led is wired to +5V
-; DIN  - READ  $2405, bit7 ($80) thrust button - inverted on input
+; This code replaces ROM J2 on my Asteroids
+;
+; SCL  - WRITE 0x3200, bit0 (0x01) 2 player start lamp - active low only because led is wired to +5V
+; DOUT - WRITE 0x3200, bit1 (0x02) 1 player start lamp - active low only because led is wired to +5V
+; DIN  - READ  0x2405, bit7 (0x80) thrust button - inverted on input
 
-	processor	6502
+        .area   CODE1   (ABS)   ; ASXXXX directive, absolute addressing
 
-DIP7	equ	$2800	;bit0 = DIP switch 7
-LEDS	equ	$3200	;bit0 = 2 player start lamp
+DIP7	.equ	0x2800	;bit0 = DIP switch 7
+LEDS	.equ	0x3200	;bit0 = 2 player start lamp
 			;bit1 = 1 player start lamp
 		
-LEDBUF	equ	$00	;buffer for lamps
-B	equ	$01	;general purpose
-C	equ	$02	;general purpose
-CMDBUF0 equ	$03	;command buffer
-CMDBUF1 equ	$04	;command buffer
-CMDBUF2 equ	$05	;command buffer
-CMDBUF3 equ	$06	;command buffer
+LEDBUF	.equ	0x00	;buffer for lamps
+B	.equ	0x01	;general purpose
+C	.equ	0x02	;general purpose
+CMDBUF0 .equ	0x03	;command buffer
+CMDBUF1 .equ	0x04	;command buffer
+CMDBUF2 .equ	0x05	;command buffer
+CMDBUF3 .equ	0x06	;command buffer
 
-SSTACK	equ	$fe	;start of stack
+SSTACK	.equ	0xfe	;start of stack
 
-I2CRADR equ     $11    ;I2C read address  - I2C address 0x08
-I2CWADR equ     $10    ;I2C write address - I2C address 0x08
+I2CRADR .equ     0x11    ;I2C read address  - I2C address 0x08
+I2CWADR .equ     0x10    ;I2C write address - I2C address 0x08
 
-BIGDEL	equ	$0180
+BIGDEL	.equ	0x0180
 
-	org	$7800	;start of rom at j2
+	.org	0x7800	;start of rom at j2
 	
-NMI	rti
+NMI:	rti
 
-SETSCL	lda	LEDBUF
-	ora	#$01
+SETSCL:	lda	LEDBUF
+	ora	#0x01
 	sta	LEDBUF
 	sta	LEDS
 	jsr	I2CDLY
 	rts
 
-CLRSCL	lda	LEDBUF
-	and	#$fe
+CLRSCL:	lda	LEDBUF
+	and	#0xfe
 	sta	LEDBUF
 	sta	LEDS
 	rts
 	
-SETSDA	lda	LEDBUF
-	and	#$fd
+SETSDA:	lda	LEDBUF
+	and	#0xfd
 	sta	LEDBUF
 	sta	LEDS
 	jsr	I2CDLY
 	rts
 
-CLRSDA	lda	LEDBUF
-	ora	#$02
+CLRSDA:	lda	LEDBUF
+	ora	#0x02
 	sta	LEDBUF
 	sta	LEDS
 	jsr	I2CDLY
 	rts
 
-READSDA	lda	DIP7
+READSDA:        
+        lda	DIP7
 	ror			
 	rts				
 
 ; Delay for half a bit time
-I2CDLY	rts		; TBD - this is plenty?
+I2CDLY:	rts		; TBD - this is plenty?
 
 ; I2C Start Condition
 I2CSTART:
@@ -101,7 +104,7 @@ AHEAD:
         
 I2CWBYTE:
 	pha
-	lda	#$08
+	lda	#0x08
 	sta	B
 	pla
 ILOOP:
@@ -115,9 +118,9 @@ ILOOP:
 	rts
 	
 I2CRBYTE:
-        lda	#$08
+        lda	#0x08
 	sta	B
-	lda	#$00
+	lda	#0x00
 	sta	C
 LOOP3:
         jsr     I2CRBIT     ; get bit in carry flag
@@ -145,7 +148,7 @@ I2CRREQ:
         jmp     ENDI2C
     
 SKIP:                       ; If no device present, fake an idle response
-        lda     #$2e  ; '.'
+        lda     #0x2e  ; '.'
         sta     CMDBUF0
         jmp     ENDI2C
 
@@ -163,25 +166,25 @@ ENDI2C:
 POLL:
         jsr     I2CRREQ
         lda     CMDBUF0
-        cmp     #$52    	; 'R' - Read memory
+        cmp     #0x52    	; 'R' - Read memory
         beq     MREAD
-        cmp     #$57    	; 'W' - Write memory
+        cmp     #0x57    	; 'W' - Write memory
         beq	MWRITE
-        cmp     #$43    	; 'C' - Call subroutine
+        cmp     #0x43    	; 'C' - Call subroutine
         beq	REMCALL
         clc
         rts
 
 MREAD:
         jsr     LOADBC
-        ldy	#$00
-        lda	(B),Y
+        ldy	#0x00
+        lda	[B],Y
         jmp     SRESP
 MWRITE:
         jsr     LOADBC
         lda     CMDBUF3
-        sta     (B),Y
-        lda     #$57  	;'W'
+        sta     [B],Y
+        lda     #0x57  	;'W'
         jmp     SRESP
 LOADBC:
 	lda	CMDBUF2
@@ -196,16 +199,16 @@ RHERE:
         sec
         rts
 REMCALL:
-	lda	#(START-1)>>8
+	lda	#>(START-1)
         pha
-        lda	#(START-1)%256
+	lda	#<(START-1)
         pha
         jsr     LOADBC
-        jmp     (B)
+        jmp     [B]
         
 ;;;;;;;;;;
 	
-START	; TBD- INIT Stack Pointer!
+START:	
 	ldx	#SSTACK
 	txs		; Init stack
 	cld		; No Decimal
@@ -231,10 +234,10 @@ DECBOTH:
 	dec	B
 	jmp	MLOOP
 
-	org	$7ffa
-	dc.w	NMI
-	dc.w	START
-	dc.w	START
+	.org	0x7ffa
+	.dw	NMI
+	.dw	START
+	.dw	START
 	
 	
 	

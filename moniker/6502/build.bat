@@ -1,4 +1,9 @@
 
+tools\as6500.exe -o -p -s -l moniker.asm
+tools\aslink.exe -m -p -s moniker.rel -u
+tools\srec2bin -o f800 moniker.s19 moniker.bin
+tools\srec_cat moniker.bin -binary -output moniker.hex -Intel -address-length=2 -output_block_size=16
+
 tools\as6500.exe -o -p -s -l ref6502.asm
 tools\aslink.exe -m -p -s ref6502.rel -u
 tools\srec2bin -o f800 ref6502.s19 ref6502.bin
