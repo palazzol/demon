@@ -1,0 +1,415 @@
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 1
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+
+
+                              1 ;
+                              2 ; Moniker - Z80 Version
+                              3 ; by Frank Palazzolo
+                              4 ; For ROM IO Hardware
+                              5 ;
+                              6 ; Note: I avoid opcode 0x32 on this platform, it will trigger
+                              7 ;       the security chip on Sega Star Trek Hardware
+                              8 ;
+                              9 
+                             10         
+                             11 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             12 ; You may need to adjust these variables for different targets
+                             13 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             14 
+                             15 ; RAM SETTINGS
+                             16 
+                     63F0    17 RAMSTRT .equ    0x63f0      ; Start of RAM - need only 4 bytes here
+                     63F0    18 SSTACK  .equ    0x63f0      ; Start of stack
+                             19 
+                             20 ; ROM SETTINGS - usually the first 2K of memory for z80
+                             21 
+                     0000    22 SCHIP   .equ    0x0000          ;start of chip memory mapping
+                             23 
+                     0400    24 IOREG   .equ	SCHIP+0x0400    ;reserved region for IO
+                             25 
+                             26 ; TIMER SETTING
+                     0180    27 BIGDEL  .equ    0x0180      ;delay factor
+                             28 
+                     0011    29 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
+                     0010    30 I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
+                             31 
+                             32 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             33 ; RAM Variables	
+                             34 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                             35 
+                     63F0    36 CMDBUF  .equ    RAMSTRT         ; Need only 4 bytes of ram for command buffer
+                             37                                 ; (We will save 12 more just in case)
+                             38 
+                             39         .bank   first   (base=SCHIP, size=0x0066)
+                             40         .bank   second  (base=SCHIP+0x0066, size=0x0400-0x66)
+                             41 
+                             42         .area   first   (ABS, BANK=first)   ; ASXXXX directive, relative addressing
+                             43     
+   0000 F3            [ 4]   44 START:  DI                  ; Disable interrupts - we don't handle them
+   0001 C3 D4 00      [10]   45         JP      INIT        ; go to initialization code
+                             46     
+                             47 ; Set the SCL pin high
+                             48 ; D is the global coin counter buffer
+                             49 ; Destroys A
+   0004                      50 SETSCL:
+   0004 7A            [ 4]   51         LD      A,D
+   0005 F6 01         [ 7]   52         OR      0x01
+   0007 57            [ 4]   53         LD      D,A
+   0008 E5            [11]   54         PUSH    HL
+   0009 26 04         [ 7]   55         LD      H,#>IOREG
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 2
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+
+
+   000B 6F            [ 4]   56         LD      L,A
+   000C 7E            [ 7]   57         LD      A,(HL)
+   000D E1            [10]   58         POP     HL
+   000E CD 43 00      [17]   59         CALL    I2CDELAY
+   0011 C9            [10]   60         RET
+                             61     
+                             62 ; Set the SCL pin low
+                             63 ; D is the global coin counter buffer
+                             64 ; Destroys A
+   0012                      65 CLRSCL:
+   0012 7A            [ 4]   66         LD      A,D
+   0013 E6 FE         [ 7]   67         AND     0xFE
+   0015 57            [ 4]   68         LD      D,A
+   0016 E5            [11]   69         PUSH    HL
+   0017 26 04         [ 7]   70         LD      H,#>IOREG
+   0019 6F            [ 4]   71         LD      L,A
+   001A 7E            [ 7]   72         LD      A,(HL)
+   001B E1            [10]   73         POP     HL
+   001C C9            [10]   74         RET
+                             75 
+                             76 ; Set the DOUT pin low
+                             77 ; D is the global coin counter buffer
+                             78 ; Destroys A 
+   001D                      79 SETSDA:
+   001D 7A            [ 4]   80         LD      A,D
+   001E E6 FD         [ 7]   81         AND     0xFD
+   0020 57            [ 4]   82         LD      D,A
+   0021 E5            [11]   83         PUSH    HL
+   0022 26 04         [ 7]   84         LD      H,#>IOREG
+   0024 6F            [ 4]   85         LD      L,A
+   0025 7E            [ 7]   86         LD      A,(HL)
+   0026 E1            [10]   87         POP     HL
+   0027 CD 43 00      [17]   88         CALL    I2CDELAY
+   002A C9            [10]   89         RET
+                             90 
+                             91 ; Set the DOUT pin high
+                             92 ; D is the global coin counter buffer
+                             93 ; Destroys A  
+   002B                      94 CLRSDA:
+   002B 7A            [ 4]   95         LD      A,D
+   002C F6 02         [ 7]   96         OR      0x02
+   002E 57            [ 4]   97         LD      D,A
+   002F E5            [11]   98         PUSH    HL
+   0030 26 04         [ 7]   99         LD      H,#>IOREG
+   0032 6F            [ 4]  100         LD      L,A
+   0033 7E            [ 7]  101         LD      A,(HL)
+   0034 E1            [10]  102         POP     HL
+   0035 CD 43 00      [17]  103         CALL    I2CDELAY
+   0038 C9            [10]  104         RET
+                            105 
+                            106 ; Read the DIN pin 
+                            107 ; returns bit in carry flag    
+   0039                     108 READSDA:
+   0039 7A            [ 4]  109         LD      A,D
+   003A E5            [11]  110         PUSH    HL
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 3
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+
+
+   003B 26 04         [ 7]  111         LD      H,#>IOREG
+   003D 6F            [ 4]  112         LD      L,A
+   003E 7E            [ 7]  113         LD      A,(HL)
+   003F E1            [10]  114         POP     HL
+   0040 CB 3F         [ 8]  115         SRL     A           ;carry flag
+   0042 C9            [10]  116         RET
+                            117     
+                            118 ; Delay for half a bit time
+   0043                     119 I2CDELAY:
+   0043 C9            [10]  120         RET     ; This is plenty
+                            121 
+                            122 ; I2C Start Condition
+                            123 ; Uses HL
+                            124 ; Destroys A
+   0044                     125 I2CSTART:
+   0044 CD 2B 00      [17]  126         CALL    CLRSDA      
+   0047 CD 12 00      [17]  127         CALL    CLRSCL
+   004A C9            [10]  128         RET
+                            129 
+                            130 ; I2C Stop Condition
+                            131 ; Uses HL
+                            132 ; Destroys A
+   004B                     133 I2CSTOP:
+   004B CD 2B 00      [17]  134         CALL    CLRSDA
+   004E CD 04 00      [17]  135         CALL    SETSCL
+   0051 CD 1D 00      [17]  136         CALL    SETSDA
+   0054 C9            [10]  137         RET
+                            138 
+                            139 ; I2C Read Bit routine
+                            140 ; Returns bit in carry blag
+                            141 ; Destroys A
+   0055                     142 I2CRBIT:
+   0055 CD 1D 00      [17]  143         CALL    SETSDA
+   0058 CD 04 00      [17]  144         CALL    SETSCL
+   005B CD 39 00      [17]  145         CALL    READSDA
+   005E F5            [11]  146         PUSH    AF          ; save carry flag
+   005F CD 12 00      [17]  147         CALL    CLRSCL
+   0062 F1            [10]  148         POP     AF          ; rv in carry flag
+   0063 C9            [10]  149         RET
+                            150 
+                            151          .area   second   (ABS, BANK=second)   ; ASXXXX directive, relative addressing
+                            152 ; NMI Handler must be first thing in this bank
+   0000 ED 45         [14]  153 NMI:    RETN
+                            154 
+                            155 ; I2C Write Bit routine
+                            156 ; Takes carry flag
+                            157 ; Destroys A
+   0002                     158 I2CWBIT:
+   0002 30 05         [12]  159         JR      NC,DOCLR
+   0004 CD 1D 00      [17]  160         CALL    SETSDA
+   0007 18 03         [12]  161         JR      AHEAD
+   0009                     162 DOCLR:
+   0009 CD 2B 00      [17]  163         CALL    CLRSDA
+   000C                     164 AHEAD:
+   000C CD 04 00      [17]  165         CALL    SETSCL
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 4
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+
+
+   000F CD 12 00      [17]  166         CALL    CLRSCL
+   0012 C9            [10]  167         RET
+                            168 
+                            169 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                            170 ; This function is called once, and should be used do any game-specific
+                            171 ; initialization that is required
+                            172 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                            173 
+   0013                     174 ONCE:   
+                            175 ;       YOUR CODE CAN GO HERE
+   0013 C9            [10]  176         RET
+                            177 
+   0014                     178 EVERY:  
+                            179 ;       YOUR CODE CAN GO HERE
+   0014 C9            [10]  180         RET
+                            181 
+                            182 ; I2C Write Byte routine
+                            183 ; Takes A
+                            184 ; Destroys B
+                            185 ; Returns carry bit
+   0015                     186 I2CWBYTE:
+   0015 06 08         [ 7]  187         LD      B,8
+   0017                     188 ILOOP:
+   0017 C5            [11]  189         PUSH    BC          ; save B
+   0018 CB 07         [ 8]  190         RLC     A    
+   001A F5            [11]  191         PUSH    AF          ; save A
+   001B CD 02 00      [17]  192         CALL    I2CWBIT
+   001E F1            [10]  193         POP     AF
+   001F C1            [10]  194         POP     BC
+   0020 10 F5         [13]  195         DJNZ    ILOOP
+   0022 CD 55 00      [17]  196         CALL    I2CRBIT
+   0025 C9            [10]  197         RET
+                            198 
+                            199 ; I2C Read Byte routine
+                            200 ; Destroys BC
+                            201 ; Returns A
+   0026                     202 I2CRBYTE:
+   0026 06 08         [ 7]  203         LD      B,8
+   0028 0E 00         [ 7]  204         LD      C,0
+   002A                     205 LOOP3:
+   002A C5            [11]  206         PUSH    BC
+   002B CD 55 00      [17]  207         CALL    I2CRBIT     ; get bit in carry flag
+   002E C1            [10]  208         POP     BC
+   002F CB 11         [ 8]  209         RL      C           ; rotate carry into bit0 of C register
+   0031 10 F7         [13]  210         DJNZ    LOOP3
+   0033 AF            [ 4]  211         XOR     A           ; clear carry flag              
+   0034 C5            [11]  212         PUSH    BC
+   0035 CD 02 00      [17]  213         CALL    I2CWBIT
+   0038 C1            [10]  214         POP     BC
+   0039 79            [ 4]  215         LD      A,C
+   003A C9            [10]  216         RET
+                            217 ;
+                            218 
+                            219 ; Read 4-byte I2C Command from device into CMDBUF
+                            220 ; Uses HL
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 5
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+
+
+                            221 ; Destroys A,BC,HL
+   003B                     222 I2CRREQ:
+   003B CD 44 00      [17]  223         CALL    I2CSTART
+   003E 3E 11         [ 7]  224         LD      A,I2CRADR
+   0040 CD 15 00      [17]  225         CALL    I2CWBYTE
+   0043 38 1A         [12]  226         JR      C,SKIP
+   0045 CD 26 00      [17]  227         CALL    I2CRBYTE
+   0048 DD 77 00      [19]  228         LD      (IX),A
+   004B CD 26 00      [17]  229         CALL    I2CRBYTE
+   004E DD 77 01      [19]  230         LD      (IX+1),A  
+   0051 CD 26 00      [17]  231         CALL    I2CRBYTE
+   0054 DD 77 02      [19]  232         LD      (IX+2),A
+   0057 CD 26 00      [17]  233         CALL    I2CRBYTE
+   005A DD 77 03      [19]  234         LD      (IX+3),A
+   005D 18 14         [12]  235         JR      ENDI2C
+                            236     
+   005F                     237 SKIP:                       ; If no device present, fake an idle response
+   005F 3E 2E         [ 7]  238         LD      A,0x2e  ; '.'
+   0061 DD 77 00      [19]  239         LD      (IX),A
+   0064 18 0D         [12]  240         JR      ENDI2C
+                            241 
+   0066                     242 I2CSRESP:
+   0066 F5            [11]  243         PUSH    AF
+   0067 CD 44 00      [17]  244         CALL    I2CSTART
+   006A 3E 10         [ 7]  245         LD      A,I2CWADR
+   006C CD 15 00      [17]  246         CALL    I2CWBYTE
+   006F F1            [10]  247         POP     AF
+   0070 CD 15 00      [17]  248         CALL    I2CWBYTE
+   0073                     249 ENDI2C:
+   0073 CD 4B 00      [17]  250         CALL    I2CSTOP
+   0076 C9            [10]  251         RET
+                            252 ;
+                            253 
+                            254 ; Main Polling loop
+                            255 ; Return carry flag if we got a valid command (not idle)
+   0077                     256 POLL:
+   0077 CD 3B 00      [17]  257         CALL    I2CRREQ
+   007A DD 7E 00      [19]  258         LD      A,(IX)
+   007D FE 52         [ 7]  259         CP      0x52    ; 'R' - Read memory
+   007F 28 1B         [12]  260         JR      Z,MREAD
+   0081 FE 57         [ 7]  261         CP      0x57    ; 'W' - Write memory
+   0083 28 1D         [12]  262         JR      Z,MWRITE
+   0085 FE 49         [ 7]  263         CP      0x49    ; 'I' - Input from port
+   0087 28 2D         [12]  264         JR      Z,PREAD
+   0089 FE 4F         [ 7]  265         CP      0x4F    ; 'O' - Output from port
+   008B 28 30         [12]  266         JR      Z,PWRITE
+   008D FE 43         [ 7]  267         CP      0x43    ; 'C' - Call subroutine
+   008F 28 3B         [12]  268         JR      Z,REMCALL
+   0091 3F            [ 4]  269         CCF
+   0092 C9            [10]  270         RET
+   0093                     271 LOADHL:
+   0093 DD 7E 01      [19]  272         LD      A,(IX+1)
+   0096 67            [ 4]  273         LD      H,A
+   0097 DD 7E 02      [19]  274         LD      A,(IX+2)
+   009A 6F            [ 4]  275         LD      L,A
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 6
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+
+
+   009B C9            [10]  276         RET    
+   009C                     277 MREAD:
+   009C CD AD 00      [17]  278         CALL    LOADBC
+   009F 0A            [ 7]  279         LD      A,(BC)
+   00A0 18 25         [12]  280         JR      SRESP
+   00A2                     281 MWRITE:
+   00A2 CD AD 00      [17]  282         CALL    LOADBC
+   00A5 DD 7E 03      [19]  283         LD      A,(IX+3)
+   00A8 02            [ 7]  284         LD      (BC),A
+   00A9 3E 57         [ 7]  285         LD      A,0x57  ;'W'
+   00AB 18 1A         [12]  286         JR      SRESP
+   00AD                     287 LOADBC:
+   00AD DD 7E 01      [19]  288         LD      A,(IX+1)
+   00B0 47            [ 4]  289         LD      B,A
+   00B1 DD 7E 02      [19]  290         LD      A,(IX+2)
+   00B4 4F            [ 4]  291         LD      C,A
+   00B5 C9            [10]  292         RET
+   00B6                     293 PREAD:
+   00B6 CD AD 00      [17]  294         CALL    LOADBC
+   00B9 ED 78         [12]  295         IN      A,(C)
+   00BB 18 0A         [12]  296         JR      SRESP
+   00BD                     297 PWRITE:
+   00BD CD AD 00      [17]  298         CALL    LOADBC
+   00C0 DD 7E 03      [19]  299         LD      A,(IX+3)
+   00C3 ED 79         [12]  300         OUT     (C),A
+   00C5 3E 4F         [ 7]  301         LD      A,0x4F  ;'O'
+   00C7                     302 SRESP:
+   00C7 CD 66 00      [17]  303         CALL    I2CSRESP
+   00CA                     304 RHERE:
+   00CA 37            [ 4]  305         SCF
+   00CB C9            [10]  306         RET
+   00CC                     307 REMCALL:
+   00CC 21 00 00      [10]  308         LD      HL,START
+   00CF E5            [11]  309         PUSH    HL
+   00D0 CD 93 00      [17]  310         CALL    LOADHL
+   00D3 E9            [ 4]  311         JP      (HL)
+                            312     
+   00D4                     313 INIT:
+   00D4 31 F0 63      [10]  314         LD      SP,SSTACK   ; have to set valid SP
+   00D7 DD 21 F0 63   [14]  315         LD      IX,CMDBUF   ; Easy to index command buffer
+                            316         
+   00DB CD 13 00      [17]  317         CALL    ONCE
+                            318 
+                            319 ; Main routine
+   00DE                     320 MAIN:
+   00DE CD 14 00      [17]  321         CALL    EVERY
+   00E1 CD 77 00      [17]  322         CALL    POLL
+   00E4 38 F8         [12]  323         JR      C,MAIN
+                            324         
+   00E6 01 80 01      [10]  325         LD      BC,BIGDEL
+   00E9                     326 MLOOP:
+   00E9 0B            [ 6]  327         DEC     BC
+   00EA 79            [ 4]  328         LD      A,C
+   00EB B0            [ 4]  329         OR      B
+   00EC 20 FB         [12]  330         JR      NZ,MLOOP
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 7
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+
+
+   00EE 18 EE         [12]  331         JR      MAIN
+                            332 
+                            333 
+                            334     
+                            335 
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 8
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+Symbol Table
+
+    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
+    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
+  3 AHEAD              000C R   |     BIGDEL         =   0180 
+  2 CLRSCL             0012 R   |   2 CLRSDA             002B R
+    CMDBUF         =   63F0     |   3 DOCLR              0009 R
+  3 ENDI2C             0073 R   |   3 EVERY              0014 R
+  2 I2CDELAY           0043 R   |     I2CRADR        =   0011 
+  2 I2CRBIT            0055 R   |   3 I2CRBYTE           0026 R
+  3 I2CRREQ            003B R   |   3 I2CSRESP           0066 R
+  2 I2CSTART           0044 R   |   2 I2CSTOP            004B R
+    I2CWADR        =   0010     |   3 I2CWBIT            0002 R
+  3 I2CWBYTE           0015 R   |   3 ILOOP              0017 R
+  3 INIT               00D4 R   |     IOREG          =   0400 
+  3 LOADBC             00AD R   |   3 LOADHL             0093 R
+  3 LOOP3              002A R   |   3 MAIN               00DE R
+  3 MLOOP              00E9 R   |   3 MREAD              009C R
+  3 MWRITE             00A2 R   |   3 NMI                0000 R
+  3 ONCE               0013 R   |   3 POLL               0077 R
+  3 PREAD              00B6 R   |   3 PWRITE             00BD R
+    RAMSTRT        =   63F0     |   2 READSDA            0039 R
+  3 REMCALL            00CC R   |   3 RHERE              00CA R
+    SCHIP          =   0000     |   2 SETSCL             0004 R
+  2 SETSDA             001D R   |   3 SKIP               005F R
+  3 SRESP              00C7 R   |     SSTACK         =   63F0 
+  2 START              0000 R
+
+ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 9
+Hexadecimal [16-Bits]                                 Sun Jun 20 20:57:53 2021
+
+Area Table
+
+[_CSEG]
+   0 _CODE            size    0   flags C080
+[_DSEG]
+   1 _DATA            size    0   flags C0C0
+[first]
+   2 first            size   64   flags 8988
+[second]
+   3 second           size   F0   flags 8988
+
