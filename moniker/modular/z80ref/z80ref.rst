@@ -1,14 +1,4 @@
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 1
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                               1 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 2
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                               2         .include "../z80/settings.asm"
                               1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                               2 ; You will need to adjust these variables for different targets
@@ -30,21 +20,11 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
                              18 ; I2C ADDRESSING
                      0011    19 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
                      0010    20 I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 3
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                               3 
                               4         ; This section must end before NMI Handler
                               5         .bank   first   (base=STRTADD, size=NMIADD-STRTADD)
                               6         .area   first   (ABS, BANK=first)
                               7 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 4
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                               8         .include "../z80/startup.asm" 
                               1 
    0000 F3            [ 4]    2 START:  DI                  ; Disable interrupts - we don't handle them
@@ -58,120 +38,92 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
    0004                      10 ONCE:   
                              11 ;       YOUR CODE CAN GO HERE
    0004 C9            [10]   12         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 5
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                               9         .include "../z80/romio.asm" 
-                     0400     1 IOREG   .equ	STRTADD+0x0400    ;reserved region for IO
-                              2 
-                              3 ; Set the SCL pin high
-                              4 ; D is the global coin counter buffer
-                              5 ; Destroys A
-   0005                       6 SETSCL:
-   0005 7A            [ 4]    7         LD      A,D
-   0006 F6 01         [ 7]    8         OR      0x01
-   0008 57            [ 4]    9         LD      D,A
-   0009 E5            [11]   10         PUSH    HL
-   000A 26 04         [ 7]   11         LD      H,#>IOREG
-   000C 6F            [ 4]   12         LD      L,A
-   000D 7E            [ 7]   13         LD      A,(HL)
-   000E E1            [10]   14         POP     HL
-   000F CD 68 00      [17]   15         CALL    I2CDELAY
-   0012 C9            [10]   16         RET
-                             17     
-                             18 ; Set the SCL pin low
-                             19 ; D is the global coin counter buffer
-                             20 ; Destroys A
-   0013                      21 CLRSCL:
-   0013 7A            [ 4]   22         LD      A,D
-   0014 E6 FE         [ 7]   23         AND     0xFE
-   0016 57            [ 4]   24         LD      D,A
-   0017 E5            [11]   25         PUSH    HL
-   0018 26 04         [ 7]   26         LD      H,#>IOREG
-   001A 6F            [ 4]   27         LD      L,A
-   001B 7E            [ 7]   28         LD      A,(HL)
-   001C E1            [10]   29         POP     HL
-   001D C9            [10]   30         RET
-                             31 
-                             32 ; Set the DOUT pin low
-                             33 ; D is the global coin counter buffer
-                             34 ; Destroys A 
-   001E                      35 SETSDA:
-   001E 7A            [ 4]   36         LD      A,D
-   001F E6 FD         [ 7]   37         AND     0xFD
-   0021 57            [ 4]   38         LD      D,A
-   0022 E5            [11]   39         PUSH    HL
-   0023 26 04         [ 7]   40         LD      H,#>IOREG
-   0025 6F            [ 4]   41         LD      L,A
-   0026 7E            [ 7]   42         LD      A,(HL)
-   0027 E1            [10]   43         POP     HL
-   0028 CD 68 00      [17]   44         CALL    I2CDELAY
-   002B C9            [10]   45         RET
-                             46 
-                             47 ; Set the DOUT pin high
-                             48 ; D is the global coin counter buffer
-                             49 ; Destroys A  
-   002C                      50 CLRSDA:
-   002C 7A            [ 4]   51         LD      A,D
-   002D F6 02         [ 7]   52         OR      0x02
-   002F 57            [ 4]   53         LD      D,A
-   0030 E5            [11]   54         PUSH    HL
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 6
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
-   0031 26 04         [ 7]   55         LD      H,#>IOREG
-   0033 6F            [ 4]   56         LD      L,A
-   0034 7E            [ 7]   57         LD      A,(HL)
-   0035 E1            [10]   58         POP     HL
-   0036 CD 68 00      [17]   59         CALL    I2CDELAY
-   0039 C9            [10]   60         RET
-                             61 
-                             62 ; Read the DIN pin 
-                             63 ; returns bit in carry flag    
-   003A                      64 READSDA:
-   003A 7A            [ 4]   65         LD      A,D
-   003B E5            [11]   66         PUSH    HL
-   003C 26 04         [ 7]   67         LD      H,#>IOREG
-   003E 6F            [ 4]   68         LD      L,A
-   003F 7E            [ 7]   69         LD      A,(HL)
-   0040 E1            [10]   70         POP     HL
-   0041 CB 3F         [ 8]   71         SRL     A           ;carry flag
-   0043 C9            [10]   72         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 7
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
+                     0400     1 IOREG    .equ   STRTADD+0x0400
+                     0400     2 IOREGR   .equ	STRTADD+0x0400    ;reserved region for IO READ
+                     0500     3 IOREGW   .equ	STRTADD+0x0500    ;reserved region for IO WRITE
+                              4 
+                              5 ; Set the SCL pin high
+                              6 ; D is the global coin counter buffer
+                              7 ; Destroys A
+   0005                       8 SETSCL:
+   0005 7A            [ 4]    9         LD      A,D
+   0006 F6 01         [ 7]   10         OR      0x01
+   0008 57            [ 4]   11         LD      D,A
+   0009 E5            [11]   12         PUSH    HL
+   000A 26 05         [ 7]   13         LD      H,#>IOREGW
+   000C 6F            [ 4]   14         LD      L,A
+   000D 7E            [ 7]   15         LD      A,(HL)
+   000E E1            [10]   16         POP     HL
+   000F CD 68 00      [17]   17         CALL    I2CDELAY
+   0012 C9            [10]   18         RET
+                             19     
+                             20 ; Set the SCL pin low
+                             21 ; D is the global coin counter buffer
+                             22 ; Destroys A
+   0013                      23 CLRSCL:
+   0013 7A            [ 4]   24         LD      A,D
+   0014 E6 FE         [ 7]   25         AND     0xFE
+   0016 57            [ 4]   26         LD      D,A
+   0017 E5            [11]   27         PUSH    HL
+   0018 26 05         [ 7]   28         LD      H,#>IOREGW
+   001A 6F            [ 4]   29         LD      L,A
+   001B 7E            [ 7]   30         LD      A,(HL)
+   001C E1            [10]   31         POP     HL
+   001D C9            [10]   32         RET
+                             33 
+                             34 ; Set the DOUT pin low
+                             35 ; D is the global coin counter buffer
+                             36 ; Destroys A 
+   001E                      37 SETSDA:
+   001E 7A            [ 4]   38         LD      A,D
+   001F E6 FD         [ 7]   39         AND     0xFD
+   0021 57            [ 4]   40         LD      D,A
+   0022 E5            [11]   41         PUSH    HL
+   0023 26 05         [ 7]   42         LD      H,#>IOREGW
+   0025 6F            [ 4]   43         LD      L,A
+   0026 7E            [ 7]   44         LD      A,(HL)
+   0027 E1            [10]   45         POP     HL
+   0028 CD 68 00      [17]   46         CALL    I2CDELAY
+   002B C9            [10]   47         RET
+                             48 
+                             49 ; Set the DOUT pin high
+                             50 ; D is the global coin counter buffer
+                             51 ; Destroys A  
+   002C                      52 CLRSDA:
+   002C 7A            [ 4]   53         LD      A,D
+   002D F6 02         [ 7]   54         OR      0x02
+   002F 57            [ 4]   55         LD      D,A
+   0030 E5            [11]   56         PUSH    HL
+   0031 26 05         [ 7]   57         LD      H,#>IOREGW
+   0033 6F            [ 4]   58         LD      L,A
+   0034 7E            [ 7]   59         LD      A,(HL)
+   0035 E1            [10]   60         POP     HL
+   0036 CD 68 00      [17]   61         CALL    I2CDELAY
+   0039 C9            [10]   62         RET
+                             63 
+                             64 ; Read the DIN pin 
+                             65 ; returns bit in carry flag    
+   003A                      66 READSDA:
+   003A 7A            [ 4]   67         LD      A,D
+   003B E5            [11]   68         PUSH    HL
+   003C 26 04         [ 7]   69         LD      H,#>IOREGR
+   003E 6F            [ 4]   70         LD      L,A
+   003F 7E            [ 7]   71         LD      A,(HL)
+   0040 E1            [10]   72         POP     HL
+   0041 CB 3F         [ 8]   73         SRL     A           ;carry flag
+   0043 C9            [10]   74         RET
                              10         .include "../z80/loop.asm"
    0044                       1 EVERY:  
                               2 ;       YOUR CODE CAN GO HERE
    0044 C9            [10]    3         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 8
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                              11 
                              12 	; This section must end before IO Region
                              13         .bank   second   (base=NMIADD, size=IOREG-NMIADD)
                              14         .area   second   (ABS, BANK=second)
                              15 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 9
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                              16         .include "../z80/nmi.asm"
    0066 ED 45         [14]    1 NMI:    RETN
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 10
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                              17         .include "../z80/main.asm"
                               1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                               2 ; RAM Variables	
@@ -227,11 +179,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
    0099 C9            [10]   52         RET
                              53 
                              54 ; I2C Write Byte routine
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 11
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                              55 ; Takes A
                              56 ; Destroys B
                              57 ; Returns carry bit
@@ -287,11 +234,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
    00E2 18 14         [12]  107         JR      ENDI2C
                             108     
    00E4                     109 SKIP:                       ; If no device present, fake an idle response
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 12
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
    00E4 3E 2E         [ 7]  110         LD      A,0x2e  ; '.'
    00E6 DD 77 00      [19]  111         LD      (IX),A
    00E9 18 0D         [12]  112         JR      ENDI2C
@@ -347,11 +289,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
    0136 DD 7E 02      [19]  162         LD      A,(IX+2)
    0139 4F            [ 4]  163         LD      C,A
    013A C9            [10]  164         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 13
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
    013B                     165 PREAD:
    013B CD 32 01      [17]  166         CALL    LOADBC
    013E ED 78         [12]  167         IN      A,(C)
@@ -391,54 +328,4 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
    0170 B0            [ 4]  201         OR      B
    0171 20 FB         [12]  202         JR      NZ,DLOOP
    0173 18 EE         [12]  203         JR      MAIN
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 14
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-
-
                              18 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 15
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-Symbol Table
-
-    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
-    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
-  3 AHEAD              002D R   |     BIGDEL         =   0180 
-  2 CLRSCL             0013 R   |   2 CLRSDA             002C R
-    CMDBUF         =   FFF0     |   3 DLOOP              0108 R
-  3 DOCLR              002A R   |   3 ENDI2C             0092 R
-  2 EVERY              0044 R   |   3 I2CDELAY           0002 R
-    I2CRADR        =   0011     |   3 I2CRBIT            0014 R
-  3 I2CRBYTE           0045 R   |   3 I2CRREQ            005A R
-  3 I2CSRESP           0085 R   |   3 I2CSTART           0003 R
-  3 I2CSTOP            000A R   |     I2CWADR        =   0010 
-  3 I2CWBIT            0023 R   |   3 I2CWBYTE           0034 R
-  3 ILOOP              0036 R   |   3 INIT               00F3 R
-    IOREG          =   0400     |   3 LOADBC             00CC R
-  3 LOADHL             00B2 R   |   3 LOOP3              0049 R
-  3 MAIN               00FD R   |   3 MREAD              00BB R
-  3 MWRITE             00C1 R   |   3 NMI                0000 R
-    NMIADD         =   0066     |   2 ONCE               0004 R
-  3 POLL               0096 R   |   3 PREAD              00D5 R
-  3 PWRITE             00DC R   |     RAMADDR        =   FFF0 
-  2 READSDA            003A R   |   3 REMCALL            00EB R
-  3 RHERE              00E9 R   |   2 SETSCL             0005 R
-  2 SETSDA             001E R   |   3 SKIP               007E R
-  3 SRESP              00E6 R   |   2 START              0000 R
-    STRTADD        =   0000 
-
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 16
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:48 2022
-
-Area Table
-
-[_CSEG]
-   0 _CODE            size    0   flags C080
-[_DSEG]
-   1 _DATA            size    0   flags C0C0
-[first]
-   2 first            size   45   flags 8988
-[second]
-   3 second           size  10F   flags 8988
-

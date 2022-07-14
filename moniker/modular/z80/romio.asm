@@ -1,3 +1,4 @@
+IOREG    .equ   STRTADD+0x0400
 IOREGR   .equ	STRTADD+0x0400    ;reserved region for IO READ
 IOREGW   .equ	STRTADD+0x0500    ;reserved region for IO WRITE
 

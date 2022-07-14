@@ -1,14 +1,4 @@
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 1
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                               1 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 2
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                               2         .include "settings.asm"
                               1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                               2 ; You will need to adjust these variables for different targets
@@ -31,21 +21,11 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
                              19 ; I2C ADDRESSING
                      0011    20 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
                      0010    21 I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 3
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                               3 
                               4         ; This section must end before NMI Handler
                               5         .bank   first   (base=STRTADD, size=NMIADD-STRTADD)
                               6         .area   first   (ABS, BANK=first)
                               7 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 4
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                               8         .include "startup.asm" 
                               1 
    0000 F3            [ 4]    2 START:  DI                  ; Disable interrupts - we don't handle them
@@ -61,11 +41,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
    0006 21 00 E0      [10]   12         LD      HL,0xE000
    0009 77            [ 7]   13         LD      (HL),A      ; blank the screen
    000A C9            [10]   14         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 5
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                               9         .include "io.asm" 
                               1 ; SCL  - OUT F9, bit7, (0x80) coin counter 1, pin 5, U11 - R1
                               2 ; DOUT - OUT F9, bit6, (0x40) coin counter 2, pin 9, U11 - R3
@@ -121,11 +96,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
    002C CD 68 00      [17]   52         CALL    I2CDELAY
    002F C9            [10]   53         RET
                              54 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 6
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                              55 ; Read the DIN pin 
                              56 ; returns bit in carry flag    
    0030                      57 READSDA:
@@ -135,37 +105,17 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
    0036 CB 3F         [ 8]   61         SRL     A           ;0x01
    0038 CB 3F         [ 8]   62         SRL     A           ;carry flag
    003A C9            [10]   63         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 7
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                              10         .include "../z80/loop.asm"
    003B                       1 EVERY:  
                               2 ;       YOUR CODE CAN GO HERE
    003B C9            [10]    3         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 8
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                              11 
                              12 	; This section must end before the end of the chip
                              13         .bank   second   (base=NMIADD, size=ENDADD-NMIADD)
                              14         .area   second   (ABS, BANK=second)
                              15 
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                  Page 9
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                              16         .include "../z80/nmi.asm"
    0066 ED 45         [14]    1 NMI:    RETN
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 10
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                              17         .include "../z80/main.asm"
                               1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                               2 ; RAM Variables	
@@ -221,11 +171,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
    0099 C9            [10]   52         RET
                              53 
                              54 ; I2C Write Byte routine
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 11
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
                              55 ; Takes A
                              56 ; Destroys B
                              57 ; Returns carry bit
@@ -281,11 +226,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
    00E2 18 14         [12]  107         JR      ENDI2C
                             108     
    00E4                     109 SKIP:                       ; If no device present, fake an idle response
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 12
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
    00E4 3E 2E         [ 7]  110         LD      A,0x2e  ; '.'
    00E6 DD 77 00      [19]  111         LD      (IX),A
    00E9 18 0D         [12]  112         JR      ENDI2C
@@ -341,11 +281,6 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
    0136 DD 7E 02      [19]  162         LD      A,(IX+2)
    0139 4F            [ 4]  163         LD      C,A
    013A C9            [10]  164         RET
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 13
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-
-
    013B                     165 PREAD:
    013B CD 32 01      [17]  166         CALL    LOADBC
    013E ED 78         [12]  167         IN      A,(C)
@@ -385,49 +320,3 @@ Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
    0170 B0            [ 4]  201         OR      B
    0171 20 FB         [12]  202         JR      NZ,DLOOP
    0173 18 EE         [12]  203         JR      MAIN
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 14
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-Symbol Table
-
-    .__.$$$.       =   2710 L   |     .__.ABS.       =   0000 G
-    .__.CPU.       =   0000 L   |     .__.H$L.       =   0000 L
-  3 AHEAD              002D R   |     BIGDEL         =   0180 
-    CCPORT         =   00F9     |   2 CLRSCL             0015 R
-  2 CLRSDA             0026 R   |     CMDBUF         =   CFF0 
-  3 DLOOP              0108 R   |   3 DOCLR              002A R
-    DSPORT         =   00F8     |     ENDADD         =   0800 
-  3 ENDI2C             0092 R   |   2 EVERY              003B R
-  3 I2CDELAY           0002 R   |     I2CRADR        =   0011 
-  3 I2CRBIT            0014 R   |   3 I2CRBYTE           0045 R
-  3 I2CRREQ            005A R   |   3 I2CSRESP           0085 R
-  3 I2CSTART           0003 R   |   3 I2CSTOP            000A R
-    I2CWADR        =   0010     |   3 I2CWBIT            0023 R
-  3 I2CWBYTE           0034 R   |   3 ILOOP              0036 R
-  3 INIT               00F3 R   |   3 LOADBC             00CC R
-  3 LOADHL             00B2 R   |   3 LOOP3              0049 R
-  3 MAIN               00FD R   |   3 MREAD              00BB R
-  3 MWRITE             00C1 R   |   3 NMI                0000 R
-    NMIADD         =   0066     |   2 ONCE               0004 R
-  3 POLL               0096 R   |   3 PREAD              00D5 R
-  3 PWRITE             00DC R   |     RAMADDR        =   CFF0 
-  2 READSDA            0030 R   |   3 REMCALL            00EB R
-  3 RHERE              00E9 R   |   2 SETSCL             000B R
-  2 SETSDA             001C R   |   3 SKIP               007E R
-  3 SRESP              00E6 R   |   2 START              0000 R
-    STRTADD        =   0000 
-
-ASxxxx Assembler V05.20  (Zilog Z80 / Hitachi HD64180)                 Page 15
-Hexadecimal [16-Bits]                                 Sat Feb 05 16:46:47 2022
-
-Area Table
-
-[_CSEG]
-   0 _CODE            size    0   flags C080
-[_DSEG]
-   1 _DATA            size    0   flags C0C0
-[first]
-   2 first            size   3C   flags 8988
-[second]
-   3 second           size  10F   flags 8988
-

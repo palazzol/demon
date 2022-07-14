@@ -1,4 +1,4 @@
 
-..\tools\asz80.exe -o -l z80ref.asm
-..\tools\aslink.exe -u -s z80ref.rel
-..\tools\srec2bin -a 800 z80ref.s19 ..\z80ref.bin
+..\tools\asz80.exe -o -p -s -l z80ref.asm
+..\tools\aslink.exe -m -p -s z80ref.rel -u
+..\tools\srec2bin -a 800 z80ref.s19 z80ref.bin

@@ -1,4 +1,4 @@
 
-..\tools\asz80.exe -o -l startrek.asm
-..\tools\aslink.exe -u -s startrek.rel
-..\tools\srec2bin -a 800 startrek.s19 ..\startrek.bin
+..\tools\asz80.exe -o -p -s -l startrek.asm
+..\tools\aslink.exe -m -p -s startrek.rel -u
+..\tools\srec2bin -a 800 startrek.s19 startrek.bin

@@ -10,3 +10,6 @@ cd ..
 cd z80ref
 call build.bat
 cd ..
+cd gorf
+call build.bat
+cd ..
