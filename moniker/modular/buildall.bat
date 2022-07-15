@@ -13,3 +13,6 @@ cd ..
 cd gorf
 call build.bat
 cd ..
+cd astrocde
+call build.bat
+cd ..

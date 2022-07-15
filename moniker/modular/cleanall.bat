@@ -13,3 +13,6 @@ cd ..
 cd gorf
 call ..\tools\clean.bat
 cd ..
+cd astrocde
+call ..\tools\clean.bat
+cd ..
