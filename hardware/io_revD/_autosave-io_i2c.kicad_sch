@@ -4115,7 +4115,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x01") (at 207.645 46.99 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 19b1efdb-a9fc-4b47-8244-e1fc60c95fb0)
-    (property "Reference" "J?" (id 0) (at 207.645 50.165 0))
+    (property "Reference" "J12" (id 0) (at 207.645 50.165 0))
     (property "Value" "Conn_01x01" (id 1) (at 205.1836 46.99 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -4224,7 +4224,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x01") (at 219.71 57.15 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 3584ed87-cd32-43fa-aa55-b11fe8451b01)
-    (property "Reference" "J?" (id 0) (at 219.71 53.975 0))
+    (property "Reference" "J14" (id 0) (at 219.71 53.975 0))
     (property "Value" "Conn_01x01" (id 1) (at 222.1714 57.15 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -4665,7 +4665,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x01") (at 222.885 46.99 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 8f994a63-5979-4697-8788-8880d7fb143c)
-    (property "Reference" "J?" (id 0) (at 222.885 50.165 0))
+    (property "Reference" "J15" (id 0) (at 222.885 50.165 0))
     (property "Value" "Conn_01x01" (id 1) (at 220.4236 46.99 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -4776,7 +4776,7 @@
   (symbol (lib_id "power:GND") (at 219.71 62.23 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid c5a01f98-82aa-4185-bc9d-ae400d2c132b)
-    (property "Reference" "#PWR?" (id 0) (at 219.71 68.58 0)
+    (property "Reference" "#PWR012" (id 0) (at 219.71 68.58 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (id 1) (at 219.837 66.6242 0))
@@ -4808,7 +4808,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x01") (at 215.265 46.99 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid cb4f2bdf-6be5-4993-afae-ec4e7ba25b92)
-    (property "Reference" "J?" (id 0) (at 215.265 50.165 0))
+    (property "Reference" "J13" (id 0) (at 215.265 50.165 0))
     (property "Value" "Conn_01x01" (id 1) (at 212.8036 46.99 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -5165,6 +5165,9 @@
     (path "/f4d4296a-2daf-4866-99fd-e1ed11271f70"
       (reference "#PWR011") (unit 1) (value "GND") (footprint "")
     )
+    (path "/c5a01f98-82aa-4185-bc9d-ae400d2c132b"
+      (reference "#PWR012") (unit 1) (value "GND") (footprint "")
+    )
     (path "/00000000-0000-0000-0000-00005e291dad"
       (reference "#PWR0101") (unit 1) (value "GND") (footprint "")
     )
@@ -5273,9 +5276,6 @@
     (path "/d81b328d-50a5-4e89-82d5-111b8a705c6f"
       (reference "#PWR0138") (unit 1) (value "+5VD") (footprint "")
     )
-    (path "/c5a01f98-82aa-4185-bc9d-ae400d2c132b"
-      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
-    )
     (path "/00000000-0000-0000-0000-000060a79c85"
       (reference "A1") (unit 1) (value "Arduino_Nano_v3.x") (footprint "Module:Arduino_Nano")
     )
@@ -5382,16 +5382,16 @@
       (reference "J11") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
     (path "/19b1efdb-a9fc-4b47-8244-e1fc60c95fb0"
-      (reference "J?") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
-    )
-    (path "/3584ed87-cd32-43fa-aa55-b11fe8451b01"
-      (reference "J?") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
-    )
-    (path "/8f994a63-5979-4697-8788-8880d7fb143c"
-      (reference "J?") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
+      (reference "J12") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
     (path "/cb4f2bdf-6be5-4993-afae-ec4e7ba25b92"
-      (reference "J?") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
+      (reference "J13") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
+    )
+    (path "/3584ed87-cd32-43fa-aa55-b11fe8451b01"
+      (reference "J14") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
+    )
+    (path "/8f994a63-5979-4697-8788-8880d7fb143c"
+      (reference "J15") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
     (path "/00000000-0000-0000-0000-000060a18a27"
       (reference "Q1") (unit 1) (value "2N7000") (footprint "Package_TO_SOT_THT:TO-92_Inline")

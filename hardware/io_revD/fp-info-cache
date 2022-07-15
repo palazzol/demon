@@ -1,4 +1,4 @@
-19873104312955432
+19879701345875250
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -51359,6 +51359,13 @@ Inductor
 2
 2
 Evan's misc parts
+L77SDA15S1ACH3R
+L77SDA15S1ACH3R-1
+Connector
+0
+17
+17
+Evan's misc parts
 LED_XZM2CRKM2DGFBB45SCCB
 
 
@@ -51387,6 +51394,13 @@ mounting hole TI Thermostat
 0
 0
 Evan's misc parts
+OS202011MS2QS1
+OS202011MS2QS1-1
+Switch
+0
+8
+8
+Evan's misc parts
 OSHW gear
 
 
@@ -51400,6 +51414,13 @@ Inductor
 0
 2
 2
+Evan's misc parts
+PEC11R-4XXXK-SXXXX
+PEC11R-4xxxK-Sxxxx
+Variable Resistor
+0
+7
+7
 Evan's misc parts
 PLCC127P1750X1750X457-44N
 plcc44
@@ -51499,6 +51520,13 @@ TVS Diode Array WE-TVS
 6
 6
 Evan's misc parts
+Wii GC memory card socket
+
+
+0
+32
+32
+Evan's misc parts
 YAAJ_DCDC_StepDown_LM2596
 
 
@@ -51538,7 +51566,7 @@ jaguar dpad
 
 
 0
-4
+2
 2
 Evan's misc parts
 jaguar keypad button
