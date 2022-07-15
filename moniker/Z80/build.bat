@@ -24,10 +24,10 @@ tools\aslink.exe -m -p -s gorf.rel -u
 tools\srec2bin -a 800 gorf.s19 gorf.bin
 tools\srec_cat.exe gorf.bin -binary -output gorf.hex -Intel -address-length=2 -output_block_size=16
 
-tools\asz80.exe -o -p -s -l astrocade.asm
-tools\aslink.exe -m -p -s astrocade.rel -u
-tools\srec2bin -o 2000 -a 800 astrocade.s19 astrocade.bin
-tools\srec_cat.exe astrocade.bin -binary -output astrocade.hex -Intel -address-length=2 -output_block_size=16
+tools\asz80.exe -o -p -s -l astrocde.asm
+tools\aslink.exe -m -p -s astrocde.rel -u
+tools\srec2bin -o 2000 -a 800 astrocde.s19 astrocde.bin
+tools\srec_cat.exe astrocde.bin -binary -output astrocde.hex -Intel -address-length=2 -output_block_size=16
 
 tools\asz80.exe -o -p -s -l refz80.asm
 tools\aslink.exe -m -p -s refz80.rel -u
