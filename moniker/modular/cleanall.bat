@@ -16,3 +16,6 @@ cd ..
 cd astrocde
 call ..\tools\clean.bat
 cd ..
+cd bit90
+call ..\tools\clean.bat
+cd ..

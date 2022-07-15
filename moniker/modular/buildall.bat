@@ -16,3 +16,6 @@ cd ..
 cd astrocde
 call build.bat
 cd ..
+cd bit90
+call build.bat
+cd ..
