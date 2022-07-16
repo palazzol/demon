@@ -2696,6 +2696,11 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 355e2e96-c9fd-440e-9481-f4c655b2d36f)
   )
+  (text "For adapter cables to ROMs < 2K, tie all unused address lines high"
+    (at 43.18 224.79 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 4158ab58-5ee3-4712-818a-0486a3681ccd)
+  )
   (text "0500-05FF" (at 153.67 197.485 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 4962d7e4-237d-4d7d-be77-856e484fcaf2)
