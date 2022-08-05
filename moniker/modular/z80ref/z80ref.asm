@@ -1,6 +1,6 @@
 
         .include "../z80/settings.asm"
-        .include "../z80/romio_defs.asm"
+        .include "../romio/defs.asm"
 
         ; This section must end before NMI Handler
         .bank   first   (base=STRTADD, size=NMIADD-STRTADD)
@@ -16,9 +16,6 @@
         .include "../z80/romio.asm" 
         .include "../z80/loop.asm"
         .include "../z80/main.asm"
-
-        .bank   third   (base=IOREGW, size=0x20)
-        .area   third   (ABS, BANK=third)
         
-        .include "../z80/romio_table.asm"
+        .include "../romio/table.asm"
 

@@ -20,7 +20,7 @@
                              18 ; I2C ADDRESSING
                      0011    19 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
                      0010    20 I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
-                              3         .include "../z80/romio_defs.asm"
+                              3         .include "../romio/defs.asm"
                               1 ; For Demon Debugger Hardware - Rev D 
                               2 
                      07A0     3 IOREGR   .equ   STRTADD+0x07a0    ;reserved region for IO READ
@@ -340,11 +340,8 @@
    01BC B0            [ 4]  202         OR      B
    01BD 20 FB         [12]  203         JR      NZ,DLOOP
    01BF 18 EE         [12]  204         JR      MAIN
-                             19 
-                             20         .bank   third   (base=IOREGW, size=0x20)
-                             21         .area   third   (ABS, BANK=third)
-                             22         
-                             23         .include "../z80/romio_table.asm"
+                             19         
+                             20         .include "../romio/table.asm"
                               1 
                               2 ; 
                               3 ; For Demon Debugger Hardware - Rev D 
@@ -365,11 +362,14 @@
                              18 ; Note: Currently, only the bottom two bits are used, but reserving the memory
                              19 ; this way insures that up to 5 bits could be used 
                              20 ; 
-   07C0 00 01 02 03 04 05    21         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
+                             21         .bank   iowritebank   (base=IOREGW, size=0x20)
+                             22         .area   iowritearea   (ABS, BANK=iowritebank)
+                             23 
+   07C0 00 01 02 03 04 05    24         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
         06 07 08 09 0A 0B
         0C 0D 0E 0F
-   07D0 10 11 12 13 14 15    22         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
+   07D0 10 11 12 13 14 15    25         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
         16 17 18 19 1A 1B
         1C 1D 1E 1F
-                             23 
-                             24 
+                             26 
+                             21 

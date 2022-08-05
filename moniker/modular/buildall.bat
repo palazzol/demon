@@ -19,3 +19,12 @@ cd ..
 cd bit90
 call build.bat
 cd ..
+cd asteroidorig
+call build.bat
+cd ..
+cd 6502ref
+call build.bat
+cd ..
+cd starshp1
+call build.bat
+cd ..

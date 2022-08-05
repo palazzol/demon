@@ -19,3 +19,12 @@ cd ..
 cd bit90
 call ..\tools\clean.bat
 cd ..
+cd asteroidorig
+call ..\tools\clean.bat
+cd ..
+cd 6502ref
+call ..\tools\clean.bat
+cd ..
+cd starshp1
+call ..\tools\clean.bat
+cd ..
