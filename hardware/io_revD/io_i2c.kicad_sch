@@ -4354,7 +4354,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x03") (at 56.515 182.245 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 2e23db4f-942c-43a5-9246-4bbaaa1e5cf8)
-    (property "Reference" "J?" (id 0) (at 59.055 184.15 90)
+    (property "Reference" "J8" (id 0) (at 59.055 184.15 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "extra CS" (id 1) (at 66.675 182.245 0)
@@ -4680,7 +4680,7 @@
   (symbol (lib_id "power:+5V") (at 51.435 172.085 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 67b810e7-b7f4-4fc8-89a7-9c371140114a)
-    (property "Reference" "#PWR?" (id 0) (at 51.435 175.895 0)
+    (property "Reference" "#PWR0139" (id 0) (at 51.435 175.895 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+5V" (id 1) (at 51.816 167.6908 0))
@@ -4949,7 +4949,7 @@
   (symbol (lib_id "Device:R") (at 51.435 175.895 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 9fad9287-0f1a-49d9-8c00-6b85fd067582)
-    (property "Reference" "R?" (id 0) (at 49.657 174.7266 0)
+    (property "Reference" "R9" (id 0) (at 49.657 174.7266 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "4.7k" (id 1) (at 49.657 177.038 0)
@@ -4968,7 +4968,7 @@
   (symbol (lib_id "Diode:1N4148") (at 38.1 189.865 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid ac6b45bb-d288-4a55-b46b-b43e8c54f4b3)
-    (property "Reference" "D?" (id 0) (at 35.56 194.945 0))
+    (property "Reference" "D19" (id 0) (at 35.56 194.945 0))
     (property "Value" "1N4148" (id 1) (at 35.56 187.325 0))
     (property "Footprint" "Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_KathodeUp" (id 2) (at 42.545 189.865 0)
       (effects (font (size 1.27 1.27)) hide)
@@ -5542,7 +5542,7 @@
       (reference "#PWR0138") (unit 1) (value "+5VD") (footprint "")
     )
     (path "/67b810e7-b7f4-4fc8-89a7-9c371140114a"
-      (reference "#PWR?") (unit 1) (value "+5V") (footprint "")
+      (reference "#PWR0139") (unit 1) (value "+5V") (footprint "")
     )
     (path "/00000000-0000-0000-0000-000060a79c85"
       (reference "A1") (unit 1) (value "Arduino_Nano_v3.x") (footprint "Module:Arduino_Nano")
@@ -5617,7 +5617,7 @@
       (reference "D18") (unit 1) (value "1N4148") (footprint "Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_KathodeUp")
     )
     (path "/ac6b45bb-d288-4a55-b46b-b43e8c54f4b3"
-      (reference "D?") (unit 1) (value "1N4148") (footprint "Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_KathodeUp")
+      (reference "D19") (unit 1) (value "1N4148") (footprint "Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_KathodeUp")
     )
     (path "/00000000-0000-0000-0000-0000607e1ea2"
       (reference "J1") (unit 1) (value "Target Interface, 2716 Pinout") (footprint "Package_DIP:DIP-24_W15.24mm_Socket")
@@ -5640,6 +5640,9 @@
     (path "/f7a7ace8-7226-4c98-8d15-2a787897e552"
       (reference "J7") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
+    (path "/2e23db4f-942c-43a5-9246-4bbaaa1e5cf8"
+      (reference "J8") (unit 1) (value "extra CS") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
+    )
     (path "/19b1efdb-a9fc-4b47-8244-e1fc60c95fb0"
       (reference "J12") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
@@ -5654,9 +5657,6 @@
     )
     (path "/4d6fcc2f-a501-4eaf-be9d-9ef118b43c3d"
       (reference "J16") (unit 1) (value "read region") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
-    )
-    (path "/2e23db4f-942c-43a5-9246-4bbaaa1e5cf8"
-      (reference "J?") (unit 1) (value "extra CS") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
     )
     (path "/00000000-0000-0000-0000-000060a18a27"
       (reference "Q1") (unit 1) (value "2N7000") (footprint "Package_TO_SOT_THT:TO-92_Wide")
@@ -5686,7 +5686,7 @@
       (reference "R8") (unit 1) (value "10k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical")
     )
     (path "/9fad9287-0f1a-49d9-8c00-6b85fd067582"
-      (reference "R?") (unit 1) (value "4.7k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical")
+      (reference "R9") (unit 1) (value "4.7k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical")
     )
     (path "/00000000-0000-0000-0000-0000607df9f3"
       (reference "U1") (unit 1) (value "2716") (footprint "Package_DIP:DIP-24_W15.24mm_Socket")
