@@ -1870,6 +1870,7 @@
     )
   )
 
+
   (junction (at 180.975 220.98) (diameter 0) (color 0 0 0 0)
     (uuid 0f0ed120-b911-4ec1-8ff5-50cb79917f17)
   )
@@ -3425,7 +3426,7 @@
   (symbol (lib_id "Memory_EPROM:2716") (at 102.87 86.995 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000607e1ea2)
-    (property "Reference" "J1" (id 0) (at 102.87 90.17 90))
+    (property "Reference" "J16" (id 0) (at 102.87 90.17 90))
     (property "Value" "Target Interface, 2716 Pinout" (id 1) (at 106.045 90.805 90))
     (property "Footprint" "Package_DIP:DIP-24_W15.24mm_Socket" (id 2) (at 102.87 86.995 0)
       (effects (font (size 1.27 1.27)) hide)
@@ -4354,7 +4355,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x03") (at 56.515 182.245 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 2e23db4f-942c-43a5-9246-4bbaaa1e5cf8)
-    (property "Reference" "J8" (id 0) (at 59.055 184.15 90)
+    (property "Reference" "J1" (id 0) (at 57.785 187.325 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "extra CS" (id 1) (at 66.675 182.245 0)
@@ -4518,7 +4519,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x03") (at 174.625 240.665 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 4d6fcc2f-a501-4eaf-be9d-9ef118b43c3d)
-    (property "Reference" "J16" (id 0) (at 176.53 238.125 90)
+    (property "Reference" "J5" (id 0) (at 176.53 238.125 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "read region" (id 1) (at 158.75 240.03 90)
@@ -5140,7 +5141,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x01") (at 31.115 76.2 180) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid d85582d1-3609-45f5-a313-b6aab82f36d6)
-    (property "Reference" "J5" (id 0) (at 27.94 76.2 0))
+    (property "Reference" "J8" (id 0) (at 27.94 76.2 0))
     (property "Value" "Conn_01x01" (id 1) (at 31.115 73.7386 0)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -5619,8 +5620,8 @@
     (path "/ac6b45bb-d288-4a55-b46b-b43e8c54f4b3"
       (reference "D19") (unit 1) (value "1N4148") (footprint "Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_KathodeUp")
     )
-    (path "/00000000-0000-0000-0000-0000607e1ea2"
-      (reference "J1") (unit 1) (value "Target Interface, 2716 Pinout") (footprint "Package_DIP:DIP-24_W15.24mm_Socket")
+    (path "/2e23db4f-942c-43a5-9246-4bbaaa1e5cf8"
+      (reference "J1") (unit 1) (value "extra CS") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
     )
     (path "/00000000-0000-0000-0000-000060cb41f4"
       (reference "J2") (unit 1) (value "Jumper Block") (footprint "Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical")
@@ -5631,8 +5632,8 @@
     (path "/e06d1eab-cb86-4592-b7c5-13289f2591ff"
       (reference "J4") (unit 1) (value "Target Interface, 2716 Pinout") (footprint "Connector_PinHeader_2.54mm:PinHeader_2x12_P2.54mm_Vertical")
     )
-    (path "/d85582d1-3609-45f5-a313-b6aab82f36d6"
-      (reference "J5") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
+    (path "/4d6fcc2f-a501-4eaf-be9d-9ef118b43c3d"
+      (reference "J5") (unit 1) (value "read region") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
     )
     (path "/bc344a17-e2cd-4fbe-a62d-0a585f5bf2cd"
       (reference "J6") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
@@ -5640,8 +5641,8 @@
     (path "/f7a7ace8-7226-4c98-8d15-2a787897e552"
       (reference "J7") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
-    (path "/2e23db4f-942c-43a5-9246-4bbaaa1e5cf8"
-      (reference "J8") (unit 1) (value "extra CS") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
+    (path "/d85582d1-3609-45f5-a313-b6aab82f36d6"
+      (reference "J8") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
     (path "/19b1efdb-a9fc-4b47-8244-e1fc60c95fb0"
       (reference "J12") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
@@ -5655,8 +5656,8 @@
     (path "/8f994a63-5979-4697-8788-8880d7fb143c"
       (reference "J15") (unit 1) (value "Conn_01x01") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical")
     )
-    (path "/4d6fcc2f-a501-4eaf-be9d-9ef118b43c3d"
-      (reference "J16") (unit 1) (value "read region") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
+    (path "/00000000-0000-0000-0000-0000607e1ea2"
+      (reference "J16") (unit 1) (value "Target Interface, 2716 Pinout") (footprint "Package_DIP:DIP-24_W15.24mm_Socket")
     )
     (path "/00000000-0000-0000-0000-000060a18a27"
       (reference "Q1") (unit 1) (value "2N7000") (footprint "Package_TO_SOT_THT:TO-92_Wide")
