@@ -31,14 +31,11 @@ To support a totally new target system, a small amount of tweaking may need to b
 
 The Demon Debugger system has evolved over time.  If you have a Demon Debugger board, you can use ROM emulation mode with prebuilt target code, and get started right away, without any other tools.  If you need to support a new target, you can still use ROM emulation mode, once you build a new target code.
 
+![Image](img/RomEmulationMode.png)
 
 If you don't have a Demon Debugger board, you can still use the Demon Debugger system in Tethered mode, provided you have a few other capabilities.  It requires only an Arduino Nano/Uno, a single transistor, and the ability to program an EPROM chip.
 
-## Videos
-
-[Sega Sound Board test](https://www.youtube.com/watch?v=uYlbb8uPjoU) Quality is not very good, but the Arduino module is next to the laptop
-
-[Intellivision Demo](https://www.youtube.com/watch?v=_8YfCMpHLhY) Better quality, no Arduino needed using native serialport on the LTO Flash cart.
+![Image](img/TetheredMode.png)
 
 ## Currently Supported Targets
 
@@ -70,6 +67,13 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 * Atari 2600 (6502)
 * etc.
 
+## Old Videos
+
+Tethered Mode - [Sega Sound Board test](https://www.youtube.com/watch?v=uYlbb8uPjoU) Quality is not very good, but the Arduino module is next to the laptop
+
+[Intellivision Demo](https://www.youtube.com/watch?v=_8YfCMpHLhY) Better quality, no Arduino needed using native serialport on the LTO Flash cart.
+
 ## Future:
 
-I believe this system has the potential to help others fix their old things. It has a ton of potential to support more CPUs and more hardware platforms!  Please let us know if you need any help getting this system going, should you choose to use it!
+I would like to port this to more systems, and/or help others fix their old things.  
+Please let us know if you need any help getting this system going, should you choose to use it!
