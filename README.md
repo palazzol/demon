@@ -33,7 +33,7 @@ The Demon Debugger system has evolved over time.  If you have a Demon Debugger b
 
 ![Image](img/RomEmulationMode.png)
 
-If you don't have a Demon Debugger board, you can still use the Demon Debugger system in Tethered mode, provided you have a few other capabilities.  It requires only an Arduino Nano/Uno, a single transistor, and the ability to program an EPROM chip.
+If you don't have a Demon Debugger board, you can still use the Demon Debugger system in Tethered mode, provided you have a few other capabilities.  It requires only an Arduino Nano/Uno, a single transistor, and the ability to program an EPROM chip.  You need to identify points on your target which can be used (2 outputs, 1 input, and a ground), wire up your modified Arduino accordingly, and modify the communication routines in the target to use those points.  There are a few examples in the repo of doing this.
 
 ![Image](img/TetheredMode.png)
 
