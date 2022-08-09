@@ -75,6 +75,10 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 
 ![Image](img/DemonDebuggerGUI.png)
 
+## API
+
+For now, please see the file demonapi.py
+
 ## Old Videos
 
 Tethered Mode - [Sega Sound Board test](https://www.youtube.com/watch?v=uYlbb8uPjoU) Quality is not very good, but the Arduino module is next to the laptop
