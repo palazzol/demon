@@ -23,7 +23,7 @@ Unfortunately, Demon Debugger can't be used on a totally broken system.  The tar
 
 In ROM emulation mode, The Demon Debugger board cable plugs into a socket on the target system, in place of a standard JEDEC ROM/EPROM chip.  Then, your PC can communicate with the target over serial, using a standard USB connection.
 
-If your target system is already supported, there will be a target image already built, which you can download onto you target.  
+If your target system is already supported, there will be a target image already built, which you can upload onto your target.  
 
 To support a totally new target system, a small amount of tweaking may need to be done to the assembly code for your target. Generally, if you know the memory map for your system, this is really easy to do.
 
@@ -41,7 +41,7 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 
 ### 6502
 * Generic 6502 (Works on most targets) - Atari Asteroids, VCFMW Badge!
-* Atari Asteroid Arcade, tethered mode
+* Atari Asteroids Arcade, tethered mode
 * Atari Starship 1 Arcade
 
 ### Z80
@@ -66,6 +66,14 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 * Various 8080 targets
 * Atari 2600 (6502)
 * etc.
+
+## Command Line Client
+
+![Image](img/demon_screen.png)
+
+## New GUI WIP
+
+![Image](img/DemonDebuggerGUI.png)
 
 ## Old Videos
 
