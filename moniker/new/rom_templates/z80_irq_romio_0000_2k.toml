@@ -1,0 +1,64 @@
+[[Defs]]
+comment = 'Start of chip memory mapping'
+STRTADD = 0x0000
+
+[[Defs]]
+comment = '2K ROM'
+ROMSIZE = 0x0800
+
+[[Defs]]
+comment = 'delay factor'
+BIGDEL = 0x0180
+
+[[Region]]
+code  = [
+    { link = "dd/dd.def" }, 
+    { link = "dd/z80.def" },
+    { link = "io/romio.def" } 
+]
+
+[[Region]]
+#--------------------------------------------------
+# On the Z80, the start address is 0x0000
+# but the IRQ handler is at 0x0038
+# So, we put a small but of startup code here,
+# and then jump to after the NMI handler for more
+#--------------------------------------------------    
+start = 'STRTADD'
+end = 'IRQADD'
+code=[
+    { insert = 'startup1' },
+]
+
+[[Region]]
+#--------------------------------------------------
+# This region is reserved for the IRQ handler
+#--------------------------------------------------
+start = 'IRQADD'
+end   = 'NMIADD'
+code  = [
+    { insert = 'IRQ' } 
+]
+
+[[Region]]
+start = 'NMIADD'
+end   = 'IOADD'
+code  = [
+    { insert = 'NMI' },
+    { insert = 'startup2' },
+    { link = "dd/z80_main.asm" },
+    { insert = 'every' },
+    { link = "io/z80_romio.asm" }
+]
+
+[[Region]]
+start = 'IOREGW'
+end   = 'IOEND'
+code  = [
+    { link = "io/romio_table.asm" }
+]
+
+[[Region]]    
+start = 'IOEND'
+end = 'ROMEND'
+

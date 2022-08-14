@@ -1,0 +1,66 @@
+
+[[Defs]]
+comment = 'Start of RAM variables - need only 4 bytes here, but we have 16. Stack will grow towards 0 from this point'
+RAMADDR = 0xfff0
+
+[Code]
+#--------------------------------------------------------------------------
+# IRQ HANDLER
+#--------------------------------------------------------------------------
+IRQ = '''
+;       IRQ HANDLER
+IRQ:
+        RETI
+'''
+
+#--------------------------------------------------------------------------
+# NMI HANDLER
+#--------------------------------------------------------------------------
+NMI = '''
+;       IRQ HANDLER
+NMI:
+        RETN
+'''
+
+#--------------------------------------------------------------------------
+# STARTUP Routines
+#
+# These are called once, and can be used do any target-specific
+# initialization that is required
+#
+# On the Z80, it is split into two.  This is because startup1 is 
+# usually place into a space-limited region.
+# It's best to expand startup2 and leave startup1 alone.
+#--------------------------------------------------------------------------
+startup1 = '''
+;       STARTUP CODE 1
+STARTUP1:
+        DI                  ; Disable interrupts - we don't handle them
+        LD      SP,RAMADDR  ; have to set valid SP
+;       YOUR SMALL CODE CAN GO HERE
+        JP  STARTUP2
+'''
+
+startup2 = '''
+;       STARTUP CODE 2
+STARTUP2:
+;       YOUR CODE CAN GO HERE
+'''
+
+#--------------------------------------------------------------------------
+# EVERY Routine
+# This is called regularly, every polling loop, and can be used do any 
+# target-specific task that is required, such as hitting a watchdog
+#--------------------------------------------------------------------------
+every = '''
+;       EVERY CODE
+EVERY:
+;       YOUR CODE CAN GO HERE
+        RET
+'''
+
+[Links]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+template = "rom_templates/z80_irq_romio_0000_2k.toml"
