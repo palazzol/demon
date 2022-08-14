@@ -1,0 +1,4 @@
+
+ROMEND  .equ    STRTADD+ROMSIZE
+
+
