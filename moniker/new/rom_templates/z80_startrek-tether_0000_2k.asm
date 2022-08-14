@@ -49,6 +49,6 @@ EVERY:
         EVERY_MACRO
 
         ; Routines for romio here
-        .include "../io/startrek_tether.asm"
+        .include "../io/startrek-tether.asm"
 
         .end

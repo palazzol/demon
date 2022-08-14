@@ -42,4 +42,4 @@ RAMADDR .equ    0x4fce      ; Start of RAM variables - need only 4 bytes here, b
 ;--------------------------------------------------------------------------
 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
 ;--------------------------------------------------------------------------
-        .include "../rom_templates/astrocde_romio_2000_2k.asm"
+        .include "../rom_templates/astrocde-cart_romio_2000_2k.asm"

@@ -43,4 +43,4 @@ SSTACK	.equ	0xff	;start of stack, needs some memory below this address
 ;--------------------------------------------------------------------------
 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
 ;--------------------------------------------------------------------------
-        .include "../rom_templates/asteroid_tether_f800_2k.asm"
+        .include "../rom_templates/6502_asteroid-tether_f800_2k.asm"

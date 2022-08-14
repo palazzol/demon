@@ -41,7 +41,7 @@
                              42 ;--------------------------------------------------------------------------
                              43 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
                              44 ;--------------------------------------------------------------------------
-                             45         .include "../rom_templates/astrocde_romio_2000_2k.asm"
+                             45         .include "../rom_templates/astrocde-cart_romio_2000_2k.asm"
                               1 
                               2          
                      2000     3 STRTADD .equ    0x2000      ; start of chip memory mapping

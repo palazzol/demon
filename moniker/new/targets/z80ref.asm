@@ -56,4 +56,4 @@ RAMADDR .equ    0xfff0      ; Start of RAM variables - need only 4 bytes here, b
 ;--------------------------------------------------------------------------
 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
 ;--------------------------------------------------------------------------
-        .include "../rom_templates/z80_irq_romio_0000_2k.asm"
+        .include "../rom_templates/z80_romio_0000_2k.asm"

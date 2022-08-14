@@ -58,4 +58,4 @@ RAMADDR .equ    0xcff0      ; Start of RAM variables - need only 4 bytes here, b
 ;--------------------------------------------------------------------------
 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
 ;--------------------------------------------------------------------------
-        .include "../rom_templates/startrek_tether_0000_2k.asm"
+        .include "../rom_templates/z80_startrek-tether_0000_2k.asm"

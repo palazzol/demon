@@ -42,4 +42,4 @@ RAMADDR .equ    0x77f0      ; Start of RAM variables - need only 4 bytes here, b
 ;--------------------------------------------------------------------------
 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
 ;--------------------------------------------------------------------------
-        .include "../rom_templates/coleco_romio_8000_2k.asm"
+        .include "../rom_templates/coleco-cart_romio_8000_2k.asm"

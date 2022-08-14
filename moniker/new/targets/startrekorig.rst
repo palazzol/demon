@@ -57,7 +57,7 @@
                              58 ;--------------------------------------------------------------------------
                              59 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
                              60 ;--------------------------------------------------------------------------
-                             61         .include "../rom_templates/startrek_tether_0000_2k.asm"
+                             61         .include "../rom_templates/z80_startrek-tether_0000_2k.asm"
                               1 
                               2 
                               3         
@@ -331,7 +331,7 @@
    017A C9            [10]    2         RET
                              50 
                              51         ; Routines for romio here
-                             52         .include "../io/startrek_tether.asm"
+                             52         .include "../io/startrek-tether.asm"
                               1 ; SCL  - OUT F9, bit7, (0x80) coin counter 1, pin 5, U11 - R1
                               2 ; DOUT - OUT F9, bit6, (0x40) coin counter 2, pin 9, U11 - R3
                               3 ; DIN  - IN  F8, bit3, (0x08) DIP, SW1, pin9, U2-pin 6

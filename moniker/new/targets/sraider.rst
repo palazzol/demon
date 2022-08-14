@@ -55,7 +55,7 @@
                              56 ;--------------------------------------------------------------------------
                              57 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
                              58 ;--------------------------------------------------------------------------
-                             59         .include "../rom_templates/z80_irq_romio_0000_2k.asm"
+                             59         .include "../rom_templates/z80_romio_0000_2k.asm"
                               1 
                               2 
                               3           

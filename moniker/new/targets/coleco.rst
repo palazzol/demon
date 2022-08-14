@@ -41,7 +41,7 @@
                              42 ;--------------------------------------------------------------------------
                              43 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
                              44 ;--------------------------------------------------------------------------
-                             45         .include "../rom_templates/coleco_romio_8000_2k.asm"
+                             45         .include "../rom_templates/coleco-cart_romio_8000_2k.asm"
                               1 
                               2           
                      8000     3 STRTADD .equ    0x8000      ; start of chip memory mapping

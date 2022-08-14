@@ -42,7 +42,7 @@
                              43 ;--------------------------------------------------------------------------
                              44 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
                              45 ;--------------------------------------------------------------------------
-                             46         .include "../rom_templates/asteroid_tether_f800_2k.asm"
+                             46         .include "../rom_templates/6502_asteroid-tether_f800_2k.asm"
                               1 
                               2          
                      F800     3 STRTADD .equ    0xf800      ; start of chip memory mapping
@@ -262,7 +262,7 @@
    F906 60            [ 6]    2         rts
                              22 
                              23         ; Routines for tether io here
-                             24         .include "../io/asteroid_tether.asm"
+                             24         .include "../io/asteroid-tether.asm"
                               1 
                               2 ; SCL  - WRITE 0x3200, bit0 (0x01) 2 player start lamp - active low only because led is wired to +5V
                               3 ; DOUT - WRITE 0x3200, bit1 (0x02) 1 player start lamp - active low only because led is wired to +5V

@@ -21,7 +21,7 @@ EVERY:
         EVERY_MACRO
 
         ; Routines for tether io here
-        .include "../io/asteroid_tether.asm"
+        .include "../io/asteroid-tether.asm"
 
 NMI:
         NMI_MACRO
