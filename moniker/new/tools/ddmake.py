@@ -28,6 +28,14 @@ class DDTargetMaker:
             if key == 'ROMSIZE':
                 self.romsize = elem[key]
 
+    def ExtractCPUType(self, name):
+        if name == "dd/z80.def":
+            self.cpu = 'Z80'
+            self.assembler = 'asz80'
+        elif name == "dd/6502.def":
+            self.cpu = '6502'
+            self.assembler = 'as6500'
+
     def EmitDef(self, f, elem):
         comment = elem["comment"]
         print(f"; {comment}",file=f)
@@ -82,14 +90,15 @@ class DDTargetMaker:
                     for codeelem in elem['code']:
                         if 'link' in codeelem:
                             self.EmitLink(f, codeelem['link'])
+                            self.ExtractCPUType(codeelem['link'])
                         elif 'insert' in codeelem:
                             self.EmitInsert(f, codeelem['insert'])
                 print("",file=f)
     
-    def BuildTarget(self, assembler):
+    def BuildTarget(self):
         fullname = self.objpath+'\\'+self.basename
         self.Log(2, f'Assembling {self.basename}.asm...')
-        cmd = f'..\\tools\\{assembler} -o -p -s -l {fullname}.asm'
+        cmd = f'..\\tools\\{self.assembler}.exe -o -p -s -l {fullname}.asm'
         #print(cmd)
         rv = os.system(cmd)
         if rv != 0:
@@ -133,7 +142,7 @@ if __name__ == "__main__":
         t = DDTargetMaker(basename,2)
         t.LoadTOML()
         t.CreateTarget()
-        rv = t.BuildTarget('asz80.exe')
+        rv = t.BuildTarget()
         if rv != 0:
             sys.exit(rv)
     print("Done!")
