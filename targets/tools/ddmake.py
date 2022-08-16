@@ -299,28 +299,53 @@ class DDTargetMaker:
         return 0
 
 if __name__ == "__main__":
-    if len(sys.argv) > 3:
-        print('Usage: ddmake.py <target> <loglevel>')
+    if len(sys.argv) == 1 or len(sys.argv) > 3:
+        print('Usage: ddmake.py <target> (loglevel)')
         os.sys.exit(-1)
     loglevel = 1
     if len(sys.argv) > 2:
         loglevel = int(sys.argv[2])
-    if len(sys.argv) == 1:
+    if sys.argv[1] == 'clean':
         files = glob.glob("*.toml")
         basenames = []
         for file in files:
             basenames.append(file[0:-5])
-    else:
-        basenames = [ sys.argv[1] ]
-    for basename in basenames:
-        t = DDTargetMaker(basename,loglevel)
-        t.LoadTOML()
-        t.CreateTarget()
-        rv = t.BuildTarget()
-        if rv != 0:
-            sys.exit(rv)
-        #rv = os.system(f'fc ..\\output\\{basename}\\{basename}.bin ..\\backup\\targets\\{basename}.bin')
-        #if rv != 0:
-        #    sys.exit(rv)
+        bindir = '..\\..\\bin'
+        for basename in basenames:
+            for suffix in ['lst','sym','map','hlr','rel','s19']:
+                try:
+                    os.remove(f'{bindir}\\{basename}\\{basename}.{suffix}')
+                except:
+                    pass
+    elif sys.argv[1] == 'cleanall':
+        files = glob.glob("*.toml")
+        basenames = []
+        for file in files:
+            basenames.append(file[0:-5])
+        bindir = '..\\..\\bin'
+        for basename in basenames:
+            for suffix in ['lst','sym','map','hlr','rel','s19','asm','bin','hex','rst']:
+                try:
+                    os.remove(f'{bindir}\\{basename}\\{basename}.{suffix}')
+                except:
+                    pass
+    else: 
+        if sys.argv[1] == 'all':
+            files = glob.glob("*.toml")
+            basenames = []
+            for file in files:
+                basenames.append(file[0:-5])
+        else:
+            basenames = [ sys.argv[1] ]
+        for basename in basenames:
+            t = DDTargetMaker(basename,loglevel)
+            t.LoadTOML()
+            t.CreateTarget()
+            rv = t.BuildTarget()
+            if rv != 0:
+                sys.exit(rv)
+            #rv = os.system(f'fc ..\\output\\{basename}\\{basename}.bin ..\\backup\\targets\\{basename}.bin')
+            #if rv != 0:
+            #    sys.exit(rv)
     print("Done!")
 
