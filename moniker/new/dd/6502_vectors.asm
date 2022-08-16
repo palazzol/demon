@@ -1,3 +1,3 @@
         .dw     NMI
-        .dw     STARTUP
-        .dw     STARTUP
+        .dw     START
+        .dw     START

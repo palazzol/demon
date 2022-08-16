@@ -8,20 +8,16 @@ RAMADDR = 0x4fce
 
 [Code]
 #--------------------------------------------------------------------------
-# STARTUP Routines
+# START Routine
 #
-# These are called once, and can be used do any target-specific
+# This is called once, and can be used do any target-specific
 # initialization that is required
-#
-# On the Z80, it is split into two.  This is because startup1 is 
-# usually place into a space-limited region.
-# It's best to expand startup2 and leave startup1 alone.
 #--------------------------------------------------------------------------
-startup = '''
+start = '''
 ;
-;       STARTUP CODE
+;       START CODE
 ;
-STARTUP1:
+START:
 ;
 ;       Assume the stack and the interrupt states are
 ;       set up properly, by the Astrocade BIOS.
@@ -29,6 +25,7 @@ STARTUP1:
 ;
         ;DI                  ; Disable interrupts - we don't handle them
         ;LD      SP,RAMADDR  ; have to set valid SP
+        JP       INIT
 '''
 
 #--------------------------------------------------------------------------

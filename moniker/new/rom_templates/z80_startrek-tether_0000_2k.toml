@@ -42,32 +42,33 @@ NMI:
 '''
 
 #--------------------------------------------------------------------------
-# STARTUP Routines
+# START Routines
 #
 # These are called once, and can be used do any target-specific
 # initialization that is required
 #
-# On the Z80, it is split into two.  This is because startup1 is 
-# usually place into a space-limited region.
-# It's best to expand startup2 and leave startup1 alone.
+# On the Z80, it is split into two.  This is because start is 
+# usually placed into a space-limited region.
+# It's best to expand start2 and leave start alone.
 #--------------------------------------------------------------------------
-startup1 = '''
+start = '''
 ;
-;       STARTUP CODE 1
+;       START CODE
 ;
-STARTUP1:
+START:
         DI                  ; Disable interrupts - we don't handle them
         LD      SP,RAMADDR  ; have to set valid SP
 ;       YOUR SMALL CODE CAN GO HERE
-        JP  STARTUP2
+        JP      START2
 '''
 
-startup2 = '''
+start2 = '''
 ;
-;       STARTUP CODE 2
+;       START CODE 2
 ;
-STARTUP2:
+START2:
 ;       YOUR CODE CAN GO HERE
+        JP      INIT
 '''
 
 #--------------------------------------------------------------------------
@@ -100,7 +101,7 @@ code  = [
 start = 'STRTADD'
 end = 'IRQADD'
 code=[
-    { insert = 'startup1' },
+    { insert = 'start' },
 ]
 
 [[Region]]
@@ -118,7 +119,7 @@ start = 'NMIADD'
 end   = 'ROMEND'
 code  = [
     { insert = 'NMI' },
-    { insert = 'startup2' },
+    { insert = 'start2' },
     { link = "dd/z80_main.asm" },
     { insert = 'every' },
     { link = "io/startrek-tether.asm" }

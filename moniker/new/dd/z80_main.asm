@@ -8,6 +8,7 @@ I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
 
 CMDBUF  .equ    RAMADDR     ; Need only 4 bytes of ram for command buffer
 
+INIT:
         LD      IX,CMDBUF   ; Easy to index command buffer
         LD      D,#0x00     ; initialize D to prevent index overflow
 
@@ -198,7 +199,7 @@ RHERE:
         SCF
         RET
 REMCALL:
-        LD      HL,STARTUP1
+        LD      HL,START
         PUSH    HL
         CALL    LOADHL
         JP      (HL)

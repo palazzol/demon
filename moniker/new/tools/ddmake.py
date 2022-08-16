@@ -319,7 +319,7 @@ if __name__ == "__main__":
         rv = t.BuildTarget()
         if rv != 0:
             sys.exit(rv)
-        #rv = os.system(f'fc {basename}.bin ..\\output\\{basename}\\{basename}.bin')
+        #rv = os.system(f'fc ..\\output\\{basename}\\{basename}.bin ..\\backup\\targets\\{basename}.bin')
         #if rv != 0:
         #    sys.exit(rv)
     print("Done!")

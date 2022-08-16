@@ -14,6 +14,7 @@ CMDBUF3 .equ	RAMSTRT+0x06	;command buffer
 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
 I2CWADR .equ    0x10        ; I2C write address - I2C address 0x08
 
+INIT:
         lda     #0x00
         sta     OUTBUF
 
@@ -171,9 +172,9 @@ RHERE:
         sec
         rts
 REMCALL:
-	    lda	#>(STARTUP-1)
+	    lda	#>(START-1)
         pha
-        lda	#<(STARTUP-1)
+        lda	#<(START-1)
         pha
         jsr     LOADBC
         jmp     [B]

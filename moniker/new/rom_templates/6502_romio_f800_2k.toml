@@ -37,21 +37,22 @@ NMI:
 '''
 
 #--------------------------------------------------------------------------
-# STARTUP Routine
+# START Routine
 #
-# This are called once, and can be used do any target-specific
+# This is called once, and can be used do any target-specific
 # initialization that is required
 #--------------------------------------------------------------------------
-startup = '''
+start = '''
 ;
-;       STARTUP CODE
+;       START CODE
 ;
-STARTUP:
+START:
         sei              ; Disable interrupts - we don't handle them
         ldx     #SSTACK  ; set up the stack
         txs
         cld              ; No Decimal
 ;       YOUR CODE CAN GO HERE
+        jmp     INIT
 '''
 
 #--------------------------------------------------------------------------
@@ -79,7 +80,7 @@ code  = [
 start = 'STRTADD'
 end = 'IOADD'
 code=[
-    { insert = 'startup' },
+    { insert = 'start' },
     { link = "dd/6502_main.asm" },
     { insert = 'every' },
     { link = "io/6502_romio.asm" },

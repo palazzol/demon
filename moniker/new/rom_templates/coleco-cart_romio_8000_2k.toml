@@ -28,7 +28,7 @@ cartheader = '''
     	.dw     0x0000
     	.dw     0x0000
     	.dw     0x0000
-    	.dw     STARTUP1
+    	.dw     START
     	JP      0x0008
     	JP      0x0010
     	JP      0x0018
@@ -47,19 +47,20 @@ title = '''
 '''
 
 #--------------------------------------------------------------------------
-# STARTUP Routine
+# START Routine
 #
-# These are called once, and can be used do any target-specific
+# This is called once, and can be used do any target-specific
 # initialization that is required
 #--------------------------------------------------------------------------
-startup = '''
+start = '''
 ;
-;       STARTUP CODE
+;       START CODE
 ;
-STARTUP1:
+START:
         DI                  ; Disable interrupts - we don't handle them
         LD      SP,RAMADDR  ; have to set valid SP
 ;       YOUR CODE CAN GO HERE
+        JP      INIT
 '''
 
 #--------------------------------------------------------------------------
@@ -92,7 +93,7 @@ end = 'IOADD'
 code = [
     { insert = 'cartheader' },
     { insert = 'title' },
-    { insert = 'startup' },
+    { insert = 'start' },
     { link = 'dd/z80_main.asm'},
     { insert = 'every'},
     { link = 'io/z80_romio.asm'}
