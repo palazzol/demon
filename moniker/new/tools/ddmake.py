@@ -237,7 +237,10 @@ class DDTargetMaker:
 
     def CreateTarget(self):
         self.Log(2, f"Creating {self.basename}.asm...")
-        self.objpath = f'..\\output\\{self.basename}'
+        objpath = f'..\\output'
+        if not os.path.exists(objpath):
+            os.mkdir(objpath)            
+        self.objpath = f'{objpath}\\{self.basename}'
         if not os.path.exists(self.objpath):
             os.mkdir(self.objpath)
         with open(f"{self.objpath}\\{self.basename}.asm",'w') as f:
