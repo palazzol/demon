@@ -171,12 +171,24 @@ class DDTargetMaker:
 
     def LoadTOML(self):
         self.Log(2, f"Loading target {self.basename}.toml...")
+        if not os.path.exists(f'{self.basename}.toml'):
+            print(f'Error: {self.basename}.toml not found')
+            sys.exit(-1)            
         with open(f'{self.basename}.toml','rb') as f:
             self.target = tomllib.load(f)
         #pprint.pp(target)
+        if 'Links' not in self.target:
+            print(f'Error: no [[Links]] in target {self.basename}.toml')
+            sys.exit(-1)
+        if 'template' not in self.target["Links"]:
+            print(f'Error: no template in [[Links]] section of target {self.basename}.toml')
+            sys.exit(-1)
         template_name = self.target["Links"]["template"]
         self.Log(2, f"Loading template {template_name}...")
-        with open("../"+template_name,'rb') as f:
+        if not os.path.exists(f'..\\{template_name}'):
+            print(f'Error: Referenced template file {template_name} not found')
+            sys.exit(-1)
+        with open("..\\"+template_name,'rb') as f:
             self.template = tomllib.load(f)
         #pprint.pp(template)
 
@@ -203,6 +215,10 @@ class DDTargetMaker:
                         elif 'insert' in codeelem:
                             self.EmitInsert(f, codeelem['insert'])
                 print("",file=f)
+            if not self.cpu:
+                print("ERROR: CPU type cannot be determined, please add include of <cpu>.def to template file")
+                sys.exit(-1)
+            
     
     def BuildTarget(self):
         fullname = self.objpath+'\\'+self.basename
