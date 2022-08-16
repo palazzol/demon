@@ -83,14 +83,14 @@ class DDTargetMaker:
                         comment = elem[e]
                     else:
                         if namefound:
-                            print(f'Error: Template [[defs]] entry "{name}" has extra data')
+                            print(f'Error: Template [[Defs]] entry "{name}" has extra data {e}')
                             sys.exit(-1)
                         else:
                             namefound = True
                             name = e
                             value = elem[name]
                 if namefound == False:
-                    print(f'Error: Template [[defs]] entry "{name}" with no name')
+                    print(f'Error: Template [[Defs]] entry with no name')
                     sys.exit(-1)
                 template_param_names.append(name)
                 template_param_value[name] = int(value)
@@ -108,14 +108,14 @@ class DDTargetMaker:
                         comment = elem[e]
                     else:
                         if namefound:
-                            print(f'Error: Target [[defs]] entry "{name}" has extra data')
+                            print(f'Error: Target [[Defs]] entry "{name}" has extra data {e}')
                             sys.exit(-1)
                         else:
                             namefound = True
                             name = e
                             value = elem[name]
                 if namefound == False:
-                    print(f'Error: Template [[defs]] entry "{name}" with no name')
+                    print(f'Error: Target [[Defs]] entry with no name')
                     sys.exit(-1)
                 target_param_names.append(name)
                 target_param_value[name] = int(value)
@@ -169,6 +169,53 @@ class DDTargetMaker:
             print(f"{name} = 0x{value:04x}",file=f)
             print('',file=f)
 
+    def ValidateTarget(self):
+        recognized_names = [ 'Defs', 'Code', 'Links' ]
+        for elem in self.target:
+            if elem not in recognized_names:
+                print(f'Error: Unrecognized element {elem} in target {self.basename}.toml')
+                sys.exit(-1)
+        if 'Links' not in self.target:
+            print(f'Error: No [Links] element in target {self.basename}.toml')
+            sys.exit(-1)
+        if 'Defs' in self.target:    
+            if not isinstance(self.target['Defs'],list):
+                print(f'Error: Defs element must be [[Defs]] in target {self.basename}.toml')
+                sys.exit(-1)
+        if 'Code' in self.target:
+            if not isinstance(self.target['Code'],dict):
+                print(f'Error: Code element must be [Code] in target {self.basename}.toml')
+                sys.exit(-1)
+        if not isinstance(self.target['Links'],dict):
+            print(f'Error: Links element must be [Links] in target {self.basename}.toml')
+            sys.exit(-1)
+        if 'template' not in self.target['Links']:
+            print(f'Error: [Links] must contain template element in target {self.basename}.toml')
+            sys.exit(-1)
+
+    def ValidateTemplate(self, template_name):
+        recognized_names = [ 'Defs', 'Code', 'Region' ]
+        for elem in self.template:
+            if elem not in recognized_names:
+                print(f'Error: Unrecognized element {elem} in template {template_name}.toml')
+                sys.exit(-1)
+        if 'Defs' not in self.template:
+            print(f'Error: No [[Defs]] element in template {template_name}.toml')
+            sys.exit(-1)
+        if 'Region' not in self.template:
+            print(f'Error: No [[Region]] element in template {template_name}.toml')
+            sys.exit(-1)
+        if not isinstance(self.template['Defs'],list):
+            print(f'Error: Defs element must be [[Defs]] in template {template_name}.toml')
+            sys.exit(-1)
+        if 'Defs' in self.template:
+            if not isinstance(self.template['Code'],dict):
+                print(f'Error: Code element must be [Code] in template {template_name}.toml')
+                sys.exit(-1)
+        if not isinstance(self.template['Region'],list):
+            print(f'Error: Region element must be [[Region]] in template {template_name}.toml')
+            sys.exit(-1)
+
     def LoadTOML(self):
         self.Log(2, f"Loading target {self.basename}.toml...")
         if not os.path.exists(f'{self.basename}.toml'):
@@ -176,13 +223,8 @@ class DDTargetMaker:
             sys.exit(-1)            
         with open(f'{self.basename}.toml','rb') as f:
             self.target = tomllib.load(f)
-        #pprint.pp(target)
-        if 'Links' not in self.target:
-            print(f'Error: no [[Links]] in target {self.basename}.toml')
-            sys.exit(-1)
-        if 'template' not in self.target["Links"]:
-            print(f'Error: no template in [[Links]] section of target {self.basename}.toml')
-            sys.exit(-1)
+        #pprint.pp(self.target)
+        self.ValidateTarget()
         template_name = self.target["Links"]["template"]
         self.Log(2, f"Loading template {template_name}...")
         if not os.path.exists(f'..\\{template_name}'):
@@ -190,7 +232,8 @@ class DDTargetMaker:
             sys.exit(-1)
         with open("..\\"+template_name,'rb') as f:
             self.template = tomllib.load(f)
-        #pprint.pp(template)
+        #pprint.pp(self.template)
+        self.ValidateTemplate(template_name)
 
     def CreateTarget(self):
         self.Log(2, f"Creating {self.basename}.asm...")
@@ -273,5 +316,8 @@ if __name__ == "__main__":
         rv = t.BuildTarget()
         if rv != 0:
             sys.exit(rv)
+        #rv = os.system(f'fc {basename}.bin ..\\output\\{basename}\\{basename}.bin')
+        #if rv != 0:
+        #    sys.exit(rv)
     print("Done!")
 
