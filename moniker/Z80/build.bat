@@ -14,11 +14,6 @@ tools\aslink.exe -m -p -s sraider.rel -u
 tools\srec2bin -a 800 sraider.s19 sraider.bin
 tools\srec_cat.exe sraider.bin -binary -output sraider.hex -Intel -address-length=2 -output_block_size=16
 
-tools\asz80.exe -o -p -s -l gorf.asm
-tools\aslink.exe -m -p -s gorf.rel -u
-tools\srec2bin -a 800 gorf.s19 gorf.bin
-tools\srec_cat.exe gorf.bin -binary -output gorf.hex -Intel -address-length=2 -output_block_size=16
-
 tools\asz80.exe -o -p -s -l astrocde.asm
 tools\aslink.exe -m -p -s astrocde.rel -u
 tools\srec2bin -o 2000 -a 800 astrocde.s19 astrocde.bin
