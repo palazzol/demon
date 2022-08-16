@@ -1,0 +1,11 @@
+
+[[Defs]]
+# if you skip the comment entry here, 
+# it will pick up the comment in the template
+RAMADDR = 0x63f0
+
+[Links]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+template = "templates/z80_romio_0000_2k.toml"

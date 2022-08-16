@@ -1,0 +1,6 @@
+
+[Links]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+template = "templates/z80_romio_0000_2k.toml"
