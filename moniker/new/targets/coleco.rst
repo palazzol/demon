@@ -10,38 +10,37 @@
                              11 ; MESSAGE MACRO
                              12 ;--------------------------------------------------------------------------
                              13         .macro  MESSAGE_MACRO
-                             14     	.ascii  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
-                             15         .byte	0x00
-                             16         .endm
-                             17 
-                             18 ;--------------------------------------------------------------------------
-                             19 ; STARTUP MACROS
-                             20 ;
-                             21 ; These are called once, and can be used do any target-specific
-                             22 ; initialization that is required
-                             23 ;--------------------------------------------------------------------------
-                             24 
-                             25         .macro  STARTUP1_MACRO 
-                             26         DI                  ; Disable interrupts - we don't handle them
-                             27         LD      SP,RAMADDR  ; have to set valid SP
-                             28 ;       YOUR SMALL CODE CAN GO HERE
-                             29         .endm     
-                             30 
-                             31 ;--------------------------------------------------------------------------
-                             32 ; EVERY MACRO
-                             33 ; This is called regularly, every polling loop, and can be used do any 
-                             34 ; target-specific task that is required, such as hitting a watchdog
-                             35 ;--------------------------------------------------------------------------
-                             36 
-                             37         .macro  EVERY_MACRO  
-                             38 ;       YOUR CODE CAN GO HERE
-                             39         RET
-                             40         .endm        
-                             41 
-                             42 ;--------------------------------------------------------------------------
-                             43 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
-                             44 ;--------------------------------------------------------------------------
-                             45         .include "../rom_templates/coleco-cart_romio_8000_2k.asm"
+                             14     	.asciz  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
+                             15         .endm
+                             16 
+                             17 ;--------------------------------------------------------------------------
+                             18 ; STARTUP MACROS
+                             19 ;
+                             20 ; These are called once, and can be used do any target-specific
+                             21 ; initialization that is required
+                             22 ;--------------------------------------------------------------------------
+                             23 
+                             24         .macro  STARTUP1_MACRO 
+                             25         DI                  ; Disable interrupts - we don't handle them
+                             26         LD      SP,RAMADDR  ; have to set valid SP
+                             27 ;       YOUR SMALL CODE CAN GO HERE
+                             28         .endm     
+                             29 
+                             30 ;--------------------------------------------------------------------------
+                             31 ; EVERY MACRO
+                             32 ; This is called regularly, every polling loop, and can be used do any 
+                             33 ; target-specific task that is required, such as hitting a watchdog
+                             34 ;--------------------------------------------------------------------------
+                             35 
+                             36         .macro  EVERY_MACRO  
+                             37 ;       YOUR CODE CAN GO HERE
+                             38         RET
+                             39         .endm        
+                             40 
+                             41 ;--------------------------------------------------------------------------
+                             42 ; ROM TEMPLATE - this defines the rom layout, and which kind of io
+                             43 ;--------------------------------------------------------------------------
+                             44         .include "../rom_templates/coleco-cart_romio_8000_2k.asm"
                               1 
                               2           
                      8000     3 STRTADD .equ    0x8000      ; start of chip memory mapping
@@ -88,13 +87,12 @@
    8021 C3 66 00      [10]   33     	JP      0x0066
                              34     	
    0024                      35         MESSAGE_MACRO
-   8024 42 59 3A 20 45 56     1     	.ascii  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
+   8024 42 59 3A 20 45 56     1     	.asciz  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
         41 4E 26 46 52 41
         4E 4B 2F 44 45 4D
         4F 4E 20 44 45 42
         55 47 47 45 52 2F
-        32 30 31 39
-   8046 00                    2         .byte	0x00
+        32 30 31 39 00
                              36     	
    8047                      37 STARTUP1:  
    0047                      38         STARTUP1_MACRO

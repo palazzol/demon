@@ -72,7 +72,7 @@
                              17 
    2000 55                   18         .byte   0x55	    ; cartridge header
    2001 18 02                19         .word   0x0218	    ; next menu item (first one)
-   2003 19 20                20         .word   TITLE	    ; t itle pointer
+   2003 19 20                20         .word   TITLE	    ; title pointer
    2005 28 20                21         .word   STARTUP1	; start pointer
                              22         
    2007 C9            [10]   23         ret		    ; rst8
@@ -324,7 +324,7 @@
    0134                      57         EVERY_MACRO
    2134 DB 10         [11]    1         IN	A,(0x10)    ; hit watchdog
    2136 C9            [10]    2         RET
-                             58         
+                             58 
                              59         ; Routines for romio here
                              60         .include "../io/z80_romio.asm"
                               1 

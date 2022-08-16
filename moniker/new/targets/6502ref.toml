@@ -1,0 +1,6 @@
+
+[Links]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+template = "rom_templates/6502_romio_f800_2k.toml"

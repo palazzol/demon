@@ -11,8 +11,7 @@ RAMADDR .equ    0x77f0      ; Start of RAM variables - need only 4 bytes here, b
 ; MESSAGE MACRO
 ;--------------------------------------------------------------------------
         .macro  MESSAGE_MACRO
-    	.ascii  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
-        .byte	0x00
+    	.asciz  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
         .endm
 
 ;--------------------------------------------------------------------------
