@@ -1,14 +1,31 @@
+[[Defs]]
+comment = 'Start of chip memory mapping'
+STRTADD = 0x0000
 
 [[Defs]]
-comment = 'Start of RAM variables - need only 4 bytes here, but we have 16. Stack will grow towards 0 from this point'
+comment = '2K ROM'
+ROMSIZE = 0x0800
+
+[[Defs]]
+comment = '''
+The code actually needs 4 bytes ram at this address for the command buffer.
+However, stack also starts here, and will grow down (towards 0) from this point.
+So, we need some above and below this address.  I generally choose the
+Top of RAM minus 16'''
 RAMADDR = 0xfff0
+
+[[Defs]]
+comment = 'delay factor'
+BIGDEL = 0x0180
 
 [Code]
 #--------------------------------------------------------------------------
 # IRQ HANDLER
 #--------------------------------------------------------------------------
 IRQ = '''
+;
 ;       IRQ HANDLER
+;
 IRQ:
         RETI
 '''
@@ -17,7 +34,9 @@ IRQ:
 # NMI HANDLER
 #--------------------------------------------------------------------------
 NMI = '''
-;       IRQ HANDLER
+;
+;       NMI HANDLER
+;
 NMI:
         RETN
 '''
@@ -33,7 +52,9 @@ NMI:
 # It's best to expand startup2 and leave startup1 alone.
 #--------------------------------------------------------------------------
 startup1 = '''
+;
 ;       STARTUP CODE 1
+;
 STARTUP1:
         DI                  ; Disable interrupts - we don't handle them
         LD      SP,RAMADDR  ; have to set valid SP
@@ -42,7 +63,9 @@ STARTUP1:
 '''
 
 startup2 = '''
+;
 ;       STARTUP CODE 2
+;
 STARTUP2:
 ;       YOUR CODE CAN GO HERE
 '''
@@ -53,14 +76,50 @@ STARTUP2:
 # target-specific task that is required, such as hitting a watchdog
 #--------------------------------------------------------------------------
 every = '''
+;
 ;       EVERY CODE
+;
 EVERY:
 ;       YOUR CODE CAN GO HERE
         RET
 '''
 
-[Links]
-#--------------------------------------------------------------------------
-# ROM TEMPLATE - this defines the rom layout, and which kind of io
-#--------------------------------------------------------------------------
-template = "rom_templates/z80_romio_0000_2k.toml"
+[[Region]]
+code  = [
+    { link = "dd/dd.def" }, 
+    { link = "dd/z80.def" },
+]
+
+[[Region]]
+#--------------------------------------------------
+# On the Z80, the start address is 0x0000
+# but the IRQ handler is at 0x0038
+# So, we put a small but of startup code here,
+# and then jump to after the NMI handler for more
+#--------------------------------------------------    
+start = 'STRTADD'
+end = 'IRQADD'
+code=[
+    { insert = 'startup1' },
+]
+
+[[Region]]
+#--------------------------------------------------
+# This region is reserved for the IRQ handler
+#--------------------------------------------------
+start = 'IRQADD'
+end   = 'NMIADD'
+code  = [
+    { insert = 'IRQ' } 
+]
+
+[[Region]]
+start = 'NMIADD'
+end   = 'ROMEND'
+code  = [
+    { insert = 'NMI' },
+    { insert = 'startup2' },
+    { link = "dd/z80_main.asm" },
+    { insert = 'every' },
+    { link = "io/startrek-tether.asm" }
+]

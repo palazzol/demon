@@ -47,9 +47,9 @@ EVERY:
         .include "../io/z80_romio.asm"
 
         ;--------------------------------------------------
-        ; The romio write region has a small table here
+        ; The romio region has a small table here
         ;--------------------------------------------------
-        .bank   second  (base=IOREGW, size=IOEND-IOREGW)
+        .bank   second  (base=IOADD, size=IOEND-IOADD)
         .area   second  (ABS, BANK=second)
         .include "../io/romio_table.asm"
 

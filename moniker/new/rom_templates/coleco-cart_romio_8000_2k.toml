@@ -1,7 +1,7 @@
 
 [[Defs]]
 comment = 'Start of chip memory mapping'
-STRTADD = 0x0000
+STRTADD = 0x8000
 
 [[Defs]]
 comment = '2K ROM'
@@ -20,54 +20,45 @@ comment = 'delay factor'
 BIGDEL = 0x0180
 
 [Code]
-#--------------------------------------------------------------------------
-# IRQ HANDLER
-#--------------------------------------------------------------------------
-IRQ = '''
-;
-;       IRQ HANDLER
-;
-IRQ:
-        RETI
+cartheader = '''
+        .db	0xaa	    ; cartridge signature
+    	.db	0x55
+    	
+    	.dw     0x0000
+    	.dw     0x0000
+    	.dw     0x0000
+    	.dw     0x0000
+    	.dw     STARTUP1
+    	JP      0x0008
+    	JP      0x0010
+    	JP      0x0018
+    	JP      0x0020
+    	JP      0x0028
+    	JP      0x0030
+    	JP      IRQADD
+    	JP      NMIADD
 '''
 
 #--------------------------------------------------------------------------
-# NMI HANDLER
+# TITLE DATA
 #--------------------------------------------------------------------------
-NMI = '''
-;
-;       NMI HANDLER
-;
-NMI:
-        RETN
+title = '''
+    	.asciz  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
 '''
 
 #--------------------------------------------------------------------------
-# STARTUP Routines
+# STARTUP Routine
 #
 # These are called once, and can be used do any target-specific
 # initialization that is required
-#
-# On the Z80, it is split into two.  This is because startup1 is 
-# usually place into a space-limited region.
-# It's best to expand startup2 and leave startup1 alone.
 #--------------------------------------------------------------------------
-startup1 = '''
+startup = '''
 ;
-;       STARTUP CODE 1
+;       STARTUP CODE
 ;
 STARTUP1:
         DI                  ; Disable interrupts - we don't handle them
         LD      SP,RAMADDR  ; have to set valid SP
-;       YOUR SMALL CODE CAN GO HERE
-        JP  STARTUP2
-'''
-
-startup2 = '''
-;
-;       STARTUP CODE 2
-;
-STARTUP2:
 ;       YOUR CODE CAN GO HERE
 '''
 
@@ -93,37 +84,18 @@ code  = [
 ]
 
 [[Region]]
-#--------------------------------------------------
-# On the Z80, the start address is 0x0000
-# but the IRQ handler is at 0x0038
-# So, we put a small but of startup code here,
-# and then jump to after the NMI handler for more
-#--------------------------------------------------    
+#---------------------------------------------------
+# On the Coleco cart, the start address is 0x8000
+#---------------------------------------------------
 start = 'STRTADD'
-end = 'IRQADD'
-code=[
-    { insert = 'startup1' },
-]
-
-[[Region]]
-#--------------------------------------------------
-# This region is reserved for the IRQ handler
-#--------------------------------------------------
-start = 'IRQADD'
-end   = 'NMIADD'
-code  = [
-    { insert = 'IRQ' } 
-]
-
-[[Region]]
-start = 'NMIADD'
-end   = 'IOADD'
-code  = [
-    { insert = 'NMI' },
-    { insert = 'startup2' },
-    { link = "dd/z80_main.asm" },
-    { insert = 'every' },
-    { link = "io/z80_romio.asm" }
+end = 'IOADD'
+code = [
+    { insert = 'cartheader' },
+    { insert = 'title' },
+    { insert = 'startup' },
+    { link = 'dd/z80_main.asm'},
+    { insert = 'every'},
+    { link = 'io/z80_romio.asm'}
 ]
 
 [[Region]]
@@ -136,4 +108,3 @@ code  = [
 [[Region]]    
 start = 'IOEND'
 end = 'ROMEND'
-

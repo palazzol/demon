@@ -79,33 +79,6 @@
                               5 
                      07A0     6 IOADD    .equ   IOREGR            ;start of region
                      07E0     7 IOEND    .equ   STRTADD+0x07e0    ;end of region
-                              8 
-                              9 ; 
-                             10 ; For Demon Debugger Hardware - Rev D 
-                             11 ;
-                             12 ; In earlier hardware designs, I tried to capture the address bus bits on a 
-                             13 ; read cycle, to use to write to the Arduino.  But it turns out it is impossible
-                             14 ; to know exactly when to sample these address bits across all platforms, designs, and 
-                             15 ; clock speeds
-                             16 ;
-                             17 ; The solution I came up with was to make sure the data bus contains the same information
-                             18 ; as the lower address bus during these read cycles, so that I can sample the data bus just like the 
-                             19 ; CPU would.
-                             20 ;
-                             21 ; This block of memory, starting at 0x07c0, is filled with consecutive integers.
-                             22 ; When the CPU reads from a location, the data bus matches the lower bits of the address bus.  
-                             23 ; And the data bus read by the CPU is also written to the Arduino.
-                             24 ; 
-                             25 ; Note: Currently, only the bottom two bits are used, but reserving the memory
-                             26 ; this way insures that up to 5 bits could be used 
-                             27 ; 
-                             28         ;.macro  ROMIO_TABLE_MACRO
-                             29         ;.bank   iowritebank   (base=IOREGW, size=0x20)
-                             30         ;.area   iowritearea   (BANK=iowritebank)
-                             31 
-                             32         ;.DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
-                             33         ;.DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
-                             34         ;.endm
                              10 
                              11 ; TIMER SETTING
                      0180    12 BIGDEL  .equ    0x0180      ; delay factor
@@ -444,9 +417,9 @@
    01BD C9            [10]   78         RET
                              55 
                              56         ;--------------------------------------------------
-                             57         ; The romio write region has a small table here
+                             57         ; The romio region has a small table here
                              58         ;--------------------------------------------------
-                             59         .bank   fourth  (base=IOREGW, size=IOEND-IOREGW)
+                             59         .bank   fourth  (base=IOADD, size=IOEND-IOADD)
                              60         .area   fourth  (ABS, BANK=fourth)
                              61         .include "../io/romio_table.asm"
                               1 
@@ -469,16 +442,22 @@
                              18 ; Note: Currently, only the bottom two bits are used, but reserving the memory
                              19 ; this way insures that up to 5 bits could be used 
                              20 ; 
-                             21         ;.bank   iowritebank   (base=IOREGW, size=0x20)
-                             22         ;.area   iowritearea   (BANK=iowritebank)
-                             23 
-   07C0 00 01 02 03 04 05    24         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
+                             21         ; ROMIO READ Area - reserved
+   07A0 FF FF FF FF FF FF    22         .DB     0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
+        FF FF FF FF FF FF
+        FF FF FF FF
+   07B0 FF FF FF FF FF FF    23         .DB     0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
+        FF FF FF FF FF FF
+        FF FF FF FF
+                             24 
+                             25         ; ROMIO WRITE Area - data is used
+   07C0 00 01 02 03 04 05    26         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
         06 07 08 09 0A 0B
         0C 0D 0E 0F
-   07D0 10 11 12 13 14 15    25         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
+   07D0 10 11 12 13 14 15    27         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
         16 17 18 19 1A 1B
         1C 1D 1E 1F
-                             26 
+                             28 
                              62 
                              63         ;--------------------------------------------------
                              64         ; There is a little more room here, which is unused

@@ -1,0 +1,22 @@
+
+[[Defs]]
+# if you skip the comment entry here, 
+# it will pick up the comment in the template
+RAMADDR = 0xcff0
+
+[Code]
+startup2 = '''
+;
+;       STARTUP CODE 2
+;
+STARTUP2:
+        LD      A,0x81
+        LD      HL,0xE000
+        LD      (HL),A      ; blank the screen
+'''
+
+[Links]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+template = "rom_templates/z80_romio_0000_2k.toml"

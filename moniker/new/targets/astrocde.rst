@@ -61,33 +61,6 @@
                      27A0     6 IOADD    .equ   IOREGR            ;start of region
                      27E0     7 IOEND    .equ   STRTADD+0x07e0    ;end of region
                               8 
-                              9 ; 
-                             10 ; For Demon Debugger Hardware - Rev D 
-                             11 ;
-                             12 ; In earlier hardware designs, I tried to capture the address bus bits on a 
-                             13 ; read cycle, to use to write to the Arduino.  But it turns out it is impossible
-                             14 ; to know exactly when to sample these address bits across all platforms, designs, and 
-                             15 ; clock speeds
-                             16 ;
-                             17 ; The solution I came up with was to make sure the data bus contains the same information
-                             18 ; as the lower address bus during these read cycles, so that I can sample the data bus just like the 
-                             19 ; CPU would.
-                             20 ;
-                             21 ; This block of memory, starting at 0x07c0, is filled with consecutive integers.
-                             22 ; When the CPU reads from a location, the data bus matches the lower bits of the address bus.  
-                             23 ; And the data bus read by the CPU is also written to the Arduino.
-                             24 ; 
-                             25 ; Note: Currently, only the bottom two bits are used, but reserving the memory
-                             26 ; this way insures that up to 5 bits could be used 
-                             27 ; 
-                             28         ;.macro  ROMIO_TABLE_MACRO
-                             29         ;.bank   iowritebank   (base=IOREGW, size=0x20)
-                             30         ;.area   iowritearea   (BANK=iowritebank)
-                             31 
-                             32         ;.DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
-                             33         ;.DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
-                             34         ;.endm
-                              8 
                               9 ; TIMER SETTING
                      0180    10 BIGDEL  .equ    0x0180      ; delay factor
                              11 
@@ -99,7 +72,7 @@
                              17 
    2000 55                   18         .byte   0x55	    ; cartridge header
    2001 18 02                19         .word   0x0218	    ; next menu item (first one)
-   2003 19 20                20         .word   TITLE	    ; title pointer
+   2003 19 20                20         .word   TITLE	    ; t itle pointer
    2005 28 20                21         .word   STARTUP1	; start pointer
                              22         
    2007 C9            [10]   23         ret		    ; rst8
@@ -156,7 +129,7 @@
                              13 
                              14 ; Main routine
    202E                      15 MAIN:
-   202E CD 7D 21      [17]   16         CALL    EVERY
+   202E CD 34 21      [17]   16         CALL    EVERY
    2031 CD D7 20      [17]   17         CALL    POLL
    2034 DA 2E 20      [10]   18         JP      C,MAIN
                              19         
@@ -176,28 +149,28 @@
                              33 ; Uses HL
                              34 ; Destroys A
    2044                      35 I2CSTART:
-   2044 CD 61 21      [17]   36         CALL    CLRSDA      
-   2047 CD 44 21      [17]   37         CALL    CLRSCL
+   2044 CD 64 21      [17]   36         CALL    CLRSDA      
+   2047 CD 47 21      [17]   37         CALL    CLRSCL
    204A C9            [10]   38         RET
                              39 
                              40 ; I2C Stop Condition
                              41 ; Uses HL
                              42 ; Destroys A
    204B                      43 I2CSTOP:
-   204B CD 61 21      [17]   44         CALL    CLRSDA
-   204E CD 34 21      [17]   45         CALL    SETSCL
-   2051 CD 51 21      [17]   46         CALL    SETSDA
+   204B CD 64 21      [17]   44         CALL    CLRSDA
+   204E CD 37 21      [17]   45         CALL    SETSCL
+   2051 CD 54 21      [17]   46         CALL    SETSDA
    2054 C9            [10]   47         RET
                              48 
                              49 ; I2C Read Bit routine
                              50 ; Returns bit in carry blag
                              51 ; Destroys A
    2055                      52 I2CRBIT:
-   2055 CD 51 21      [17]   53         CALL    SETSDA
-   2058 CD 34 21      [17]   54         CALL    SETSCL
-   205B CD 71 21      [17]   55         CALL    READSDA
+   2055 CD 54 21      [17]   53         CALL    SETSDA
+   2058 CD 37 21      [17]   54         CALL    SETSCL
+   205B CD 74 21      [17]   55         CALL    READSDA
    205E F5            [11]   56         PUSH    AF          ; save carry flag
-   205F CD 44 21      [17]   57         CALL    CLRSCL
+   205F CD 47 21      [17]   57         CALL    CLRSCL
    2062 F1            [10]   58         POP     AF          ; rv in carry flag
    2063 C9            [10]   59         RET
                              60 
@@ -206,13 +179,13 @@
                              63 ; Destroys A
    2064                      64 I2CWBIT:
    2064 30 05         [12]   65         JR      NC,DOCLR
-   2066 CD 51 21      [17]   66         CALL    SETSDA
+   2066 CD 54 21      [17]   66         CALL    SETSDA
    2069 18 03         [12]   67         JR      AHEAD
    206B                      68 DOCLR:
-   206B CD 61 21      [17]   69         CALL    CLRSDA
+   206B CD 64 21      [17]   69         CALL    CLRSDA
    206E                      70 AHEAD:
-   206E CD 34 21      [17]   71         CALL    SETSCL
-   2071 CD 44 21      [17]   72         CALL    CLRSCL
+   206E CD 37 21      [17]   71         CALL    SETSCL
+   2071 CD 47 21      [17]   72         CALL    CLRSCL
    2074 C9            [10]   73         RET
                              74 
                              75 ; I2C Write Byte routine
@@ -347,96 +320,96 @@
    2133 E9            [ 4]  204         JP      (HL)
                             205 
                              55 
-                             56         ; Routines for romio here
-                             57         .include "../io/z80_romio.asm"
+   2134                      56 EVERY:
+   0134                      57         EVERY_MACRO
+   2134 DB 10         [11]    1         IN	A,(0x10)    ; hit watchdog
+   2136 C9            [10]    2         RET
+                             58         
+                             59         ; Routines for romio here
+                             60         .include "../io/z80_romio.asm"
                               1 
                               2 ; For Demon Debugger Hardware - Rev D 
                               3 
                               4 ; Set the SCL pin high
                               5 ; D is the global output buffer
                               6 ; Destroys A
-   2134                       7 SETSCL:
-   2134 7A            [ 4]    8         LD      A,D
-   2135 F6 01         [ 7]    9         OR      0x01
-   2137 57            [ 4]   10         LD      D,A
-   2138 E5            [11]   11         PUSH    HL
-   2139 26 27         [ 7]   12         LD      H,#>IOREGW
-   213B C6 C0         [ 7]   13         ADD     A,#<IOREGW 
-   213D 6F            [ 4]   14         LD      L,A
-   213E 7E            [ 7]   15         LD      A,(HL)
-   213F E1            [10]   16         POP     HL
-   2140 CD 43 20      [17]   17         CALL    I2CDELAY
-   2143 C9            [10]   18         RET
+   2137                       7 SETSCL:
+   2137 7A            [ 4]    8         LD      A,D
+   2138 F6 01         [ 7]    9         OR      0x01
+   213A 57            [ 4]   10         LD      D,A
+   213B E5            [11]   11         PUSH    HL
+   213C 26 27         [ 7]   12         LD      H,#>IOREGW
+   213E C6 C0         [ 7]   13         ADD     A,#<IOREGW 
+   2140 6F            [ 4]   14         LD      L,A
+   2141 7E            [ 7]   15         LD      A,(HL)
+   2142 E1            [10]   16         POP     HL
+   2143 CD 43 20      [17]   17         CALL    I2CDELAY
+   2146 C9            [10]   18         RET
                              19     
                              20 ; Set the SCL pin low
                              21 ; D is the global output buffer
                              22 ; Destroys A
-   2144                      23 CLRSCL:
-   2144 7A            [ 4]   24         LD      A,D
-   2145 E6 1E         [ 7]   25         AND     0x1E
-   2147 57            [ 4]   26         LD      D,A
-   2148 E5            [11]   27         PUSH    HL
-   2149 26 27         [ 7]   28         LD      H,#>IOREGW
-   214B C6 C0         [ 7]   29         ADD     A,#<IOREGW 
-   214D 6F            [ 4]   30         LD      L,A
-   214E 7E            [ 7]   31         LD      A,(HL)
-   214F E1            [10]   32         POP     HL
-   2150 C9            [10]   33         RET
+   2147                      23 CLRSCL:
+   2147 7A            [ 4]   24         LD      A,D
+   2148 E6 1E         [ 7]   25         AND     0x1E
+   214A 57            [ 4]   26         LD      D,A
+   214B E5            [11]   27         PUSH    HL
+   214C 26 27         [ 7]   28         LD      H,#>IOREGW
+   214E C6 C0         [ 7]   29         ADD     A,#<IOREGW 
+   2150 6F            [ 4]   30         LD      L,A
+   2151 7E            [ 7]   31         LD      A,(HL)
+   2152 E1            [10]   32         POP     HL
+   2153 C9            [10]   33         RET
                              34 
                              35 ; Set the DOUT pin low
                              36 ; D is the global output buffer
                              37 ; Destroys A 
-   2151                      38 SETSDA:
-   2151 7A            [ 4]   39         LD      A,D
-   2152 E6 1D         [ 7]   40         AND     0x1D
-   2154 57            [ 4]   41         LD      D,A
-   2155 E5            [11]   42         PUSH    HL
-   2156 26 27         [ 7]   43         LD      H,#>IOREGW
-   2158 C6 C0         [ 7]   44         ADD     A,#<IOREGW 
-   215A 6F            [ 4]   45         LD      L,A
-   215B 7E            [ 7]   46         LD      A,(HL)
-   215C E1            [10]   47         POP     HL
-   215D CD 43 20      [17]   48         CALL    I2CDELAY
-   2160 C9            [10]   49         RET
+   2154                      38 SETSDA:
+   2154 7A            [ 4]   39         LD      A,D
+   2155 E6 1D         [ 7]   40         AND     0x1D
+   2157 57            [ 4]   41         LD      D,A
+   2158 E5            [11]   42         PUSH    HL
+   2159 26 27         [ 7]   43         LD      H,#>IOREGW
+   215B C6 C0         [ 7]   44         ADD     A,#<IOREGW 
+   215D 6F            [ 4]   45         LD      L,A
+   215E 7E            [ 7]   46         LD      A,(HL)
+   215F E1            [10]   47         POP     HL
+   2160 CD 43 20      [17]   48         CALL    I2CDELAY
+   2163 C9            [10]   49         RET
                              50 
                              51 ; Set the DOUT pin high
                              52 ; D is the global output buffer
                              53 ; Destroys A  
-   2161                      54 CLRSDA:
-   2161 7A            [ 4]   55         LD      A,D
-   2162 F6 02         [ 7]   56         OR      0x02
-   2164 57            [ 4]   57         LD      D,A
-   2165 E5            [11]   58         PUSH    HL
-   2166 26 27         [ 7]   59         LD      H,#>IOREGW
-   2168 C6 C0         [ 7]   60         ADD     A,#<IOREGW 
-   216A 6F            [ 4]   61         LD      L,A
-   216B 7E            [ 7]   62         LD      A,(HL)
-   216C E1            [10]   63         POP     HL
-   216D CD 43 20      [17]   64         CALL    I2CDELAY
-   2170 C9            [10]   65         RET
+   2164                      54 CLRSDA:
+   2164 7A            [ 4]   55         LD      A,D
+   2165 F6 02         [ 7]   56         OR      0x02
+   2167 57            [ 4]   57         LD      D,A
+   2168 E5            [11]   58         PUSH    HL
+   2169 26 27         [ 7]   59         LD      H,#>IOREGW
+   216B C6 C0         [ 7]   60         ADD     A,#<IOREGW 
+   216D 6F            [ 4]   61         LD      L,A
+   216E 7E            [ 7]   62         LD      A,(HL)
+   216F E1            [10]   63         POP     HL
+   2170 CD 43 20      [17]   64         CALL    I2CDELAY
+   2173 C9            [10]   65         RET
                              66 
                              67 ; Read the DIN pin 
                              68 ; returns bit in carry flag    
-   2171                      69 READSDA:
-   2171 7A            [ 4]   70         LD      A,D
-   2172 E5            [11]   71         PUSH    HL
-   2173 26 27         [ 7]   72         LD      H,#>IOREGR
-   2175 C6 A0         [ 7]   73         ADD     A,#<IOREGR
-   2177 6F            [ 4]   74         LD      L,A
-   2178 7E            [ 7]   75         LD      A,(HL)
-   2179 E1            [10]   76         POP     HL
-   217A CB 3F         [ 8]   77         SRL     A           ;carry flag
-   217C C9            [10]   78         RET
-                             58 
-   217D                      59 EVERY:
-   017D                      60         EVERY_MACRO
-   217D DB 10         [11]    1         IN	A,(0x10)    ; hit watchdog
-   217F C9            [10]    2         RET
+   2174                      69 READSDA:
+   2174 7A            [ 4]   70         LD      A,D
+   2175 E5            [11]   71         PUSH    HL
+   2176 26 27         [ 7]   72         LD      H,#>IOREGR
+   2178 C6 A0         [ 7]   73         ADD     A,#<IOREGR
+   217A 6F            [ 4]   74         LD      L,A
+   217B 7E            [ 7]   75         LD      A,(HL)
+   217C E1            [10]   76         POP     HL
+   217D CB 3F         [ 8]   77         SRL     A           ;carry flag
+   217F C9            [10]   78         RET
                              61 
                              62         ;--------------------------------------------------
-                             63         ; The romio write region has a small table here
+                             63         ; The romio region has a small table here
                              64         ;--------------------------------------------------
-                             65         .bank   second  (base=IOREGW, size=IOEND-IOREGW)
+                             65         .bank   second  (base=IOADD, size=IOEND-IOADD)
                              66         .area   second  (ABS, BANK=second)
                              67         .include "../io/romio_table.asm"
                               1 
@@ -459,16 +432,22 @@
                              18 ; Note: Currently, only the bottom two bits are used, but reserving the memory
                              19 ; this way insures that up to 5 bits could be used 
                              20 ; 
-                             21         ;.bank   iowritebank   (base=IOREGW, size=0x20)
-                             22         ;.area   iowritearea   (BANK=iowritebank)
-                             23 
-   27C0 00 01 02 03 04 05    24         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
+                             21         ; ROMIO READ Area - reserved
+   27A0 FF FF FF FF FF FF    22         .DB     0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
+        FF FF FF FF FF FF
+        FF FF FF FF
+   27B0 FF FF FF FF FF FF    23         .DB     0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
+        FF FF FF FF FF FF
+        FF FF FF FF
+                             24 
+                             25         ; ROMIO WRITE Area - data is used
+   27C0 00 01 02 03 04 05    26         .DB     0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f
         06 07 08 09 0A 0B
         0C 0D 0E 0F
-   27D0 10 11 12 13 14 15    25         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
+   27D0 10 11 12 13 14 15    27         .DB     0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f
         16 17 18 19 1A 1B
         1C 1D 1E 1F
-                             26 
+                             28 
                              68 
                              69         ;--------------------------------------------------
                              70         ; There is a little more room here, which is unused
