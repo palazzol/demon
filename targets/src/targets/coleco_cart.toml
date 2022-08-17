@@ -1,11 +1,11 @@
 
-[[Defs]]
+[[Param]]
 # if you skip the comment entry here, 
 # it will pick up the comment in the template
 RAMADDR = 0x77f0
 
-[Links]
+[Template]
 #--------------------------------------------------------------------------
 # ROM TEMPLATE - this defines the rom layout, and which kind of io
 #--------------------------------------------------------------------------
-template = "templates/coleco-cart_romio_8000_2k.toml"
+file = "templates/coleco-cart_romio_8000_2k.toml"

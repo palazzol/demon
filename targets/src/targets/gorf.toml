@@ -1,5 +1,5 @@
 
-[[Defs]]
+[[Param]]
 # if you skip the comment entry here, 
 # it will pick up the comment in the template
 RAMADDR = 0xdff0
@@ -34,8 +34,8 @@ EVERY:
         RET
 '''
 
-[Links]
+[Template]
 #--------------------------------------------------------------------------
 # ROM TEMPLATE - this defines the rom layout, and which kind of io
 #--------------------------------------------------------------------------
-template = "templates/z80_romio_0000_2k.toml"
+file = "templates/z80_romio_0000_2k.toml"

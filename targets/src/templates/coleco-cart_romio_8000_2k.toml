@@ -1,13 +1,13 @@
 
-[[Defs]]
+[[Param]]
 comment = 'Start of chip memory mapping'
 STRTADD = 0x8000
 
-[[Defs]]
+[[Param]]
 comment = '2K ROM'
 ROMSIZE = 0x0800
 
-[[Defs]]
+[[Param]]
 comment = '''
 The code actually needs 4 bytes ram at this address for the command buffer.
 However, stack also starts here, and will grow down (towards 0) from this point.
@@ -15,7 +15,7 @@ So, we need some above and below this address.  I generally choose the
 Top of RAM minus 16'''
 RAMADDR = 0xfff0
 
-[[Defs]]
+[[Param]]
 comment = 'delay factor'
 BIGDEL = 0x0180
 

@@ -13,8 +13,6 @@ class DDTargetMaker:
     def __init__(self, basename, loglevel=0):
         self.basename = basename
         self.loglevel = loglevel
-        self.templatedefs = []
-        self.targetdefs = []
         self.Log(1, f'Processing target {self.basename}...')
 
     def Log(self, level, msg):
@@ -51,15 +49,15 @@ class DDTargetMaker:
             self.Log(3,f'Using target code:   "{name}"')
             if name in self.template['Code']:
                 if self.target['Code'][name] == self.template['Code'][name]:
-                    print(f'Warning: Code snippet "{name}" in target is identical to default in template')
+                    print(f'Warning: Code entry "{name}" in target is identical to default in template')
             else:
-                print(f'Warning: Required Code snippet "{name}" found in target, but has no default in template')
+                print(f'Warning: Required Code entry "{name}" found in target, but has no default in template')
         else:
             if name in self.template['Code']:
                 print(self.template['Code'][name],file = f)
                 self.Log(3,f'Using default code:  "{name}"')
             else:
-                print(f'Error: Required Code snippet "{name}" in has no definition anywhere')
+                print(f'Error: Required Code entry "{name}" has no definition anywhere')
                 sys.exit(-1)
 
     def EmitHeader(self, f):
@@ -69,13 +67,13 @@ class DDTargetMaker:
         print(f';****************************************************************', file=f)
         print(f'', file=f)
 
-    def ExtractDefs(self):
+    def ExtractParams(self):
         # first, build up a valid list of template params
         template_param_names = []
         template_param_value = {}
         template_param_comment = {}
-        if 'Defs' in self.template:
-            for elem in self.template['Defs']:
+        if 'Param' in self.template:
+            for elem in self.template['Param']:
                 namefound = False
                 comment = ''
                 for e in elem:
@@ -83,14 +81,14 @@ class DDTargetMaker:
                         comment = elem[e]
                     else:
                         if namefound:
-                            print(f'Error: Template [[Defs]] entry "{name}" has extra data {e}')
+                            print(f'Error: Template [[Param]] entry "{name}" has extra data {e}')
                             sys.exit(-1)
                         else:
                             namefound = True
                             name = e
                             value = elem[name]
                 if namefound == False:
-                    print(f'Error: Template [[Defs]] entry with no name')
+                    print(f'Error: Template [[Param]] entry with no name')
                     sys.exit(-1)
                 template_param_names.append(name)
                 template_param_value[name] = int(value)
@@ -99,8 +97,8 @@ class DDTargetMaker:
         target_param_names = []
         target_param_value = {}
         target_param_comment = {}
-        if 'Defs' in self.target:
-            for elem in self.target['Defs']:
+        if 'Param' in self.target:
+            for elem in self.target['Param']:
                 namefound = False
                 comment = ''
                 for e in elem:
@@ -108,14 +106,14 @@ class DDTargetMaker:
                         comment = elem[e]
                     else:
                         if namefound:
-                            print(f'Error: Target [[Defs]] entry "{name}" has extra data {e}')
+                            print(f'Error: Target [[Param]] entry "{name}" has extra data {e}')
                             sys.exit(-1)
                         else:
                             namefound = True
                             name = e
                             value = elem[name]
                 if namefound == False:
-                    print(f'Error: Target [[Defs]] entry with no name')
+                    print(f'Error: Target [[Param]] entry with no name')
                     sys.exit(-1)
                 target_param_names.append(name)
                 target_param_value[name] = int(value)
@@ -125,7 +123,7 @@ class DDTargetMaker:
             if name in template_param_names:
                 pass
             else:
-                print(f"Error: [[Defs]] entry {name} in target with no default value in template")
+                print(f"Error: [[Param]] entry {name} in target with no default value in template")
                 sys.exit(-1)
         self.param_names = []
         self.param_value = {}
@@ -150,15 +148,15 @@ class DDTargetMaker:
         if 'STRTADD' in self.param_names:
             self.origin = self.param_value['STRTADD']
         else:
-            print("Error: Required [[Defs]] entry 'STRTADD' not found")
+            print("Error: Required [[Param]] entry 'STRTADD' not found")
             sys.exit(-1)
         if 'ROMSIZE' in self.param_names:
             self.romsize = self.param_value['ROMSIZE']
         else:
-            print("Error: Required [[Defs]] entry 'ROMSIZE' not found")
+            print("Error: Required [[Param]] entry 'ROMSIZE' not found")
             sys.exit(-1)
 
-    def EmitDefs(self, f):
+    def EmitParams(self, f):
         for name in self.param_names:
             commentstring = self.param_comment[name]
             if commentstring != '':
@@ -170,45 +168,45 @@ class DDTargetMaker:
             print('',file=f)
 
     def ValidateTarget(self):
-        recognized_names = [ 'Defs', 'Code', 'Links' ]
+        recognized_names = [ 'Param', 'Code', 'Template' ]
         for elem in self.target:
             if elem not in recognized_names:
                 print(f'Error: Unrecognized element {elem} in target {self.basename}.toml')
                 sys.exit(-1)
-        if 'Links' not in self.target:
-            print(f'Error: No [Links] element in target {self.basename}.toml')
+        if 'Template' not in self.target:
+            print(f'Error: No [Template] element in target {self.basename}.toml')
             sys.exit(-1)
-        if 'Defs' in self.target:    
-            if not isinstance(self.target['Defs'],list):
-                print(f'Error: Defs element must be [[Defs]] in target {self.basename}.toml')
+        if 'Param' in self.target:    
+            if not isinstance(self.target['Param'],list):
+                print(f'Error: Param element must be [[Param]] in target {self.basename}.toml')
                 sys.exit(-1)
         if 'Code' in self.target:
             if not isinstance(self.target['Code'],dict):
                 print(f'Error: Code element must be [Code] in target {self.basename}.toml')
                 sys.exit(-1)
-        if not isinstance(self.target['Links'],dict):
-            print(f'Error: Links element must be [Links] in target {self.basename}.toml')
+        if not isinstance(self.target['Template'],dict):
+            print(f'Error: Template element must be [Template] in target {self.basename}.toml')
             sys.exit(-1)
-        if 'template' not in self.target['Links']:
-            print(f'Error: [Links] must contain template element in target {self.basename}.toml')
+        if 'file' not in self.target['Template']:
+            print(f'Error: [Template] must contain file element in target {self.basename}.toml')
             sys.exit(-1)
 
     def ValidateTemplate(self, template_name):
-        recognized_names = [ 'Defs', 'Code', 'Region' ]
+        recognized_names = [ 'Param', 'Code', 'Region' ]
         for elem in self.template:
             if elem not in recognized_names:
                 print(f'Error: Unrecognized element {elem} in template {template_name}.toml')
                 sys.exit(-1)
-        if 'Defs' not in self.template:
-            print(f'Error: No [[Defs]] element in template {template_name}.toml')
+        if 'Param' not in self.template:
+            print(f'Error: No [[Param]] element in template {template_name}.toml')
             sys.exit(-1)
         if 'Region' not in self.template:
             print(f'Error: No [[Region]] element in template {template_name}.toml')
             sys.exit(-1)
-        if not isinstance(self.template['Defs'],list):
-            print(f'Error: Defs element must be [[Defs]] in template {template_name}.toml')
+        if not isinstance(self.template['Param'],list):
+            print(f'Error: Param element must be [[Param]] in template {template_name}.toml')
             sys.exit(-1)
-        if 'Defs' in self.template:
+        if 'Param' in self.template:
             if not isinstance(self.template['Code'],dict):
                 print(f'Error: Code element must be [Code] in template {template_name}.toml')
                 sys.exit(-1)
@@ -225,7 +223,7 @@ class DDTargetMaker:
             self.target = tomllib.load(f)
         #pprint.pp(self.target)
         self.ValidateTarget()
-        template_name = self.target["Links"]["template"]
+        template_name = self.target['Template']['file']
         self.Log(2, f"Loading template {template_name}...")
         if not os.path.exists(f'..\\{template_name}'):
             print(f'Error: Referenced template file {template_name} not found')
@@ -245,9 +243,9 @@ class DDTargetMaker:
             os.mkdir(self.objpath)
         with open(f"{self.objpath}\\{self.basename}.asm",'w') as f:
             self.EmitHeader(f)
-            self.ExtractDefs()
+            self.ExtractParams()
             self.ExtractOriginAndRomsize()
-            self.EmitDefs(f)
+            self.EmitParams(f)
             self.regionnum = 1
             for elem in self.template['Region']:
                 if 'start' in elem:

@@ -1,6 +1,6 @@
 
-[Links]
+[Template]
 #--------------------------------------------------------------------------
 # ROM TEMPLATE - this defines the rom layout, and which kind of io
 #--------------------------------------------------------------------------
-template = "templates/6502_asteroid-tether_f800_2k.toml"
+file = "templates/6502_asteroid-tether_f800_2k.toml"
