@@ -2,11 +2,44 @@
 [[Param]]
 # if you skip the comment entry here, 
 # it will pick up the comment in the template
+name = 'STRTADD'
+value = 0x8000
+
+[[Param]]
+# if you skip the comment entry here, 
+# it will pick up the comment in the template
 name = 'RAMADDR'
 value = 0x77f0
+
+[Code]
+cartheader = '''
+        .db	0xaa	    ; cartridge signature
+    	.db	0x55
+    	
+    	.dw     0x0000
+    	.dw     0x0000
+    	.dw     0x0000
+    	.dw     0x0000
+    	.dw     START
+    	JP      0x0008
+    	JP      0x0010
+    	JP      0x0018
+    	JP      0x0020
+    	JP      0x0028
+    	JP      0x0030
+    	JP      IRQADD
+    	JP      NMIADD
+'''
+
+#--------------------------------------------------------------------------
+# TITLE DATA
+#--------------------------------------------------------------------------
+title = '''
+    	.asciz  "BY: EVAN&FRANK/DEMON DEBUGGER/2019"
+'''
 
 [Template]
 #--------------------------------------------------------------------------
 # ROM TEMPLATE - this defines the rom layout, and which kind of io
 #--------------------------------------------------------------------------
-file = "templates/coleco-cart_romio_8000_2k.toml"
+file = "templates/z80-cart_romio_2k.toml"

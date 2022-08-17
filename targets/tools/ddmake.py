@@ -54,6 +54,9 @@ class DDTargetMaker:
                 print(f'Warning: Required Code entry "{name}" found in target, but has no default in template')
         else:
             if name in self.template['Code']:
+                if self.template['Code'][name] == 'reserved':
+                    print(f'Error: Code entry "{name}" in template is "reserved", but no entry in target')
+                    sys.exit(-1)
                 print(self.template['Code'][name],file = f)
                 self.Log(3,f'Using default code:  "{name}"')
             else:

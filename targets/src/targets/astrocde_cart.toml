@@ -1,5 +1,11 @@
 
 [[Param]]
+# if you skip the comment entry here, 
+# it will pick up the comment in the template
+name = 'STRTADD'
+value = 0x2000
+
+[[Param]]
 comment = '''
 The code actually needs 4 bytes ram at this address for the command buffer.
 In this case, the stack is elsewhere, set by the Astrocade BIOS
@@ -8,6 +14,37 @@ name = 'RAMADDR'
 value = 0x4fce
 
 [Code]
+cartheader = '''
+        .byte   0x55        ; cartridge header
+        .word   0x0218      ; next menu item (first one)
+        .word   TITLE       ; title pointer
+        .word   START       ; start pointer
+        
+        ret                 ; rst8
+        nop
+        nop
+
+        ret                 ; rst16
+        nop
+        nop
+        
+        ret                 ; rst24
+        nop
+        nop
+        
+        ret                 ; rst32
+        nop
+        nop
+        
+        ret                 ; rst40
+        nop
+        nop
+        
+        ret                 ; rst48
+        nop
+        nop
+'''
+
 #--------------------------------------------------------------------------
 # START Routine
 #
@@ -47,5 +84,5 @@ EVERY:
 #--------------------------------------------------------------------------
 # ROM TEMPLATE - this defines the rom layout, and which kind of io
 #--------------------------------------------------------------------------
-file = "templates/astrocde-cart_romio_2000_2k.toml"
+file = "templates/z80-cart_romio_2k.toml"
 
