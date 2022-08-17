@@ -1,4 +1,8 @@
 
+[[Param]]
+name = 'RAMSTRT'
+value = 0x0000
+
 [Template]
 #--------------------------------------------------------------------------
 # ROM TEMPLATE - this defines the rom layout, and which kind of io

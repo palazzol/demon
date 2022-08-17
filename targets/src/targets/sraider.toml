@@ -2,7 +2,8 @@
 [[Param]]
 # if you skip the comment entry here, 
 # it will pick up the comment in the template
-RAMADDR = 0x63f0
+name = 'RAMADDR'
+value = 0x63f0
 
 [Template]
 #--------------------------------------------------------------------------

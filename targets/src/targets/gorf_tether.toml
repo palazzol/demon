@@ -2,7 +2,8 @@
 [[Param]]
 # if you skip the comment entry here, 
 # it will pick up the comment in the template
-RAMADDR = 0xdff0
+name = 'RAMADDR'
+value = 0xdff0
 
 [Code]
 NMI = '''

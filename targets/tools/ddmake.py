@@ -74,24 +74,31 @@ class DDTargetMaker:
         template_param_comment = {}
         if 'Param' in self.template:
             for elem in self.template['Param']:
-                namefound = False
-                comment = ''
-                for e in elem:
-                    if e == 'comment':
-                        comment = elem[e]
-                    else:
-                        if namefound:
-                            print(f'Error: Template [[Param]] entry "{name}" has extra data {e}')
-                            sys.exit(-1)
-                        else:
-                            namefound = True
-                            name = e
-                            value = elem[name]
-                if namefound == False:
-                    print(f'Error: Template [[Param]] entry with no name')
+                if 'name' not in elem:
+                    print(f'Error: Template [[Param]] entry has no name element')
                     sys.exit(-1)
+                else:
+                    name = elem['name']
+                if 'value' not in elem:
+                    print(f'Error: Template [[Param]] entry "{name}" has no value element')
+                    sys.exit(-1)
+                else:
+                    value = elem['value']
+                if isinstance(value,str) and value != 'reserved':
+                    print(f'Error: Template [[Param]] entry "{name}" has string value, but not "reserved"')
+                    sys.exit(-1)
+                if not (isinstance(value,int) or isinstance(value,str)):
+                    print(f'Error: Template [[Param]] entry "{name}" has invalid value. Must be integer or "reserved"')
+                    sys.exit(-1)
+                comment = ''
+                if 'comment' in elem:
+                    comment = elem['comment']
+                for e in elem:
+                    if e not in ['name','value','comment']:
+                        print(f'Error: Template [[Param]] entry "{name}" has extra data {e}')
+                        sys.exit(-1)
                 template_param_names.append(name)
-                template_param_value[name] = int(value)
+                template_param_value[name] = value
                 template_param_comment[name] = comment
 
         target_param_names = []
@@ -99,31 +106,35 @@ class DDTargetMaker:
         target_param_comment = {}
         if 'Param' in self.target:
             for elem in self.target['Param']:
-                namefound = False
-                comment = ''
-                for e in elem:
-                    if e == 'comment':
-                        comment = elem[e]
-                    else:
-                        if namefound:
-                            print(f'Error: Target [[Param]] entry "{name}" has extra data {e}')
-                            sys.exit(-1)
-                        else:
-                            namefound = True
-                            name = e
-                            value = elem[name]
-                if namefound == False:
-                    print(f'Error: Target [[Param]] entry with no name')
+                if 'name' not in elem:
+                    print(f'Error: Target [[Param]] entry has no name element')
+                    sys.exit(-1) 
+                else:
+                    name = elem['name']
+                if 'value' not in elem:
+                    print(f'Error: Target [[Param]] entry "{name}" has no value element')
                     sys.exit(-1)
+                else:
+                    value = elem['value']
+                if not isinstance(value,int):
+                    print(f'Error: Target [[Param]] entry "{name}" has non-integer value')
+                    sys.exit(-1) 
+                comment = ''
+                if 'comment' in elem:
+                    comment = elem['comment']
+                for e in elem:
+                    if e not in ['name','value','comment']:
+                        print(f'Error: Target [[Param]] entry "{name}" has extra data {e}')
+                        sys.exit(-1)
                 target_param_names.append(name)
-                target_param_value[name] = int(value)
+                target_param_value[name] = value
                 target_param_comment[name] = comment
 
         for name in target_param_names:
             if name in template_param_names:
                 pass
             else:
-                print(f"Error: [[Param]] entry {name} in target with no default value in template")
+                print(f"Error: [[Param]] entry {name} in target with no default entry in template")
                 sys.exit(-1)
         self.param_names = []
         self.param_value = {}
@@ -131,15 +142,18 @@ class DDTargetMaker:
         for name in template_param_names:
             self.param_names.append(name)
             if name in target_param_names:
+                if target_param_value[name] == template_param_value[name]:
+                    print(f'Warning: Param {name} = 0x{target_param_value[name]:04x} in target is identical to default in template')
                 self.param_value[name] = target_param_value[name]
-                if self.param_value[name] == template_param_value[name]:
-                    print(f'Warning: Param {name} = 0x{self.param_value[name]:04x} in target is identical to default in template')
                 if target_param_comment[name] == '':
                     self.param_comment[name] = template_param_comment[name]
                 else:
                     self.param_comment[name] = target_param_comment[name]
                 self.Log(3, f"Using target param:  {name} = 0x{self.param_value[name]:04x}")
             else:
+                if template_param_value[name] == 'reserved':
+                    print(f'Error: Template [[Param]] entry "{name}" has reserved value, but no entry in Target')
+                    sys.exit(-1)                    
                 self.param_value[name] = template_param_value[name]
                 self.param_comment[name] = template_param_comment[name]
                 self.Log(3, f"Using default param: {name} = 0x{self.param_value[name]:04x}")

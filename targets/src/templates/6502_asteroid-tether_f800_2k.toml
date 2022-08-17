@@ -1,28 +1,33 @@
 
 [[Param]]
 comment = 'Start of chip memory mapping'
-STRTADD = 0xf800
+name = 'STRTADD'
+value = 0xf800
 
 [[Param]]
 comment = '2K ROM'
-ROMSIZE = 0x0800
+name = 'ROMSIZE'
+value = 0x0800
 
 [[Param]]
 comment = '''
 Start of ram, needs 7 bytes starting here
 On the 6502, you can usually you can count on there being RAM in page 0'''
-RAMSTRT = 0x0000
+name = 'RAMSTRT'
+value = 'reserved'
 
 [[Param]]
 comment = '''
 Start of stack, needs some memory below this address
 On the 6502, this is in page 1, so this actually represents
 address 0x0100+SSTACK'''
-SSTACK = 0x00ff
+name = 'SSTACK'
+value = 0x00ff
 
 [[Param]]
 comment = 'delay factor'
-BIGDEL = 0x0180
+name = 'BIGDEL'
+value = 0x0180
 
 [Code]
 #--------------------------------------------------------------------------

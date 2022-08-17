@@ -4,7 +4,8 @@ comment = '''
 The code actually needs 4 bytes ram at this address for the command buffer.
 In this case, the stack is elsewhere, set by the Astrocade BIOS
 '''
-RAMADDR = 0x4fce
+name = 'RAMADDR'
+value = 0x4fce
 
 [Code]
 #--------------------------------------------------------------------------

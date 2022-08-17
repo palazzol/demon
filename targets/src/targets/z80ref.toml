@@ -1,4 +1,10 @@
 
+[[Param]]
+# if you skip the comment entry here, 
+# it will pick up the comment in the template
+name = 'RAMADDR'
+value = 0xfff0
+
 [Template]
 #--------------------------------------------------------------------------
 # ROM TEMPLATE - this defines the rom layout, and which kind of io
