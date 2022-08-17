@@ -56,16 +56,16 @@
                              43 
                              44         .include "../core/6502_main.asm"
                               1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                              2 ; RAM Variables	
+                              2 ; RAM Variables 
                               3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                               4 
-                     0000     5 OUTBUF	.equ	RAMSTRT	        ;buffer for output states
-                     0001     6 B	.equ	RAMSTRT+0x01	;general purpose
-                     0002     7 C	.equ	RAMSTRT+0x02	;general purpose
-                     0003     8 CMDBUF0 .equ	RAMSTRT+0x03	;command buffer
-                     0004     9 CMDBUF1 .equ	RAMSTRT+0x04	;command buffer
-                     0005    10 CMDBUF2 .equ	RAMSTRT+0x05	;command buffer
-                     0006    11 CMDBUF3 .equ	RAMSTRT+0x06	;command buffer
+                     0000     5 OUTBUF  .equ    RAMSTRT         ;buffer for output states
+                     0001     6 B       .equ    RAMSTRT+0x01    ;general purpose
+                     0002     7 C       .equ    RAMSTRT+0x02    ;general purpose
+                     0003     8 CMDBUF0 .equ    RAMSTRT+0x03    ;command buffer
+                     0004     9 CMDBUF1 .equ    RAMSTRT+0x04    ;command buffer
+                     0005    10 CMDBUF2 .equ    RAMSTRT+0x05    ;command buffer
+                     0006    11 CMDBUF3 .equ    RAMSTRT+0x06    ;command buffer
                              12 
                              13 ; I2C ADDRESSING
                      0011    14 I2CRADR .equ    0x11        ; I2C read address  - I2C address 0x08
@@ -80,24 +80,24 @@
    F80C 20 09 F9      [ 6]   23         jsr     EVERY
    F80F 20 C6 F8      [ 6]   24         jsr     POLL
    F812 B0 F8         [ 4]   25         bcs     MAIN
-   F814 A9 01         [ 2]   26         lda	#BIGDEL>>8
-   F816 85 01         [ 3]   27         sta	B
-   F818 A9 80         [ 2]   28         lda	#BIGDEL%256
-   F81A 85 02         [ 3]   29         sta	C
+   F814 A9 01         [ 2]   26         lda     #BIGDEL>>8
+   F816 85 01         [ 3]   27         sta     B
+   F818 A9 80         [ 2]   28         lda     #BIGDEL%256
+   F81A 85 02         [ 3]   29         sta     C
    F81C                      30 MLOOP:
-   F81C A5 02         [ 3]   31         lda	C
-   F81E F0 05         [ 4]   32         beq	DECBOTH
-   F820 C6 02         [ 5]   33         dec	C
-   F822 4C 1C F8      [ 3]   34         jmp	MLOOP
+   F81C A5 02         [ 3]   31         lda     C
+   F81E F0 05         [ 4]   32         beq     DECBOTH
+   F820 C6 02         [ 5]   33         dec     C
+   F822 4C 1C F8      [ 3]   34         jmp     MLOOP
    F825                      35 DECBOTH:
-   F825 A5 01         [ 3]   36 	lda	B
-   F827 F0 E3         [ 4]   37 	beq	MAIN
-   F829 C6 02         [ 5]   38 	dec	C
-   F82B C6 01         [ 5]   39 	dec	B
-   F82D 4C 1C F8      [ 3]   40 	jmp	MLOOP
+   F825 A5 01         [ 3]   36         lda     B
+   F827 F0 E3         [ 4]   37         beq     MAIN
+   F829 C6 02         [ 5]   38         dec     C
+   F82B C6 01         [ 5]   39         dec     B
+   F82D 4C 1C F8      [ 3]   40         jmp     MLOOP
                              41 
                              42 ; Delay for half a bit time
-   F830 60            [ 6]   43 I2CDLY:	rts		; TBD - this is plenty?
+   F830 60            [ 6]   43 I2CDLY: rts             ; TBD - this is plenty?
                              44 
                              45 ; I2C Start Condition
    F831                      46 I2CSTART:
@@ -115,56 +115,56 @@
    F841 60            [ 6]   58         rts
                              59         
    F842                      60 I2CRBIT:
-   F842 20 69 F9      [ 6]   61 	jsr	SETSDA
-   F845 20 50 F9      [ 6]   62 	jsr	SETSCL
-   F848 20 85 F9      [ 6]   63 	jsr	READSDA	; sets/clears carry flag
-   F84B 20 5E F9      [ 6]   64 	jsr     CLRSCL
-   F84E 60            [ 6]   65 	rts		; carry flag still good here
+   F842 20 69 F9      [ 6]   61         jsr     SETSDA
+   F845 20 50 F9      [ 6]   62         jsr     SETSCL
+   F848 20 85 F9      [ 6]   63         jsr     READSDA ; sets/clears carry flag
+   F84B 20 5E F9      [ 6]   64         jsr     CLRSCL
+   F84E 60            [ 6]   65         rts             ; carry flag still good here
                              66 
    F84F                      67 I2CWBIT:
-   F84F 90 06         [ 4]   68 	bcc	DOCLR
-   F851 20 69 F9      [ 6]   69 	jsr	SETSDA
-   F854 4C 5A F8      [ 3]   70 	jmp	AHEAD
+   F84F 90 06         [ 4]   68         bcc     DOCLR
+   F851 20 69 F9      [ 6]   69         jsr     SETSDA
+   F854 4C 5A F8      [ 3]   70         jmp     AHEAD
    F857                      71 DOCLR:
-   F857 20 77 F9      [ 6]   72 	jsr	CLRSDA
+   F857 20 77 F9      [ 6]   72         jsr     CLRSDA
    F85A                      73 AHEAD:
-   F85A 20 50 F9      [ 6]   74 	jsr	SETSCL
-   F85D 20 5E F9      [ 6]   75 	jsr	CLRSCL
-   F860 60            [ 6]   76 	rts
+   F85A 20 50 F9      [ 6]   74         jsr     SETSCL
+   F85D 20 5E F9      [ 6]   75         jsr     CLRSCL
+   F860 60            [ 6]   76         rts
                              77         
    F861                      78 I2CWBYTE:
-   F861 48            [ 3]   79 	pha
-   F862 A9 08         [ 2]   80 	lda	#0x08
-   F864 85 01         [ 3]   81 	sta	B
-   F866 68            [ 4]   82 	pla
+   F861 48            [ 3]   79         pha
+   F862 A9 08         [ 2]   80         lda     #0x08
+   F864 85 01         [ 3]   81         sta     B
+   F866 68            [ 4]   82         pla
    F867                      83 ILOOP:
-   F867 2A            [ 2]   84 	rol
-   F868 48            [ 3]   85 	pha
-   F869 20 4F F8      [ 6]   86 	jsr	I2CWBIT
-   F86C 68            [ 4]   87 	pla
-   F86D C6 01         [ 5]   88 	dec	B
-   F86F D0 F6         [ 4]   89 	bne	ILOOP
-   F871 20 42 F8      [ 6]   90 	jsr	I2CRBIT
-   F874 60            [ 6]   91 	rts
-                             92 	
+   F867 2A            [ 2]   84         rol
+   F868 48            [ 3]   85         pha
+   F869 20 4F F8      [ 6]   86         jsr     I2CWBIT
+   F86C 68            [ 4]   87         pla
+   F86D C6 01         [ 5]   88         dec     B
+   F86F D0 F6         [ 4]   89         bne     ILOOP
+   F871 20 42 F8      [ 6]   90         jsr     I2CRBIT
+   F874 60            [ 6]   91         rts
+                             92         
    F875                      93 I2CRBYTE:
-   F875 A9 08         [ 2]   94         lda	#0x08
-   F877 85 01         [ 3]   95 	sta	B
-   F879 A9 00         [ 2]   96 	lda	#0x00
-   F87B 85 02         [ 3]   97 	sta	C
+   F875 A9 08         [ 2]   94         lda     #0x08
+   F877 85 01         [ 3]   95         sta     B
+   F879 A9 00         [ 2]   96         lda     #0x00
+   F87B 85 02         [ 3]   97         sta     C
    F87D                      98 LOOP3:
    F87D 20 42 F8      [ 6]   99         jsr     I2CRBIT     ; get bit in carry flag
    F880 26 02         [ 5]  100         rol     C           ; rotate carry into bit0 of C register
-   F882 C6 01         [ 5]  101         dec	B
-   F884 D0 F7         [ 4]  102         bne    	LOOP3
-   F886 18            [ 2]  103         clc           	    ; clear carry flag              
-   F887 20 4F F8      [ 6]  104         jsr   	I2CWBIT
-   F88A A5 02         [ 3]  105         lda  	C
+   F882 C6 01         [ 5]  101         dec     B
+   F884 D0 F7         [ 4]  102         bne     LOOP3
+   F886 18            [ 2]  103         clc                 ; clear carry flag              
+   F887 20 4F F8      [ 6]  104         jsr     I2CWBIT
+   F88A A5 02         [ 3]  105         lda     C
    F88C 60            [ 6]  106         rts
                             107 
    F88D                     108 I2CRREQ:
    F88D 20 31 F8      [ 6]  109         jsr     I2CSTART
-   F890 A9 11         [ 2]  110         lda	    #I2CRADR
+   F890 A9 11         [ 2]  110         lda         #I2CRADR
    F892 20 61 F8      [ 6]  111         jsr     I2CWBYTE
    F895 B0 17         [ 4]  112         bcs     SKIP
    F897 20 75 F8      [ 6]  113         jsr     I2CRBYTE
@@ -196,42 +196,42 @@
    F8C6                     139 POLL:
    F8C6 20 8D F8      [ 6]  140         jsr     I2CRREQ
    F8C9 A5 03         [ 3]  141         lda     CMDBUF0
-   F8CB C9 52         [ 2]  142         cmp     #0x52    	; 'R' - Read memory
+   F8CB C9 52         [ 2]  142         cmp     #0x52           ; 'R' - Read memory
    F8CD F0 0A         [ 4]  143         beq     MREAD
-   F8CF C9 57         [ 2]  144         cmp     #0x57    	; 'W' - Write memory
-   F8D1 F0 10         [ 4]  145         beq	MWRITE
-   F8D3 C9 43         [ 2]  146         cmp     #0x43    	; 'C' - Call subroutine
-   F8D5 F0 26         [ 4]  147         beq	REMCALL
+   F8CF C9 57         [ 2]  144         cmp     #0x57           ; 'W' - Write memory
+   F8D1 F0 10         [ 4]  145         beq     MWRITE
+   F8D3 C9 43         [ 2]  146         cmp     #0x43           ; 'C' - Call subroutine
+   F8D5 F0 26         [ 4]  147         beq     REMCALL
    F8D7 18            [ 2]  148         clc
    F8D8 60            [ 6]  149         rts
                             150 
    F8D9                     151 MREAD:
    F8D9 20 EF F8      [ 6]  152         jsr     LOADBC
-   F8DC A0 00         [ 2]  153         ldy	#0x00
-   F8DE B1 01         [ 6]  154         lda	[B],Y
+   F8DC A0 00         [ 2]  153         ldy     #0x00
+   F8DE B1 01         [ 6]  154         lda     [B],Y
    F8E0 4C F8 F8      [ 3]  155         jmp     SRESP
    F8E3                     156 MWRITE:
    F8E3 20 EF F8      [ 6]  157         jsr     LOADBC
    F8E6 A5 06         [ 3]  158         lda     CMDBUF3
    F8E8 91 01         [ 6]  159         sta     [B],Y
-   F8EA A9 57         [ 2]  160         lda     #0x57  	;'W'
+   F8EA A9 57         [ 2]  160         lda     #0x57   ;'W'
    F8EC 4C F8 F8      [ 3]  161         jmp     SRESP
    F8EF                     162 LOADBC:
-   F8EF A5 05         [ 3]  163 	lda	CMDBUF2
-   F8F1 85 01         [ 3]  164 	sta	B
-   F8F3 A5 04         [ 3]  165 	lda	CMDBUF1
-   F8F5 85 02         [ 3]  166 	sta	C
-   F8F7 60            [ 6]  167 	rts
-                            168 	
+   F8EF A5 05         [ 3]  163         lda     CMDBUF2
+   F8F1 85 01         [ 3]  164         sta     B
+   F8F3 A5 04         [ 3]  165         lda     CMDBUF1
+   F8F5 85 02         [ 3]  166         sta     C
+   F8F7 60            [ 6]  167         rts
+                            168         
    F8F8                     169 SRESP:
    F8F8 20 B5 F8      [ 6]  170         jsr    I2CSRESP
    F8FB                     171 RHERE:
    F8FB 38            [ 2]  172         sec
    F8FC 60            [ 6]  173         rts
    F8FD                     174 REMCALL:
-   F8FD A9 F7         [ 2]  175 	    lda	#>(START-1)
+   F8FD A9 F7         [ 2]  175         lda     #>(START-1)
    F8FF 48            [ 3]  176         pha
-   F900 A9 FF         [ 2]  177         lda	#<(START-1)
+   F900 A9 FF         [ 2]  177         lda     #<(START-1)
    F902 48            [ 3]  178         pha
    F903 20 EF F8      [ 6]  179         jsr     LOADBC
    F906 6C 01 00      [ 5]  180         jmp     [B]
@@ -272,41 +272,43 @@
                              75 
                              76 
                              77         .include "../io/6502_romio.asm"
-   F950 A5 00         [ 3]    1 SETSCL:	lda	OUTBUF
-   F952 09 01         [ 2]    2 	ora	#0x01
+   F950 A5 00         [ 3]    1 SETSCL: lda     OUTBUF
+   F952 09 01         [ 2]    2         ora     #0x01
    F954 85 00         [ 3]    3         sta     OUTBUF
    F956 AA            [ 2]    4         tax
    F957 BD C0 FF      [ 5]    5         lda     IOREGW,X
-   F95A 20 30 F8      [ 6]    6 	jsr	I2CDLY
-   F95D 60            [ 6]    7 	rts
+   F95A 20 30 F8      [ 6]    6         jsr     I2CDLY
+   F95D 60            [ 6]    7         rts
                               8 
-   F95E A5 00         [ 3]    9 CLRSCL:	lda	OUTBUF
-   F960 29 1E         [ 2]   10     and	#0x1e
-   F962 85 00         [ 3]   11     sta	OUTBUF
+   F95E A5 00         [ 3]    9 CLRSCL: lda     OUTBUF
+   F960 29 1E         [ 2]   10         and     #0x1e
+   F962 85 00         [ 3]   11         sta     OUTBUF
    F964 AA            [ 2]   12         tax
    F965 BD C0 FF      [ 5]   13         lda     IOREGW,X
-   F968 60            [ 6]   14 	rts
+   F968 60            [ 6]   14         rts
                              15 
-   F969 A5 00         [ 3]   16 SETSDA:	lda	OUTBUF
-   F96B 29 1D         [ 2]   17 	and	#0x1d
+   F969 A5 00         [ 3]   16 SETSDA: lda     OUTBUF
+   F96B 29 1D         [ 2]   17         and     #0x1d
    F96D 85 00         [ 3]   18         sta     OUTBUF
    F96F AA            [ 2]   19         tax
    F970 BD C0 FF      [ 5]   20         lda     IOREGW,X
-   F973 20 30 F8      [ 6]   21 	jsr	I2CDLY
-   F976 60            [ 6]   22 	rts
+   F973 20 30 F8      [ 6]   21         jsr     I2CDLY
+   F976 60            [ 6]   22         rts
                              23 
-   F977 A5 00         [ 3]   24 CLRSDA:	lda	OUTBUF
-   F979 09 02         [ 2]   25 	ora	#0x02
+   F977 A5 00         [ 3]   24 CLRSDA: lda     OUTBUF
+   F979 09 02         [ 2]   25         ora     #0x02
    F97B 85 00         [ 3]   26         sta     OUTBUF
    F97D AA            [ 2]   27         tax
    F97E BD C0 FF      [ 5]   28         lda     IOREGW,X
-   F981 20 30 F8      [ 6]   29 	jsr	I2CDLY
-   F984 60            [ 6]   30 	rts
+   F981 20 30 F8      [ 6]   29         jsr     I2CDLY
+   F984 60            [ 6]   30         rts
                              31 
-   F985 A6 00         [ 3]   32 READSDA:	ldx	OUTBUF
-   F987 BD A0 FF      [ 5]   33         lda     IOREGR,X
-   F98A 6A            [ 2]   34         ror
-   F98B 60            [ 6]   35 	rts				
+   F985                      32 READSDA:
+   F985 A6 00         [ 3]   33         ldx     OUTBUF
+   F987 BD A0 FF      [ 5]   34         lda     IOREGR,X
+   F98A 6A            [ 2]   35         ror
+   F98B 60            [ 6]   36         rts
+                             37                              
                              78 ;
                              79 ;       NMI HANDLER
                              80 ;

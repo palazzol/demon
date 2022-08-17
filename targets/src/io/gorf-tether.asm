@@ -10,7 +10,7 @@ CCPORT  .equ    0x16        ; port for lamps
 ; Destroys A, B and C
 SETSCL:
         LD      B,0x01
-        LD	C,CCPORT
+        LD	    C,CCPORT
         IN      A,(C)
         CALL    I2CDELAY
         RET
@@ -19,7 +19,7 @@ SETSCL:
 ; Destroys A, B and C
 CLRSCL:
         LD      B,0x00
-        LD	C,CCPORT
+        LD	    C,CCPORT
         IN      A,(C)
         RET
 
@@ -27,7 +27,7 @@ CLRSCL:
 ; Destroys A, B and C
 SETSDA:
         LD      B,0x02
-        LD	C,CCPORT
+        LD	    C,CCPORT
         IN      A,(C)
         CALL    I2CDELAY
         RET
@@ -36,7 +36,7 @@ SETSDA:
 ; Destroys A, B and C 
 CLRSDA:
         LD      B,0x03
-        LD	C,CCPORT
+        LD	    C,CCPORT
         IN      A,(C)
         CALL    I2CDELAY
         RET

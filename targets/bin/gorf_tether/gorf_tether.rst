@@ -296,7 +296,7 @@
                              10 ; Destroys A, B and C
    017B                      11 SETSCL:
    017B 06 01         [ 7]   12         LD      B,0x01
-   017D 0E 16         [ 7]   13         LD	C,CCPORT
+   017D 0E 16         [ 7]   13         LD	    C,CCPORT
    017F ED 78         [12]   14         IN      A,(C)
    0181 CD 87 00      [17]   15         CALL    I2CDELAY
    0184 C9            [10]   16         RET
@@ -305,7 +305,7 @@
                              19 ; Destroys A, B and C
    0185                      20 CLRSCL:
    0185 06 00         [ 7]   21         LD      B,0x00
-   0187 0E 16         [ 7]   22         LD	C,CCPORT
+   0187 0E 16         [ 7]   22         LD	    C,CCPORT
    0189 ED 78         [12]   23         IN      A,(C)
    018B C9            [10]   24         RET
                              25 
@@ -313,7 +313,7 @@
                              27 ; Destroys A, B and C
    018C                      28 SETSDA:
    018C 06 02         [ 7]   29         LD      B,0x02
-   018E 0E 16         [ 7]   30         LD	C,CCPORT
+   018E 0E 16         [ 7]   30         LD	    C,CCPORT
    0190 ED 78         [12]   31         IN      A,(C)
    0192 CD 87 00      [17]   32         CALL    I2CDELAY
    0195 C9            [10]   33         RET
@@ -322,7 +322,7 @@
                              36 ; Destroys A, B and C 
    0196                      37 CLRSDA:
    0196 06 03         [ 7]   38         LD      B,0x03
-   0198 0E 16         [ 7]   39         LD	C,CCPORT
+   0198 0E 16         [ 7]   39         LD	    C,CCPORT
    019A ED 78         [12]   40         IN      A,(C)
    019C CD 87 00      [17]   41         CALL    I2CDELAY
    019F C9            [10]   42         RET
