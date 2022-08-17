@@ -307,7 +307,7 @@ class DDTargetMaker:
         self.Log(2, f'Generating {self.basename}.hex...')
         cmd = f'..\\..\\tools\\srec_cat.exe {fullname}.bin -binary -output {fullname}.hex -Intel -address-length=2 -output_block_size=16'
         #print(cmd)
-        #rv = os.system(cmd)
+        rv = os.system(cmd)
         if rv != 0:
             print("ERROR: Conversion to hex failed.")
             return rv
