@@ -1,0 +1,51 @@
+
+[[Param]]
+name = 'RAMSTRT'
+value = 0x0000
+
+[Code]
+
+#--------------------------------------------------------------------------
+# EVERY MACRO
+# This is called regularly, every polling loop, and can be used do any 
+# target-specific task that is required, such as hitting a watchdog
+#--------------------------------------------------------------------------
+every = '''
+;
+;       EVERY CODE
+;
+EVERY:
+        ; reset the starshp1 watchdog
+        lda     #0x01
+        sta     0xdc06
+        lda     #0xfe
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xcc00
+        sta     0xdc06
+        rts
+
+'''
+
+[Template]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+file = "templates/6502_romio_f800_2k.toml"
