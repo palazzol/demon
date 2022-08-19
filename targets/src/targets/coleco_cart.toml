@@ -13,11 +13,11 @@ value = 0x77f0
 
 [Code]
 cartheader = '''
-        .db	0xaa	    ; cartridge signature
-    	.db	0x55
-    	
-    	.dw     0x0000
-    	.dw     0x0000
+        .db     0xaa	    ; cartridge signature
+        .db     0x55
+        	
+        .dw     0x0000
+        .dw     0x0000
     	.dw     0x0000
     	.dw     0x0000
     	.dw     START
