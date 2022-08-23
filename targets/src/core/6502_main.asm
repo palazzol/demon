@@ -156,6 +156,7 @@ MREAD:
 MWRITE:
         jsr     LOADBC
         lda     CMDBUF3
+        ldy     #0x00
         sta     [B],Y
         lda     #0x57   ;'W'
         jmp     SRESP

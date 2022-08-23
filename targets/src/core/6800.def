@@ -1,3 +1,2 @@
-
 ; Same for all 6800s
 VECTORS .equ    0xfff8      ; location of Vector table
