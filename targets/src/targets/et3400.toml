@@ -1,0 +1,14 @@
+
+[[Param]]
+name = 'RAMSTRT'
+value = 0x0000
+
+[[Param]]
+name = 'SSTACK'
+value = 0x1fff
+
+[Template]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+file = "templates/6800_romio_f800_2k.toml"

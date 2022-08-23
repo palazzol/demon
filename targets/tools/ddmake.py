@@ -28,6 +28,9 @@ class DDTargetMaker:
         elif name == "core/6502.def":
             self.cpu = '6502'
             self.assembler = 'as6500'
+        elif name == "core/6800.def":
+            self.cpu = '6800'
+            self.assembler = 'as6800'
 
     def EmitBankArea(self, f, elem):
         start = elem["start"]
