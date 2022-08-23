@@ -27,11 +27,11 @@ BIGDEL = 0x0180
         .bank   region1 (base=STRTADD, size=IOADD-STRTADD)
         .area   region1 (ABS, BANK=region1)
 
-        .db	0xaa	    ; cartridge signature
-    	.db	0x55
-    	
-    	.dw     0x0000
-    	.dw     0x0000
+        .db     0xaa	    ; cartridge signature
+        .db     0x55
+        	
+        .dw     0x0000
+        .dw     0x0000
     	.dw     0x0000
     	.dw     0x0000
     	.dw     START

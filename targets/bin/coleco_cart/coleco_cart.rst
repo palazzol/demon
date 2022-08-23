@@ -41,11 +41,11 @@
                              27         .bank   region1 (base=STRTADD, size=IOADD-STRTADD)
                              28         .area   region1 (ABS, BANK=region1)
                              29 
-   8000 AA                   30         .db	0xaa	    ; cartridge signature
-   8001 55                   31     	.db	0x55
-                             32     	
-   8002 00 00                33     	.dw     0x0000
-   8004 00 00                34     	.dw     0x0000
+   8000 AA                   30         .db     0xaa	    ; cartridge signature
+   8001 55                   31         .db     0x55
+                             32         	
+   8002 00 00                33         .dw     0x0000
+   8004 00 00                34         .dw     0x0000
    8006 00 00                35     	.dw     0x0000
    8008 00 00                36     	.dw     0x0000
    800A 47 80                37     	.dw     START
