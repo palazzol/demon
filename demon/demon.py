@@ -65,11 +65,11 @@ class DemonDebugger:
             global_args.mode = 16
             global_args.enable_port_io = False
             global_args.rtscts = True # Required for reliable hi-speed comms on the LTO Flash
-        elif global_args.chip == '6502':
+        elif (global_args.chip == '6502') or (global_args.chip == '6800'):
             global_args.mode = 8
             global_args.enable_port_io = False
         else:
-            print("Sorry, chip must be Z80, 6502, or CP1610")
+            print("Sorry, chip must be Z80, 6502, 6800, or CP1610")
             sys.exit(-1)
         self.global_args = global_args
 

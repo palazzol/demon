@@ -1,9 +1,9 @@
 SETSCL: ldaa    OUTBUF
         oraa    #0x01
         staa    OUTBUF
-        adda    #>(IOREGW)
+        adda    #<(IOREGW)
         staa    C
-        ldaa    #<(IOREGW)
+        ldaa    #>(IOREGW)
         staa    BREG
         ldx     BREG
         ldaa    0,X
@@ -13,9 +13,9 @@ SETSCL: ldaa    OUTBUF
 CLRSCL: ldaa    OUTBUF
         anda    #0x1e
         staa    OUTBUF
-        adda    #>(IOREGW)
+        adda    #<(IOREGW) ;biffs carry flag!
         staa    C
-        ldaa    #<(IOREGW)
+        ldaa    #>(IOREGW)
         staa    BREG
         ldx     BREG
         ldaa    0,X
@@ -24,9 +24,9 @@ CLRSCL: ldaa    OUTBUF
 SETSDA: ldaa    OUTBUF
         anda    #0x1d
         staa    OUTBUF
-        adda    #>(IOREGW)
+        adda    #<(IOREGW)
         staa    C
-        ldaa    #<(IOREGW)
+        ldaa    #>(IOREGW)
         staa    BREG
         ldx     BREG
         ldaa    0,X
@@ -36,9 +36,9 @@ SETSDA: ldaa    OUTBUF
 CLRSDA: ldaa    OUTBUF
         oraa    #0x02
         staa    OUTBUF
-        adda    #>(IOREGW)
+        adda    #<(IOREGW)
         staa    C
-        ldaa    #<(IOREGW)
+        ldaa    #>(IOREGW)
         staa    BREG
         ldx     BREG
         ldaa    0,X
@@ -47,9 +47,9 @@ CLRSDA: ldaa    OUTBUF
 
 READSDA:
         ldaa    OUTBUF
-        adda    #>(IOREGR)
+        adda    #<(IOREGR)
         staa    C
-        ldaa    #<(IOREGR)
+        ldaa    #>(IOREGR)
         staa    BREG
         ldx     BREG
         ldaa    0,X

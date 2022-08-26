@@ -62,7 +62,11 @@ I2CRBIT:
         jsr     SETSDA
         jsr     SETSCL
         jsr     READSDA ; sets/clears carry flag
+        rola            ; save carry flag here
+        psha
         jsr     CLRSCL
+        pula
+        rora            ; restore carry flag here
         rts             ; carry flag still good here
 
 I2CWBIT:
@@ -77,33 +81,31 @@ AHEAD:
         rts
         
 I2CWBYTE:
-        psha
-        ldaa    #0x08
-        staa    BREG
-        pula
+        ldab    #0x08   
 ILOOP:
-        rola
+        rola                ; high bit into carry
         psha
         jsr     I2CWBIT
         pula
-        dec     BREG
+        decb
         bne     ILOOP
         jsr     I2CRBIT
         rts
         
 I2CRBYTE:
-        ldaa    #0x08
-        staa    BREG
+        ldab    #0x08
         ldaa    #0x00
-        staa    C
 LOOP3:
+        psha
         jsr     I2CRBIT     ; get bit in carry flag
-        rol     C           ; rotate carry into bit0 of C register
-        dec     BREG
+        pula
+        rola                ; rotate carry into bit0
+        decb
         bne     LOOP3
-        clc                 ; clear carry flag              
+        clc                 ; clear carry flag 
+        psha             
         jsr     I2CWBIT
-        ldaa    C
+        pula
         rts
 
 I2CRREQ:
@@ -162,9 +164,9 @@ MWRITE:
         ldaa    #0x57   ;'W'
         jmp     SRESP
 LOADBC:
-        ldaa    CMDBUF2
-        staa    BREG
         ldaa    CMDBUF1
+        staa    BREG
+        ldaa    CMDBUF2
         staa    C
         rts
         

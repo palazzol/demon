@@ -14,7 +14,7 @@ ROMSIZE = 0x0800
 RAMSTRT = 0x0000
 
 ; Start of stack, needs some memory below this address
-SSTACK = 0x1fff
+SSTACK = 0x00ff
 
 ; delay factor
 BIGDEL = 0x0180

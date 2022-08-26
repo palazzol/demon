@@ -77,7 +77,7 @@ code  = [
     { link = "io/romio.def" } 
 ]
 
-[[Region]]    
+[[Region]]
 start = 'STRTADD'
 end = 'IOADD'
 code=[

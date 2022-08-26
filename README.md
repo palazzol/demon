@@ -15,7 +15,7 @@ Debugger/Monitor for small "computers"
 
 Demon Debugger is a tool that can be used to repair and reverse-engineer devices with 8 and 16 bit CPUs, such as arcade machines, console games, embedded computers, single board computers, etc.  It provides a debugging console, and so is especially useful for systems that lack a working one.
 
-It has been ported to Z80-based, 6502-based, and the CP1610-based systems.  There are ports underway to other CPU architectures.
+It has been ported to Z80-based, 6502-based, 6800-based, and the CP1610-based systems.  There are ports underway to other CPU architectures.
 
 Unfortunately, Demon Debugger can't be used on a totally broken system.  The target system must have a working CPU, and at least a small amount of ROM and RAM.  However, we have found that for most applications, it's really not too hard to get a system to this point.
 
@@ -44,6 +44,9 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 * Atari Asteroids Arcade, tethered mode
 * Atari Starship 1 Arcade
 
+### 6800
+* Heathkit ET-3400, ET-3400A (6800 trainer)
+
 ### Z80
 * Z80 reference code (Tweakable to work on most targets)
 * Sega Star Trek Arcade
@@ -57,8 +60,7 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 * Mattel Intellivision - via LTO Flash cartridge*
 
 ### Other - coming soon
-* Heathkit ET-4300A (6800 target)
-* Heathkit ET-4300A + 6809 adapter (6809 target)
+* Heathkit ET-3400A + 6809 adapter (6809 trainer)
 * Mattel Intellivision, cartridge (CP1610 target)
 * TI 99/4A cartridge (TMS9900 target)
 * OS816 SBC (65C816 target)
