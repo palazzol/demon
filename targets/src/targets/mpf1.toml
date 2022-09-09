@@ -1,0 +1,12 @@
+
+[[Param]]
+# if you skip the comment entry here, 
+# it will pick up the comment in the template
+name = 'RAMADDR'
+value = 0x1ff0
+
+[Template]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+file = "templates/z80_romio_0000_2k.toml"

@@ -58,6 +58,7 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 * Bally Astrocade, cartridge
 * Colecovision/Bit90, cartridge
 * Universal Space Raider Arcade
+* MicroProfessor-1 (Z80 trainer)
 
 ### CP1610
 * Mattel Intellivision - via LTO Flash cartridge*
@@ -66,7 +67,6 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 * Mattel Intellivision, cartridge (CP1610 target)
 * TI 99/4A cartridge (TMS9900 target)
 * OS816 SBC (65C816 target)
-* MicroProfessor-1 (Z80 trainer)
 * Various 8080 targets
 * Atari 2600 (6502)
 * etc.
