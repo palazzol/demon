@@ -69,7 +69,7 @@
                              20 
                              21 ; Main routine
    F80C                      22 MAIN:
-   F80C 20 09 F9      [ 6]   23         jsr     EVERY
+   F80C 20 0B F9      [ 6]   23         jsr     EVERY
    F80F 20 C6 F8      [ 6]   24         jsr     POLL
    F812 B0 F8         [ 4]   25         bcs     MAIN
    F814 A9 01         [ 2]   26         lda     #BIGDEL>>8
@@ -93,35 +93,35 @@
                              44 
                              45 ; I2C Start Condition
    F831                      46 I2CSTART:
-   F831 20 2E F9      [ 6]   47         jsr    CLRSDA      
-   F834 20 17 F9      [ 6]   48         jsr    CLRSCL
+   F831 20 30 F9      [ 6]   47         jsr    CLRSDA      
+   F834 20 19 F9      [ 6]   48         jsr    CLRSCL
    F837 60            [ 6]   49         rts
                              50 
                              51 ; I2C Stop Condition
                              52 ; Uses HL
                              53 ; Destroys A
    F838                      54 I2CSTOP:
-   F838 20 2E F9      [ 6]   55         jsr    CLRSDA
-   F83B 20 0A F9      [ 6]   56         jsr    SETSCL
-   F83E 20 21 F9      [ 6]   57         jsr    SETSDA
+   F838 20 30 F9      [ 6]   55         jsr    CLRSDA
+   F83B 20 0C F9      [ 6]   56         jsr    SETSCL
+   F83E 20 23 F9      [ 6]   57         jsr    SETSDA
    F841 60            [ 6]   58         rts
                              59         
    F842                      60 I2CRBIT:
-   F842 20 21 F9      [ 6]   61         jsr     SETSDA
-   F845 20 0A F9      [ 6]   62         jsr     SETSCL
-   F848 20 3B F9      [ 6]   63         jsr     READSDA ; sets/clears carry flag
-   F84B 20 17 F9      [ 6]   64         jsr     CLRSCL
+   F842 20 23 F9      [ 6]   61         jsr     SETSDA
+   F845 20 0C F9      [ 6]   62         jsr     SETSCL
+   F848 20 3D F9      [ 6]   63         jsr     READSDA ; sets/clears carry flag
+   F84B 20 19 F9      [ 6]   64         jsr     CLRSCL
    F84E 60            [ 6]   65         rts             ; carry flag still good here
                              66 
    F84F                      67 I2CWBIT:
    F84F 90 06         [ 4]   68         bcc     DOCLR
-   F851 20 21 F9      [ 6]   69         jsr     SETSDA
+   F851 20 23 F9      [ 6]   69         jsr     SETSDA
    F854 4C 5A F8      [ 3]   70         jmp     AHEAD
    F857                      71 DOCLR:
-   F857 20 2E F9      [ 6]   72         jsr     CLRSDA
+   F857 20 30 F9      [ 6]   72         jsr     CLRSDA
    F85A                      73 AHEAD:
-   F85A 20 0A F9      [ 6]   74         jsr     SETSCL
-   F85D 20 17 F9      [ 6]   75         jsr     CLRSCL
+   F85A 20 0C F9      [ 6]   74         jsr     SETSCL
+   F85D 20 19 F9      [ 6]   75         jsr     CLRSCL
    F860 60            [ 6]   76         rts
                              77         
    F861                      78 I2CWBYTE:
@@ -193,50 +193,51 @@
    F8CF C9 57         [ 2]  144         cmp     #0x57           ; 'W' - Write memory
    F8D1 F0 10         [ 4]  145         beq     MWRITE
    F8D3 C9 43         [ 2]  146         cmp     #0x43           ; 'C' - Call subroutine
-   F8D5 F0 26         [ 4]  147         beq     REMCALL
+   F8D5 F0 28         [ 4]  147         beq     REMCALL
    F8D7 18            [ 2]  148         clc
    F8D8 60            [ 6]  149         rts
                             150 
    F8D9                     151 MREAD:
-   F8D9 20 EF F8      [ 6]  152         jsr     LOADBC
+   F8D9 20 F1 F8      [ 6]  152         jsr     LOADBC
    F8DC A0 00         [ 2]  153         ldy     #0x00
    F8DE B1 01         [ 6]  154         lda     [B],Y
-   F8E0 4C F8 F8      [ 3]  155         jmp     SRESP
+   F8E0 4C FA F8      [ 3]  155         jmp     SRESP
    F8E3                     156 MWRITE:
-   F8E3 20 EF F8      [ 6]  157         jsr     LOADBC
+   F8E3 20 F1 F8      [ 6]  157         jsr     LOADBC
    F8E6 A5 06         [ 3]  158         lda     CMDBUF3
-   F8E8 91 01         [ 6]  159         sta     [B],Y
-   F8EA A9 57         [ 2]  160         lda     #0x57   ;'W'
-   F8EC 4C F8 F8      [ 3]  161         jmp     SRESP
-   F8EF                     162 LOADBC:
-   F8EF A5 05         [ 3]  163         lda     CMDBUF2
-   F8F1 85 01         [ 3]  164         sta     B
-   F8F3 A5 04         [ 3]  165         lda     CMDBUF1
-   F8F5 85 02         [ 3]  166         sta     C
-   F8F7 60            [ 6]  167         rts
-                            168         
-   F8F8                     169 SRESP:
-   F8F8 20 B5 F8      [ 6]  170         jsr    I2CSRESP
-   F8FB                     171 RHERE:
-   F8FB 38            [ 2]  172         sec
-   F8FC 60            [ 6]  173         rts
-   F8FD                     174 REMCALL:
-   F8FD A9 F7         [ 2]  175         lda     #>(START-1)
-   F8FF 48            [ 3]  176         pha
-   F900 A9 FF         [ 2]  177         lda     #<(START-1)
-   F902 48            [ 3]  178         pha
-   F903 20 EF F8      [ 6]  179         jsr     LOADBC
-   F906 6C 01 00      [ 5]  180         jmp     [B]
-                            181         
-                            182 ;;;;;;;;;;
-                            183 
+   F8E8 A0 00         [ 2]  159         ldy     #0x00
+   F8EA 91 01         [ 6]  160         sta     [B],Y
+   F8EC A9 57         [ 2]  161         lda     #0x57   ;'W'
+   F8EE 4C FA F8      [ 3]  162         jmp     SRESP
+   F8F1                     163 LOADBC:
+   F8F1 A5 05         [ 3]  164         lda     CMDBUF2
+   F8F3 85 01         [ 3]  165         sta     B
+   F8F5 A5 04         [ 3]  166         lda     CMDBUF1
+   F8F7 85 02         [ 3]  167         sta     C
+   F8F9 60            [ 6]  168         rts
+                            169         
+   F8FA                     170 SRESP:
+   F8FA 20 B5 F8      [ 6]  171         jsr    I2CSRESP
+   F8FD                     172 RHERE:
+   F8FD 38            [ 2]  173         sec
+   F8FE 60            [ 6]  174         rts
+   F8FF                     175 REMCALL:
+   F8FF A9 F7         [ 2]  176         lda     #>(START-1)
+   F901 48            [ 3]  177         pha
+   F902 A9 FF         [ 2]  178         lda     #<(START-1)
+   F904 48            [ 3]  179         pha
+   F905 20 F1 F8      [ 6]  180         jsr     LOADBC
+   F908 6C 01 00      [ 5]  181         jmp     [B]
+                            182         
+                            183 ;;;;;;;;;;
                             184 
+                            185 
                              44 ;
                              45 ;       EVERY CODE
                              46 ;
-   F909                      47 EVERY:
+   F90B                      47 EVERY:
                              48 ;       YOUR CODE CAN GO HERE
-   F909 60            [ 6]   49         rts
+   F90B 60            [ 6]   49         rts
                              50 
                              51         .include "../io/asteroid-tether.asm"
                               1 
@@ -250,44 +251,44 @@
                               9         
                      0000    10 LEDBUF  .equ    OUTBUF  ;buffer for lamps
                              11 
-   F90A A5 00         [ 3]   12 SETSCL: lda     LEDBUF
-   F90C 09 01         [ 2]   13         ora     #0x01
-   F90E 85 00         [ 3]   14         sta     LEDBUF
-   F910 8D 00 32      [ 4]   15         sta     LEDS
-   F913 20 30 F8      [ 6]   16         jsr     I2CDLY
-   F916 60            [ 6]   17         rts
+   F90C A5 00         [ 3]   12 SETSCL: lda     LEDBUF
+   F90E 09 01         [ 2]   13         ora     #0x01
+   F910 85 00         [ 3]   14         sta     LEDBUF
+   F912 8D 00 32      [ 4]   15         sta     LEDS
+   F915 20 30 F8      [ 6]   16         jsr     I2CDLY
+   F918 60            [ 6]   17         rts
                              18 
-   F917 A5 00         [ 3]   19 CLRSCL: lda     LEDBUF
-   F919 29 FE         [ 2]   20         and     #0xfe
-   F91B 85 00         [ 3]   21         sta     LEDBUF
-   F91D 8D 00 32      [ 4]   22         sta     LEDS
-   F920 60            [ 6]   23         rts
+   F919 A5 00         [ 3]   19 CLRSCL: lda     LEDBUF
+   F91B 29 FE         [ 2]   20         and     #0xfe
+   F91D 85 00         [ 3]   21         sta     LEDBUF
+   F91F 8D 00 32      [ 4]   22         sta     LEDS
+   F922 60            [ 6]   23         rts
                              24     
-   F921 A5 00         [ 3]   25 SETSDA: lda     LEDBUF
-   F923 29 FD         [ 2]   26         and     #0xfd
-   F925 85 00         [ 3]   27         sta     LEDBUF
-   F927 8D 00 32      [ 4]   28         sta     LEDS
-   F92A 20 30 F8      [ 6]   29         jsr     I2CDLY
-   F92D 60            [ 6]   30         rts
+   F923 A5 00         [ 3]   25 SETSDA: lda     LEDBUF
+   F925 29 FD         [ 2]   26         and     #0xfd
+   F927 85 00         [ 3]   27         sta     LEDBUF
+   F929 8D 00 32      [ 4]   28         sta     LEDS
+   F92C 20 30 F8      [ 6]   29         jsr     I2CDLY
+   F92F 60            [ 6]   30         rts
                              31 
-   F92E A5 00         [ 3]   32 CLRSDA: lda     LEDBUF
-   F930 09 02         [ 2]   33         ora     #0x02
-   F932 85 00         [ 3]   34         sta     LEDBUF
-   F934 8D 00 32      [ 4]   35         sta     LEDS
-   F937 20 30 F8      [ 6]   36         jsr     I2CDLY
-   F93A 60            [ 6]   37         rts
+   F930 A5 00         [ 3]   32 CLRSDA: lda     LEDBUF
+   F932 09 02         [ 2]   33         ora     #0x02
+   F934 85 00         [ 3]   34         sta     LEDBUF
+   F936 8D 00 32      [ 4]   35         sta     LEDS
+   F939 20 30 F8      [ 6]   36         jsr     I2CDLY
+   F93C 60            [ 6]   37         rts
                              38 
-   F93B                      39 READSDA:        
-   F93B AD 00 28      [ 4]   40         lda DIP7
-   F93E 6A            [ 2]   41         ror         
-   F93F 60            [ 6]   42         rts
+   F93D                      39 READSDA:        
+   F93D AD 00 28      [ 4]   40         lda DIP7
+   F940 6A            [ 2]   41         ror         
+   F941 60            [ 6]   42         rts
                              43      
                              44     
                              52 ;
                              53 ;       NMI HANDLER
                              54 ;
-   F940                      55 NMI:
-   F940 40            [ 6]   56         rti
+   F942                      55 NMI:
+   F942 40            [ 6]   56         rti
                              57 
                              58 
                              59 ;------- region2  -----------------------------------------------
@@ -296,7 +297,7 @@
                              62         .area   region2 (ABS, BANK=region2)
                              63 
                              64         .include "../core/6502_vectors.asm"
-   FFFA 40 F9                 1         .dw     NMI
+   FFFA 42 F9                 1         .dw     NMI
    FFFC 00 F8                 2         .dw     START
    FFFE 00 F8                 3         .dw     START
                              65 
