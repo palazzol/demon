@@ -1,0 +1,103 @@
+
+[[Param]]
+comment = 'Start of chip memory mapping'
+name = 'STRTADD'
+value = 0xf800
+
+[[Param]]
+comment = '2K ROM'
+name = 'ROMSIZE'
+value = 0x0800
+
+[[Param]]
+comment = '''
+Start of ram, needs 7 bytes starting here
+On the 6502, you can usually you can count on there being RAM in page 0'''
+name = 'RAMSTRT'
+value = 'reserved'
+
+[[Param]]
+comment = '''
+Start of stack, needs some memory below this address'''
+name = 'SSTACK'
+value = 'reserved'
+
+[[Param]]
+comment = 'delay factor'
+name = 'BIGDEL'
+value = 0x0180
+
+[Code]
+#--------------------------------------------------------------------------
+# NMI HANDLER
+#--------------------------------------------------------------------------
+NMI = '''
+;
+;       NMI HANDLER
+;
+NMI:
+        rti
+'''
+
+#--------------------------------------------------------------------------
+# START Routine
+#
+# This is called once, and can be used do any target-specific
+# initialization that is required
+#--------------------------------------------------------------------------
+start = '''
+;
+;       START CODE
+;
+START:
+        sei              ; Disable interrupts - we don't handle them
+        lds     #SSTACK  ; set up the stack
+;       YOUR CODE CAN GO HERE
+        jmp     INIT
+'''
+
+#--------------------------------------------------------------------------
+# EVERY MACRO
+# This is called regularly, every polling loop, and can be used do any 
+# target-specific task that is required, such as hitting a watchdog
+#--------------------------------------------------------------------------
+every = '''
+;
+;       EVERY CODE
+;
+EVERY:
+;       YOUR CODE CAN GO HERE
+        rts
+'''
+
+[[Region]]
+code  = [
+    { link = "core/dd.def" }, 
+    { link = "core/6809.def" },
+    { link = "io/romio.def" } 
+]
+
+[[Region]]
+start = 'STRTADD'
+end = 'IOADD'
+code=[
+    { insert = 'start' },
+    { link = "core/6809_main.asm" },
+    { insert = 'every' },
+    { link = "io/6809_romio.asm" },
+    { insert = 'NMI' }
+]
+
+[[Region]]
+start = 'IOADD'
+end   = 'IOEND'
+code  = [
+    { link = "io/romio_table.asm" }
+]
+
+[[Region]]
+start = 'VECTORS'
+end   = 'ROMSIZE'
+code  = [
+    { link = "core/6809_vectors.asm" }
+]

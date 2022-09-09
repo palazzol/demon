@@ -1,0 +1,2 @@
+; Same for all 6809s
+VECTORS .equ    0xfff0      ; location of Vector table
