@@ -18,6 +18,9 @@
 #define PIN_138_ENABLE  (A3)
 #define PIN_TARGET_PWR  (A7)
 
+#define wr_high_fast() PORTD |= 0x08
+#define wr_low_fast()  PORTD &= 0xf7
+
 // Unused
 #define PIN_NOBYPASS    (A0)
 #define PIN_BYPASS      (A1)
@@ -73,6 +76,9 @@ void DoDownload()
     Serial.println(":00000001FF");
     return;
   }
+
+  // Disable Address Decoding
+  digitalWrite(PIN_138_ENABLE, LOW);
   
   //Serial.println(I2CTest(&bbi2c, 0x20));
 
@@ -139,6 +145,9 @@ void DoDownload()
   pinMode(PIN_A8, INPUT);
   pinMode(PIN_A9, INPUT);
   pinMode(PIN_A10, INPUT);
+
+  // Enable Address Decoding
+  digitalWrite(PIN_138_ENABLE, HIGH);
 }
 
 uint8_t DecodeNibble(uint8_t c)
@@ -222,9 +231,18 @@ int ProcessUploadLine(char line_buffer[], int buf_length)
         I2CWrite(&bbi2c, I2C_ADDRESS_IOEXP, &d[0], 2);
         delay(1);
         // data write
+        noInterrupts();
+#ifdef FAST
+        wr_low_fast();
+        //__builtin_avr_delay_cycles(8);  // 0.5 us
+        delayMicroseconds(500);
+        wr_high_fast();
+#endif
         digitalWrite(PIN_PROGRAM_WR, LOW);
-        delay(1);
+        delayMicroseconds(1);
         digitalWrite(PIN_PROGRAM_WR, HIGH);
+        interrupts();
+        delay(5);
         //Serial.print(address,HEX);
         //Serial.print(" ");
         //Serial.println(data,HEX);
@@ -247,6 +265,9 @@ void DoUpload()
     Serial.println(":00000001FF");
     return;
   }
+
+  // Disable Address Decoding
+  digitalWrite(PIN_138_ENABLE, LOW);
   
   //Serial.println(I2CTest(&bbi2c, 0x20));
 
@@ -312,6 +333,9 @@ void DoUpload()
   pinMode(PIN_A8, INPUT);
   pinMode(PIN_A9, INPUT);
   pinMode(PIN_A10, INPUT);
+
+  // Enable Address Decoding
+  digitalWrite(PIN_138_ENABLE, HIGH);
 }
 
 void loop() {

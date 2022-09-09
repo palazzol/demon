@@ -27,7 +27,7 @@ class DemonDebugger:
         self.global_args = global_args
 
         if self.global_args.port:
-            self.ser = serial.Serial(self.global_args.port, self.global_args.rate, rtscts=self.global_args.rtscts, timeout=0.1)
+            self.ser = serial.Serial(self.global_args.port, self.global_args.rate, rtscts=self.global_args.rtscts, timeout=0.5)
         else:
             print("Port is a required field, unless using Simulation Mode")
             sys.exit(-1)
