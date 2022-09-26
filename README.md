@@ -6,7 +6,7 @@ Debugger/Monitor for small "computers"
 
 ## Vintage Computer Festival Midwest 17 - 2022
 
-- Youtube (Soon)
+- [YouTube](https://youtu.be/M9XML7viIT8)
 
 - [Slides](doc/DD_Presentation-VCFMW_2022.pdf)
 
