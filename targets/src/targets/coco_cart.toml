@@ -1,0 +1,19 @@
+
+[[Param]]
+comment = 'Start of chip memory mapping'
+name = 'STRTADD'
+value = 0xc000
+
+[[Param]]
+name = 'RAMSTRT'
+value = 0x0000
+
+[[Param]]
+name = 'SSTACK'
+value = 0x00ff
+
+[Template]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+file = "templates/6809_cart_romio_2k.toml"
