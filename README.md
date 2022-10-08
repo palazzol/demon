@@ -68,7 +68,7 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 ### 6809
 
 * Heathkit ET-3404 (ET-3400(A) + 6809 adapter) (6809 trainer)
-* Radio Shack Color Computer - Cartridge (6809) (UNTESTED)
+* Radio Shack Color Computer - Cartridge (6809)
 
 ### Z80
 
