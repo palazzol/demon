@@ -1,0 +1,88 @@
+
+[[Param]]
+# if you skip the comment entry here, 
+# it will pick up the comment in the template
+name = 'STRTADD'
+value = 0x2000
+
+[[Param]]
+comment = '''
+The code actually needs 4 bytes ram at this address for the command buffer.
+In this case, the stack is elsewhere, set by the Astrocade BIOS
+'''
+name = 'RAMADDR'
+value = 0x4fce
+
+[Code]
+cartheader = '''
+        .byte   0x55        ; cartridge header
+        .word   0x0218      ; next menu item (first one)
+        .word   TITLE       ; title pointer
+        .word   START       ; start pointer
+        
+        ret                 ; rst8
+        nop
+        nop
+
+        ret                 ; rst16
+        nop
+        nop
+        
+        ret                 ; rst24
+        nop
+        nop
+        
+        ret                 ; rst32
+        nop
+        nop
+        
+        ret                 ; rst40
+        nop
+        nop
+        
+        ret                 ; rst48
+        nop
+        nop
+'''
+
+#--------------------------------------------------------------------------
+# START Routine
+#
+# This is called once, and can be used do any target-specific
+# initialization that is required
+#--------------------------------------------------------------------------
+start = '''
+;
+;       START CODE
+;
+START:
+;
+;       Assume the stack and the interrupt states are
+;       set up properly, by the Astrocade BIOS.
+;       Comment out normal startup code
+;
+        ;DI                  ; Disable interrupts - we don't handle them
+        ;LD      SP,RAMADDR  ; have to set valid SP
+        JP       INIT
+'''
+
+#--------------------------------------------------------------------------
+# EVERY Routine
+# This is called regularly, every polling loop, and can be used do any 
+# target-specific task that is required, such as hitting a watchdog
+#--------------------------------------------------------------------------
+every = '''
+;
+;       EVERY CODE
+;
+EVERY:
+        IN	A,(0x10)    ; hit watchdog
+        RET
+'''
+
+[Template]
+#--------------------------------------------------------------------------
+# ROM TEMPLATE - this defines the rom layout, and which kind of io
+#--------------------------------------------------------------------------
+file = "templates/z80-cart_romio_2k.toml"
+

@@ -1,0 +1,3 @@
+; Same for all Z80s
+IRQADD  .equ    0x0038      ; location of IRQ handler
+NMIADD  .equ    0x0066      ; location of NMI handler

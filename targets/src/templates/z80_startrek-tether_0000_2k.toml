@@ -1,0 +1,130 @@
+[[Param]]
+comment = 'Start of chip memory mapping'
+name = 'STRTADD'
+value = 0x0000
+
+[[Param]]
+comment = '2K ROM'
+name = 'ROMSIZE' 
+value = 0x0800
+
+[[Param]]
+comment = '''
+The code actually needs 4 bytes ram at this address for the command buffer.
+However, stack also starts here, and will grow down (towards 0) from this point.
+So, we need some above and below this address.  I generally choose the
+Top of RAM minus 16'''
+name = 'RAMADDR'
+value = 'reserved'
+
+[[Param]]
+comment = 'delay factor'
+name = 'BIGDEL'
+value = 0x0180
+
+[Code]
+#--------------------------------------------------------------------------
+# IRQ HANDLER
+#--------------------------------------------------------------------------
+IRQ = '''
+;
+;       IRQ HANDLER
+;
+IRQ:
+        RETI
+'''
+
+#--------------------------------------------------------------------------
+# NMI HANDLER
+#--------------------------------------------------------------------------
+NMI = '''
+;
+;       NMI HANDLER
+;
+NMI:
+        RETN
+'''
+
+#--------------------------------------------------------------------------
+# START Routines
+#
+# These are called once, and can be used do any target-specific
+# initialization that is required
+#
+# On the Z80, it is split into two.  This is because start is 
+# usually placed into a space-limited region.
+# It's best to expand start2 and leave start alone.
+#--------------------------------------------------------------------------
+start = '''
+;
+;       START CODE
+;
+START:
+        DI                  ; Disable interrupts - we don't handle them
+        LD      SP,RAMADDR  ; have to set valid SP
+;       YOUR SMALL CODE CAN GO HERE
+        JP      START2
+'''
+
+start2 = '''
+;
+;       START CODE 2
+;
+START2:
+;       YOUR CODE CAN GO HERE
+        JP      INIT
+'''
+
+#--------------------------------------------------------------------------
+# EVERY Routine
+# This is called regularly, every polling loop, and can be used do any 
+# target-specific task that is required, such as hitting a watchdog
+#--------------------------------------------------------------------------
+every = '''
+;
+;       EVERY CODE
+;
+EVERY:
+;       YOUR CODE CAN GO HERE
+        RET
+'''
+
+[[Region]]
+code  = [
+    { link = "core/dd.def" }, 
+    { link = "core/z80.def" },
+]
+
+[[Region]]
+#--------------------------------------------------
+# On the Z80, the start address is 0x0000
+# but the IRQ handler is at 0x0038
+# So, we put a small but of startup code here,
+# and then jump to after the NMI handler for more
+#--------------------------------------------------    
+start = 'STRTADD'
+end = 'IRQADD'
+code=[
+    { insert = 'start' },
+]
+
+[[Region]]
+#--------------------------------------------------
+# This region is reserved for the IRQ handler
+#--------------------------------------------------
+start = 'IRQADD'
+end   = 'NMIADD'
+code  = [
+    { insert = 'IRQ' } 
+]
+
+[[Region]]
+start = 'NMIADD'
+end   = 'ROMEND'
+code  = [
+    { insert = 'NMI' },
+    { insert = 'start2' },
+    { link = "core/z80_main.asm" },
+    { insert = 'every' },
+    { link = "io/startrek-tether.asm" }
+]

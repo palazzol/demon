@@ -1,47 +1,91 @@
-# demon debugger system - version 1.0 !
+# Demon Debugger system - version 2.0 - coming soon!
 
 Debugger/Monitor for small "computers"
 
-![Image](img/demon_screen.png)
+![Image](img/RevDRender.png)
+
+## New in version 2.0
+
+* No EPROM programmer needed!
+* GUI client
+* Python API for automating control of targets
+* Modular target code minimized work for supporting new targets
 
 ## Description:
 
-This software can be used to add debug capabilities to an 8 or 16 bit machine, even if it doesn't have a serial console. It has been ported to Z80-based, 6502-based, and the CP1610-based systems.
+Demon Debugger is a tool that can be used to repair and reverse-engineer devices with 8 and 16 bit CPUs, such as arcade machines, console games, embedded computers, single board computers, etc.  It provides a debugging console, and so is especially useful for systems that lack a working one.
 
-In the normal configuration, you may have a system with no console, such as an arcade PCB. For example, I have used this system to repair a Sega Star Trek (Z80) and an Atari Asteroid (6502) machine.
+It has been ported to Z80-based, 6502-based, and the CP1610-based systems.  There are ports underway to other CPU architectures.
 
-The system must have a working CPU, and at least a small amount of ROM, RAM, and I/O.  The small kernel of code that runs on the system requires 2 output pins and 1 input pin to be available to the system. (I generally use the I/O lines for coin counters or dip switches, for example.)
-
-Some minor modifications need to be done to the "moniker.asm" program to address the identified 3 I/O lines, and then the program is assembled, and the binary is placed into an EPROM and put into the system.
-
-The three lines + ground are connected to an arduino-based adapter, which converts this communication standard to serial.
-
-The USB/Serial is connected back to a PC running the demon.py command shell, which requires Python 3.0 and PySerial.
-
-Now, if all goes well, you can use the console on the PC to access the memory space and I/O ports of the native system.
+Unfortunately, Demon Debugger can't be used on a totally broken system.  The target system must have a working CPU, and at least a small amount of ROM and RAM.  However, we have found that for most applications, it's really not too hard to get a system to this point.
 
 ## How it Works:
 
-The kernal of code on the native system is a modified I2C master, which polls the arduino at regular intervals for a handful of simple commands. Why an I2C master?  Because the target system is a master, the clock can go as slow as needed, as there are no timing requirements on the target system.
+In ROM emulation mode, The Demon Debugger board cable plugs into a socket on the target system, in place of a standard JEDEC ROM/EPROM chip.  Then, your PC can communicate with the target over serial, using a standard USB connection.
 
-The Arduino acts as a Serial to I2C Slave bridge.  It is simply a standard Arduino Uno with one additional transistor, to convert the I2C bus from 2 signal lines to 3.  Why? Because it is much easier to identify unidirectional I/O lines than bidirectional ones.
+If your target system is already supported, there will be a target image already built, which you can upload onto your target.  
 
-![Image](img/demon_arch.png)
+To support a totally new target system, a small amount of tweaking may need to be done to the assembly code for your target. Generally, if you know the memory map for your system, this is really easy to do.
 
-## Videos
+## Details
 
-[Sega Sound Board test](https://www.youtube.com/watch?v=uYlbb8uPjoU) Quality is not very good, but the Arduino module is next to the laptop
+The Demon Debugger system has evolved over time.  If you have a Demon Debugger board, you can use ROM emulation mode with prebuilt target code, and get started right away, without any other tools.  If you need to support a new target, you can still use ROM emulation mode, once you build a new target code.
+
+![Image](img/RomEmulationMode.png)
+
+If you don't have a Demon Debugger board, you can still use the Demon Debugger system in Tethered mode, provided you have a few other capabilities.  It requires only an Arduino Nano/Uno, a single transistor, and the ability to program an EPROM chip.  You need to identify points on your target which can be used (2 outputs, 1 input, and a ground), wire up your modified Arduino accordingly, and modify the communication routines in the target to use those points.  There are a few examples in the repo of doing this.
+
+![Image](img/TetheredMode.png)
+
+## Currently Supported Targets
+
+### 6502
+* Generic 6502 (Works on most targets) - Atari Asteroids, VCFMW Badge!
+* Atari Asteroids Arcade, tethered mode
+* Atari Starship 1 Arcade
+
+### Z80
+* Z80 reference code (Tweakable to work on most targets)
+* Sega Star Trek Arcade
+* Sega Star Trek Arcade, tethered mode
+* Bally Midway Gorf Arcade 
+* Bally Astrocade, cartridge
+* Colecovision/Bit90, cartridge
+* Universal Space Raider Arcade
+
+### CP1610
+* Mattel Intellivision - via LTO Flash cartridge*
+
+### Other - coming soon
+* Heathkit ET-4300A (6800 target)
+* Heathkit ET-4300A + 6809 adapter (6809 target)
+* Mattel Intellivision, cartridge (CP1610 target)
+* TI 99/4A cartridge (TMS9900 target)
+* OS816 SBC (65C816 target)
+* MicroProfessor-1 (Z80 trainer)
+* Various 8080 targets
+* Atari 2600 (6502)
+* etc.
+
+## Command Line Client
+
+![Image](img/demon_screen.png)
+
+## New GUI WIP
+
+![Image](img/DemonDebuggerGUI.png)
+
+## API
+
+For now, please see the file demonapi.py
+
+## Old Videos
+
+Tethered Mode - [Sega Sound Board test](https://www.youtube.com/watch?v=uYlbb8uPjoU) Quality is not very good, but the Arduino module is next to the laptop
 
 [Intellivision Demo](https://www.youtube.com/watch?v=_8YfCMpHLhY) Better quality, no Arduino needed using native serialport on the LTO Flash cart.
 
-## Alternate Configuration:
-
-For systems that already have a Serial port, it is possible to bypass the entire I2C business, and connect directly to code on the native platform that speaks serial.  This was done on the Mattel Intellivision game console. Joe Zbiciak wrote a special cartridge image to do this, which runs on his excellent [LTO Flash](http://ltoflash.leftturnonly.info/) cartridge.
-
 ## Future:
 
-1) I would like to port this to more systems, and/or help others fix their old things.  
-2) The demon.py console is really quirky and primitive, I'd like to make full-fledged GUI at some point.
-
-Please let me know if you need any help getting this system going, should you choose to use it!
-
+I would like to port this to more systems, and/or help others fix their old things.  
+Please let us know if you need any help getting this system going, should you choose to use it!
