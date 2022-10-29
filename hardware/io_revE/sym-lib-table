@@ -1,4 +1,0 @@
-(sym_lib_table
-  (lib (name Memory_EPROM)(type Legacy)(uri ${KIPRJMOD}/Memory_EPROM.lib)(options "")(descr ""))
-  (lib (name io-rescue)(type Legacy)(uri ${KIPRJMOD}/io-rescue.lib)(options "")(descr ""))
-)
