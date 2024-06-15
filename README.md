@@ -14,6 +14,10 @@ Debugger/Monitor for small "computers"
 
 **We would like to port this to more systems, and/or help others fix their old things. Please let us know if you need any help getting this system going, should you choose to give it a try!**
 
+## Newly added
+
+* 68HC11 Reference Target - used for Chuck E Cheese Cyberamics computer
+
 ## New in version 2.0
 
 * No EPROM programmer needed, reflash through USB serial
@@ -69,6 +73,10 @@ If you don't have a Demon Debugger board, you can still use the Demon Debugger s
 
 * Heathkit ET-3404 (ET-3400(A) + 6809 adapter) (6809 trainer)
 * Radio Shack Color Computer - Cartridge (6809)
+
+### 6811
+
+* (Chuck E. Cheese Cyberamics Computer) (6811 reference)
 
 ### Z80
 
