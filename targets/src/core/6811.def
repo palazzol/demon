@@ -1,0 +1,1 @@
+VECTORS .equ    0xffe0      ; location of Vector table
