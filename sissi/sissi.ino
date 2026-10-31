@@ -7,24 +7,26 @@
 #define I2C_ADDRESS         0x08
 #define I2C_ADDRESS_IOEXP   0x20
 
-#define PIN_PROGRAM_nOE (2)
-#define PIN_PROGRAM_WR  (3)
-#define PIN_A8          (4)
-#define PIN_A9          (5)
-#define PIN_A10         (6)
+// Modified to work with Rev E.
 
-#define PIN_IO_SCL      (8)
-#define PIN_IO_SDA      (9)
-#define PIN_138_ENABLE  (A3)
-#define PIN_TARGET_PWR  (A7)
+#define PIN_READ_DISABLE (2)
+#define PIN_PROGRAM_WR   (3)
+#define PIN_A8           (4)
+#define PIN_A9           (5)
+#define PIN_A10          (6)
+#define PIN_TARGET_nOE   (7)
+#define PIN_IO_SCL       (8)
+#define PIN_IO_SDA       (9)
+#define PIN_TARGET_nCE   (A3)
+#define PIN_TARGET_PWR   (A7)
 
 #define wr_high_fast() PORTD |= 0x08
 #define wr_low_fast()  PORTD &= 0xf7
 
 // Unused
-#define PIN_NOBYPASS    (A0)
-#define PIN_BYPASS      (A1)
-#define PIN_NO_RC       (A2)
+//#define PIN_NOBYPASS    (A0)
+//#define PIN_BYPASS      (A1)
+//#define PIN_NO_RC       (A2)
 
 const char hex[16]="0123456789ABCDEF";
 
@@ -34,17 +36,19 @@ void setup() {
   // Disable Write!
   digitalWrite(PIN_PROGRAM_WR, HIGH);
   pinMode(PIN_PROGRAM_WR, OUTPUT);
+  
+  digitalWrite(PIN_READ_DISABLE, LOW);
+  pinMode(PIN_READ_DISABLE, INPUT);
 
-  pinMode(PIN_PROGRAM_nOE, INPUT);
   pinMode(PIN_A8, INPUT);
   pinMode(PIN_A9, INPUT);
   pinMode(PIN_A10, INPUT);
+  pinMode(PIN_TARGET_nOE, INPUT);
   pinMode(PIN_IO_SCL, INPUT_PULLUP);
   pinMode(PIN_IO_SDA, INPUT_PULLUP);
   pinMode(PIN_TARGET_PWR, INPUT);
 
-  pinMode(PIN_138_ENABLE, OUTPUT);
-  digitalWrite(PIN_138_ENABLE, HIGH);
+  pinMode(PIN_TARGET_nCE, INPUT);
 
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
@@ -69,6 +73,18 @@ byte xmit_buffer[4] = { 0x2E, 0x2E, 0x2E, 0x2E };
 
 int i2c_led_counter = 0;
 
+void loop() {
+  // LED_BUILTIN Behavior:
+  // When the LED is on, communication with the target is possible
+
+  if ((i2c_led_counter == 0) || (digitalRead(PIN_READ_DISABLE) == LOW))
+      digitalWrite(LED_BUILTIN, LOW);
+  else {
+      digitalWrite(LED_BUILTIN, HIGH);
+      i2c_led_counter--;
+  }
+}
+
 void DoDownload()
 {
   int v = analogRead(PIN_TARGET_PWR);
@@ -76,9 +92,6 @@ void DoDownload()
     Serial.println(":00000001FF");
     return;
   }
-
-  // Disable Address Decoding
-  digitalWrite(PIN_138_ENABLE, LOW);
   
   //Serial.println(I2CTest(&bbi2c, 0x20));
 
@@ -87,9 +100,17 @@ void DoDownload()
   pinMode(PIN_A9, OUTPUT);
   pinMode(PIN_A10, OUTPUT);
   // data bus driven
-  pinMode(PIN_PROGRAM_nOE, OUTPUT);
-  digitalWrite(PIN_PROGRAM_nOE, LOW);
-  
+  pinMode(PIN_TARGET_nOE, OUTPUT);
+  pinMode(PIN_TARGET_nCE, OUTPUT);
+  digitalWrite(PIN_TARGET_nOE, LOW);
+  digitalWrite(PIN_TARGET_nCE, LOW);
+
+  if (digitalRead(PIN_READ_DISABLE) == HIGH)
+  {
+    // The forces the pin LOW because of the definition in setup()
+    pinMode(PIN_READ_DISABLE, OUTPUT);
+  }
+
   uint8_t c[2] = { 0x01, 0x00 }; // enable address bus
   I2CWrite(&bbi2c, I2C_ADDRESS_IOEXP, &c[0], 2);
   uint8_t c1[2] = { 0x0d, 0xff }; // enable address bus pull ups
@@ -139,15 +160,16 @@ void DoDownload()
   I2CWrite(&bbi2c, I2C_ADDRESS_IOEXP, &c3[0], 2);
 
   // data bus undriven
-  pinMode(PIN_PROGRAM_nOE, INPUT);
+  pinMode(PIN_TARGET_nOE, INPUT);
+  pinMode(PIN_TARGET_nCE, INPUT);
 
   // extra address bits undriven
   pinMode(PIN_A8, INPUT);
   pinMode(PIN_A9, INPUT);
   pinMode(PIN_A10, INPUT);
 
-  // Enable Address Decoding
-  digitalWrite(PIN_138_ENABLE, HIGH);
+  // Allow I2C Comm
+  pinMode(PIN_READ_DISABLE, INPUT);
 }
 
 uint8_t DecodeNibble(uint8_t c)
@@ -266,9 +288,18 @@ void DoUpload()
     return;
   }
 
-  // Disable Address Decoding
-  digitalWrite(PIN_138_ENABLE, LOW);
+  // 2816 output disabled
+  pinMode(PIN_TARGET_nOE, OUTPUT);
+  pinMode(PIN_TARGET_nCE, OUTPUT);
+  digitalWrite(PIN_TARGET_nOE, HIGH);
+  digitalWrite(PIN_TARGET_nCE, HIGH);
   
+  if (digitalRead(PIN_READ_DISABLE) == HIGH)
+  {
+    // The forces the pin LOW because of the definition in setup()
+    pinMode(PIN_READ_DISABLE, OUTPUT);
+  }
+
   //Serial.println(I2CTest(&bbi2c, 0x20));
 
   // extra address pins enabled
@@ -334,17 +365,12 @@ void DoUpload()
   pinMode(PIN_A9, INPUT);
   pinMode(PIN_A10, INPUT);
 
-  // Enable Address Decoding
-  digitalWrite(PIN_138_ENABLE, HIGH);
-}
+  // restore target control
+  pinMode(PIN_TARGET_nOE, INPUT);
+  pinMode(PIN_TARGET_nCE, INPUT);
 
-void loop() {
-  if (i2c_led_counter == 0)
-      digitalWrite(LED_BUILTIN, LOW);
-  else {
-      digitalWrite(LED_BUILTIN, HIGH);
-      i2c_led_counter--;
-  }
+  // Allow I2C Comm
+  pinMode(PIN_READ_DISABLE, INPUT);
 }
 
 // function that executes whenever data is requested by master
